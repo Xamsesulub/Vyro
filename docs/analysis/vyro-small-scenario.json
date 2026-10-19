@@ -1,0 +1,89 @@
+{
+  "environment": {
+    "viewport": {
+      "height": 640,
+      "width": 320
+    }
+  },
+  "capture": {
+    "at_end": [
+      "accessibility"
+    ],
+    "after_each_step": [
+      "accessibility",
+      "screenshot"
+    ]
+  },
+  "start_url": {
+    "url": "http://127.0.0.1:8101/track"
+  },
+  "actions": [
+    {
+      "timeout_ms": 15000,
+      "state": "visible",
+      "locator": {
+        "role": "button",
+        "name": "Start simulering",
+        "kind": "role"
+      },
+      "action": "wait_for",
+      "step_id": "ready"
+    },
+    {
+      "timeout_ms": 10000,
+      "locator": {
+        "role": "button",
+        "name": "Start simulering",
+        "kind": "role"
+      },
+      "action": "click",
+      "step_id": "start"
+    },
+    {
+      "timeout_ms": 10000,
+      "locator": {
+        "role": "button",
+        "name": "Pause",
+        "kind": "role"
+      },
+      "action": "click",
+      "step_id": "pause"
+    },
+    {
+      "timeout_ms": 10000,
+      "locator": {
+        "role": "button",
+        "name": "Fortsett",
+        "kind": "role"
+      },
+      "action": "click",
+      "step_id": "resume"
+    },
+    {
+      "timeout_ms": 10000,
+      "step_id": "community",
+      "action": "click",
+      "locator": {
+        "kind": "role",
+        "name": "Fellesskap",
+        "role": "tab"
+      }
+    },
+    {
+      "timeout_ms": 10000,
+      "step_id": "community_ready",
+      "action": "wait_for",
+      "locator": {
+        "kind": "role",
+        "name": "Bli med i demo",
+        "role": "button"
+      },
+      "state": "visible"
+    }
+  ],
+  "browser": {
+    "mode": "launch",
+    "executable_path": "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
+    "headless": true
+  }
+}

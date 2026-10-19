@@ -1,0 +1,29 @@
+{
+  "environment": {
+    "viewport": {
+      "height": 844,
+      "width": 390
+    }
+  },
+  "capture": {
+    "at_end": [
+      "accessibility",
+      "screenshot"
+    ]
+  },
+  "start_url": {
+    "url": "http://127.0.0.1:8101/track"
+  },
+  "actions": [
+    {
+      "action": "wait_for_timeout",
+      "step_id": "loaded",
+      "duration_ms": 1500
+    }
+  ],
+  "browser": {
+    "mode": "launch",
+    "executable_path": "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
+    "headless": true
+  }
+}

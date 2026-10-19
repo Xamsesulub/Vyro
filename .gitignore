@@ -1,0 +1,13 @@
+node_modules/
+.env
+.env.*
+!.env.example
+.expo/
+dist/
+coverage/
+*.log
+
+# Private, local design references
+docs/design-references/strava/*.png
+docs/design-references/strava-references.zip
+.claude/

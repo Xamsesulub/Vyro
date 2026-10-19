@@ -1,0 +1,61 @@
+import { Sport } from "../activities/model";
+export type Recording = {
+  status: "idle" | "recording" | "paused" | "finishing";
+  sport: Sport;
+  seconds: number;
+  startedAt: number | null;
+  distance: number;
+};
+export const initialRecording: Recording = {
+  status: "idle",
+  sport: "Løping",
+  seconds: 0,
+  startedAt: null,
+  distance: 0,
+};
+const speeds: Record<Sport, number> = {
+  Løping: 10,
+  Gange: 4.8,
+  Sykling: 22,
+  Fottur: 3.6,
+};
+export function snapshot(state: Recording, now: number): Recording {
+  if (state.status !== "recording" || state.startedAt === null) return state;
+  if (now <= state.startedAt) return state;
+  const elapsed = Math.max(0, (now - state.startedAt) / 1000);
+  return {
+    ...state,
+    seconds: state.seconds + elapsed,
+    distance: state.distance + (elapsed * speeds[state.sport]) / 3600,
+    startedAt: now,
+  };
+}
+export function transition(
+  state: Recording,
+  event: "start" | "pause" | "resume" | "finish" | "discard",
+  now = Date.now(),
+): Recording {
+  if (event === "discard") return { ...initialRecording, sport: state.sport };
+  if (event === "start" && state.status === "idle")
+    return { ...state, status: "recording", startedAt: now };
+  if (event === "pause" && state.status === "recording")
+    return { ...snapshot(state, now), status: "paused", startedAt: null };
+  if (event === "resume" && state.status === "paused")
+    return { ...state, status: "recording", startedAt: now };
+  if (
+    event === "finish" &&
+    (state.status === "recording" || state.status === "paused")
+  )
+    return { ...snapshot(state, now), status: "finishing", startedAt: null };
+  return state;
+}
+// Illustration coordinates, not a navigable route or real GPS observations.
+export const demoRoute = [
+  { latitude: 59.922, longitude: 10.754 },
+  { latitude: 59.925, longitude: 10.757 },
+  { latitude: 59.928, longitude: 10.755 },
+  { latitude: 59.931, longitude: 10.759 },
+  { latitude: 59.934, longitude: 10.76 },
+  { latitude: 59.936, longitude: 10.764 },
+  { latitude: 59.939, longitude: 10.765 },
+];

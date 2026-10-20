@@ -14,13 +14,15 @@ import {
 } from "../../components/ui";
 
 import { useAppStore } from "../../stores/useAppStore";
+import { useVisibleWorkouts } from "../../features/activities/useVisibleWorkouts";
 import { examples } from "../../features/activities/examples";
 import { duration, km, pace } from "../../features/activities/model";
 export default function Activity() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const s = useAppStore();
+  const workouts = useVisibleWorkouts();
   const [confirm, setConfirm] = useState(false);
-  const w = [...s.workouts, ...examples].find((item) => item.id === id);
+  const w = [...workouts, ...examples].find((item) => item.id === id);
   const back = () => {
     if (router.canGoBack()) router.back();
     else router.replace("/(tabs)/profile");
@@ -43,7 +45,13 @@ export default function Activity() {
         title={w.title}
       />
       <Badge
-        text={w.source === "example" ? "Eksempeløkt" : "Lagret simulering"}
+        text={
+          w.source === "example"
+            ? "Eksempeløkt"
+            : w.source === "gps"
+              ? "GPS-økt"
+              : "Lagret simulering"
+        }
       />
       <Card>
         <View style={styles.row}>
@@ -65,19 +73,25 @@ export default function Activity() {
             Privat økt
           </Txt>
         </View>
-        <Txt muted>
-          {w.notes || "Ingen notater. Et lite steg er også et steg."}
-        </Txt>
+        <Txt muted>{w.notes || "Ingen notater."}</Txt>
         <Txt muted size={12}>
           {w.source === "example"
             ? "Dette er en fiktiv økt for å vise produktet."
-            : "Simuleringen er lagret lokalt. Den teller ikke som et ekte treningsopptak."}
+            : w.source === "gps"
+              ? "Dette er den private kopien på enheten. Eventuell deling trekkes tilbake fra Hjem, uavhengig av lokal sletting."
+              : "Simuleringen er lagret lokalt. Den teller ikke som et ekte treningsopptak."}
         </Txt>
       </Card>
-      {w.source === "simulation" && (
+      {w.source !== "example" && (
         <>
           <Button
-            title={confirm ? "Bekreft sletting" : "Slett simuleringen"}
+            title={
+              confirm
+                ? "Bekreft sletting"
+                : w.source === "gps"
+                  ? "Slett fra denne enheten"
+                  : "Slett simuleringen"
+            }
             secondary={!confirm}
             danger={confirm}
             onPress={() => {

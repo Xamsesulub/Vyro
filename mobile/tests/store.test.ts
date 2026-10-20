@@ -10,6 +10,42 @@ beforeEach(async () => {
     storageError: null,
   });
 });
+
+test("light redesign migrates old profiles without losing workouts or preferences", async () => {
+  const workout = {
+    id: "sim-existing",
+    title: "Behold meg",
+    sport: "Løping",
+    distance: 2,
+    seconds: 600,
+    date: "2026-10-19T10:00:00Z",
+    source: "simulation",
+    visibility: "private",
+  };
+  await AsyncStorage.setItem(
+    "vyro-prototype-v1",
+    JSON.stringify({
+      version: 0,
+      state: {
+        theme: "dark",
+        name: "Test",
+        goal: 30,
+        workouts: [workout],
+        recording: initialRecording,
+      },
+    }),
+  );
+  await useAppStore.persist.rehydrate();
+  expect(useAppStore.getState()).toMatchObject({
+    theme: "light",
+    name: "Test",
+    goal: 30,
+    workouts: [workout],
+  });
+  useAppStore.getState().preferences({ theme: "dark" });
+  await useAppStore.persist.rehydrate();
+  expect(useAppStore.getState().theme).toBe("dark");
+});
 test("save is private and idempotent, and clears the pending session", () => {
   useAppStore.setState({
     recording: {
@@ -65,7 +101,7 @@ test("a persistent storage failure reports an error without a write loop", async
   write.mockRejectedValue(new Error("Disk full"));
   write.mockClear();
   useAppStore.getState().preferences({ name: "Storage test" });
-  await new Promise(resolve => setTimeout(resolve, 0));
+  await new Promise((resolve) => setTimeout(resolve, 0));
   expect(useAppStore.getState().storageError).toContain("Lokal lagring feilet");
   expect(write.mock.calls.length).toBeLessThanOrEqual(2);
   write.mockResolvedValue(undefined);

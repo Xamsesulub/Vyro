@@ -2,6 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { Sport, Workout } from "../features/activities/model";
+import { useSocialStore } from "./useSocialStore";
 import {
   initialRecording,
   Recording,
@@ -56,7 +57,7 @@ export const useAppStore = create<State>()(
       preferred: ["Løping"],
       goal: 20,
       experience: "Litt erfaring",
-      theme: "dark",
+      theme: "light",
       examplesVisible: true,
       workouts: [],
       recording: initialRecording,
@@ -93,11 +94,18 @@ export const useAppStore = create<State>()(
         });
         return id;
       },
-      remove: (id) =>
-        set({ workouts: get().workouts.filter((w) => w.id !== id) }),
+      remove: (id) => {
+        useSocialStore.getState().unshare(`post-${id}`);
+        set({ workouts: get().workouts.filter((w) => w.id !== id) });
+      },
     }),
     {
       name: "vyro-prototype-v1",
+      version: 1,
+      migrate: (persisted) => ({
+        ...(persisted as State),
+        theme: "light" as const,
+      }),
       storage: createJSONStorage(() => ({
         getItem: (key: string) => AsyncStorage.getItem(key),
         setItem: async (key: string, value: string) => {

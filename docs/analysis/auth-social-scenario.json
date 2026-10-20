@@ -1,0 +1,110 @@
+{
+  "browser": {
+    "mode": "launch",
+    "headless": true,
+    "executable_path": "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe"
+  },
+  "start_url": {
+    "url": "http://127.0.0.1:8101/"
+  },
+  "environment": {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "locale": "nb-NO"
+  },
+  "actions": [
+    {
+      "step_id": "ready",
+      "action": "wait_for",
+      "locator": {
+        "kind": "role",
+        "role": "button",
+        "name": "Kom i gang"
+      },
+      "state": "visible",
+      "timeout_ms": 15000
+    },
+    {
+      "step_id": "begin",
+      "action": "click",
+      "locator": {
+        "kind": "role",
+        "role": "button",
+        "name": "Kom i gang"
+      },
+      "timeout_ms": 10000
+    },
+    {
+      "step_id": "account",
+      "action": "click",
+      "locator": {
+        "kind": "role",
+        "role": "button",
+        "name": "Logg inn eller opprett konto"
+      },
+      "timeout_ms": 10000
+    },
+    {
+      "step_id": "login_ready",
+      "action": "wait_for_timeout",
+      "duration_ms": 500
+    },
+    {
+      "step_id": "register",
+      "action": "click",
+      "locator": {
+        "kind": "role",
+        "role": "button",
+        "name": "Ny her? Opprett konto"
+      },
+      "timeout_ms": 10000
+    },
+    {
+      "step_id": "register_ready",
+      "action": "wait_for_timeout",
+      "duration_ms": 500
+    },
+    {
+      "step_id": "share_guard",
+      "action": "goto",
+      "destination": {
+        "url": "http://127.0.0.1:8101/share-workout"
+      },
+      "wait_until": "load",
+      "timeout_ms": 15000
+    },
+    {
+      "step_id": "share_ready",
+      "action": "wait_for_timeout",
+      "duration_ms": 800
+    },
+    {
+      "step_id": "gps_guard",
+      "action": "goto",
+      "destination": {
+        "url": "http://127.0.0.1:8101/record-gps"
+      },
+      "wait_until": "load",
+      "timeout_ms": 15000
+    },
+    {
+      "step_id": "gps_ready",
+      "action": "wait_for_timeout",
+      "duration_ms": 800
+    }
+  ],
+  "capture": {
+    "after_each_step": [
+      "accessibility",
+      "screenshot"
+    ],
+    "at_end": [
+      "url"
+    ],
+    "events": [
+      "page-errors"
+    ]
+  }
+}

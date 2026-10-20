@@ -7,12 +7,16 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useReducedMotion } from "react-native-reanimated";
 import { useAppStore } from "../stores/useAppStore";
 import { useTheme } from "../components/ui";
+import { manageSupabaseSession } from "../lib/supabase";
+import { observeAuth } from "../stores/useAuthStore";
 
 export default function RootLayout() {
   const ready = useAppStore((s) => s.ready);
   const theme = useAppStore((s) => s.theme);
   const c = useTheme();
   const reduced = useReducedMotion();
+  useEffect(manageSupabaseSession, []);
+  useEffect(observeAuth, []);
   useEffect(() => {
     const timer = setInterval(() => {
       if (useAppStore.getState().recording.status === "recording")

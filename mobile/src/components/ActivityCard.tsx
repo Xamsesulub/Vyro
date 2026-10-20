@@ -1,7 +1,6 @@
 import { Pressable, View } from "react-native";
 import { router } from "expo-router";
 import { Workout, duration, km, pace } from "../features/activities/model";
-import { brand } from "../theme/tokens";
 import { Card, Icon, Metric, Txt, styles, useTheme } from "./ui";
 export function ActivityCard({ workout }: { workout: Workout }) {
   const c = useTheme();
@@ -13,7 +12,14 @@ export function ActivityCard({ workout }: { workout: Workout }) {
         router.push({ pathname: "/activity/[id]", params: { id: workout.id } })
       }
     >
-      <Card>
+      <Card
+        style={{
+          padding: 0,
+          paddingBottom: 24,
+          borderBottomWidth: 1,
+          borderRadius: 0,
+        }}
+      >
         <View style={styles.row}>
           <View
             style={{
@@ -38,7 +44,7 @@ export function ActivityCard({ workout }: { workout: Workout }) {
                       ? "mountain"
                       : "run"
                 }
-                color={brand.lavender}
+                color={c.text}
               />
             </View>
             <View style={{ flex: 1 }}>
@@ -63,8 +69,12 @@ export function ActivityCard({ workout }: { workout: Workout }) {
           />
         </View>
         <Txt size={10} muted>
-          {workout.source === "example" ? "EKSEMPELDATA" : "SIMULERT ØKT"} ·
-          PRIVAT
+          {workout.source === "example"
+            ? "EKSEMPELDATA"
+            : workout.source === "gps"
+              ? "GPS-ØKT"
+              : "SIMULERT ØKT"}{" "}
+          · PRIVAT
         </Txt>
       </Card>
     </Pressable>

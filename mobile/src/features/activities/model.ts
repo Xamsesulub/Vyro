@@ -8,8 +8,10 @@ export type Workout = {
   seconds: number;
   date: string;
   notes: string;
-  source: "example" | "simulation";
+  source: "example" | "simulation" | "gps";
+  route?: { latitude: number; longitude: number }[];
   visibility: "private";
+  ownerId?: string;
 };
 export function duration(seconds: number) {
   const total = Math.max(0, Math.floor(seconds));

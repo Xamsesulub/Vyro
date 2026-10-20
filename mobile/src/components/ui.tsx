@@ -52,6 +52,9 @@ export function Txt({
   );
 }
 const paths = {
+  map: "M3 5l6-2 6 2 6-2v16l-6 2-6-2-6 2V5Zm6-2v16m6-14v16",
+  record:
+    "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18 M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10",
   home: "M3 10 12 3 21 10 M5 9v12h5v-7h4v7h5V9",
   track: "m4 20 6-16 4 10 6 6-16 0Z M10 4l4 10 6 6",
   chart: "M4 20V12m8 8V4m8 16V9",
@@ -175,7 +178,7 @@ export function Button({
         }}
         style={{
           minHeight: large ? 76 : 54,
-          borderRadius: 18,
+          borderRadius: 28,
           backgroundColor: danger
             ? brand.coral
             : secondary
@@ -215,7 +218,7 @@ export function Card({
         {
           backgroundColor: c.surface,
           borderColor: c.border,
-          borderWidth: 1,
+          borderWidth: 0,
           padding: 18,
           borderRadius: 14,
           gap: 16,
@@ -235,7 +238,9 @@ export function Screen({
   const error = useAppStore((s) => s.storageError);
   return (
     <SafeAreaView
-      edges={["top", "left", "right"]}
+      edges={
+        footer ? ["top", "left", "right", "bottom"] : ["top", "left", "right"]
+      }
       style={{ flex: 1, backgroundColor: c.bg }}
     >
       <ScrollView
@@ -277,7 +282,6 @@ export function Screen({
   );
 }
 export function Header({
-  eyebrow,
   title,
   right,
 }: {
@@ -288,10 +292,7 @@ export function Header({
   return (
     <View style={styles.row}>
       <View style={{ flex: 1, gap: 6 }}>
-        <Txt size={11} muted weight="700" style={{ letterSpacing: 2 }}>
-          {eyebrow.toUpperCase()}
-        </Txt>
-        <Txt size={30} weight="700" style={{ letterSpacing: -1 }}>
+        <Txt size={26} weight="700" style={{ letterSpacing: -0.5 }}>
           {title}
         </Txt>
       </View>

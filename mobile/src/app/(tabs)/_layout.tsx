@@ -1,15 +1,17 @@
 import { Tabs } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Icon, IconName, useTheme } from "../../components/ui";
+import { useAppStore } from "../../stores/useAppStore";
 const tabs: { name: string; title: string; icon: IconName }[] = [
   { name: "index", title: "Hjem", icon: "home" },
-  { name: "track", title: "Tren", icon: "track" },
-  { name: "progress", title: "Fremgang", icon: "chart" },
-  { name: "community", title: "Fellesskap", icon: "people" },
-  { name: "profile", title: "Profil", icon: "user" },
+  { name: "map", title: "Kart", icon: "map" },
+  { name: "track", title: "Registrer", icon: "record" },
+  { name: "community", title: "Løpere", icon: "people" },
+  { name: "profile", title: "Du", icon: "user" },
 ];
 export default function TabLayout() {
   const c = useTheme();
+  const recording = useAppStore((s) => s.recording.status !== "idle");
   const insets = useSafeAreaInsets();
   return (
     <Tabs
@@ -33,6 +35,9 @@ export default function TabLayout() {
           key={t.name}
           name={t.name}
           options={{
+            ...(t.name === "track" && recording
+              ? { tabBarStyle: { display: "none" as const } }
+              : {}),
             title: t.title,
             tabBarIcon: ({ focused }) => (
               <Icon

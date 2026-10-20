@@ -1,0 +1,186 @@
+{
+  "browser": {
+    "mode": "launch",
+    "headless": true,
+    "executable_path": "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe"
+  },
+  "start_url": {
+    "url": "http://127.0.0.1:8101/"
+  },
+  "environment": {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "locale": "nb-NO"
+  },
+  "actions": [
+    {
+      "step_id": "ready",
+      "action": "wait_for",
+      "locator": {
+        "kind": "role",
+        "role": "button",
+        "name": "Kom i gang"
+      },
+      "state": "visible",
+      "timeout_ms": 15000
+    },
+    {
+      "step_id": "begin",
+      "action": "click",
+      "locator": {
+        "kind": "role",
+        "role": "button",
+        "name": "Kom i gang"
+      },
+      "timeout_ms": 10000
+    },
+    {
+      "step_id": "feed_ready",
+      "action": "wait_for_timeout",
+      "duration_ms": 1800
+    },
+    {
+      "step_id": "like",
+      "action": "click",
+      "locator": {
+        "kind": "role",
+        "role": "button",
+        "name": "Lik"
+      },
+      "timeout_ms": 10000
+    },
+    {
+      "step_id": "comments",
+      "action": "click",
+      "locator": {
+        "kind": "role",
+        "role": "button",
+        "name": "Kommentarer (0)"
+      },
+      "timeout_ms": 10000
+    },
+    {
+      "step_id": "comment_text",
+      "action": "fill",
+      "locator": {
+        "kind": "role",
+        "role": "textbox",
+        "name": "Skriv kommentar"
+      },
+      "value": {
+        "source": "literal",
+        "value": "Bra løpt!"
+      },
+      "timeout_ms": 10000
+    },
+    {
+      "step_id": "comment_save",
+      "action": "click",
+      "locator": {
+        "kind": "role",
+        "role": "button",
+        "name": "Legg til kommentar"
+      },
+      "timeout_ms": 10000
+    },
+    {
+      "step_id": "repost",
+      "action": "click",
+      "locator": {
+        "kind": "role",
+        "role": "button",
+        "name": "Del på nytt"
+      },
+      "timeout_ms": 10000
+    },
+    {
+      "step_id": "repost_feed",
+      "action": "click",
+      "locator": {
+        "kind": "role",
+        "role": "button",
+        "name": "Delt på nytt"
+      },
+      "timeout_ms": 10000
+    },
+    {
+      "step_id": "map",
+      "action": "click",
+      "locator": {
+        "kind": "role",
+        "role": "tab",
+        "name": "Kart"
+      },
+      "timeout_ms": 10000
+    },
+    {
+      "step_id": "map_ready",
+      "action": "wait_for_timeout",
+      "duration_ms": 1800
+    },
+    {
+      "step_id": "runners",
+      "action": "click",
+      "locator": {
+        "kind": "role",
+        "role": "tab",
+        "name": "Løpere"
+      },
+      "timeout_ms": 10000
+    },
+    {
+      "step_id": "follow_nora",
+      "action": "click",
+      "locator": {
+        "kind": "role",
+        "role": "button",
+        "name": "Følg Nora"
+      },
+      "timeout_ms": 10000
+    },
+    {
+      "step_id": "map_again",
+      "action": "click",
+      "locator": {
+        "kind": "role",
+        "role": "tab",
+        "name": "Kart"
+      },
+      "timeout_ms": 10000
+    },
+    {
+      "step_id": "both_owners",
+      "action": "wait_for_timeout",
+      "duration_ms": 1400
+    },
+    {
+      "step_id": "share_screen",
+      "action": "goto",
+      "destination": {
+        "url": "http://127.0.0.1:8101/share-workout"
+      },
+      "wait_until": "load",
+      "timeout_ms": 15000
+    },
+    {
+      "step_id": "share_ready",
+      "action": "wait_for_timeout",
+      "duration_ms": 800
+    }
+  ],
+  "capture": {
+    "after_each_step": [
+      "accessibility",
+      "screenshot"
+    ],
+    "at_end": [
+      "url"
+    ],
+    "events": [
+      "page-errors",
+      "network"
+    ]
+  }
+}

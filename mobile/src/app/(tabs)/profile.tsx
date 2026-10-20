@@ -1,164 +1,175 @@
-import { Switch, TextInput, View } from "react-native";
+import { useState } from "react";
+import { Pressable, View } from "react-native";
 import { router } from "expo-router";
 import { ActivityCard } from "../../components/ActivityCard";
-import {
-  Badge,
-  Button,
-  Card,
-  Chip,
-  Header,
-  Icon,
-  Metric,
-  Screen,
-  Section,
-  Txt,
-  styles,
-  useTheme,
-} from "../../components/ui";
-import { useAppStore } from "../../stores/useAppStore";
+import { Button, Screen, Txt, styles, useTheme } from "../../components/ui";
 import { examples } from "../../features/activities/examples";
-import { km, sports, total } from "../../features/activities/model";
-import { brand } from "../../theme/tokens";
+import { km, total, weekWorkouts } from "../../features/activities/model";
+import { useAppStore } from "../../stores/useAppStore";
+import { useVisibleWorkouts } from "../../features/activities/useVisibleWorkouts";
+import { useAuthStore } from "../../stores/useAuthStore";
+
 export default function Profile() {
   const s = useAppStore();
+  const workouts = useVisibleWorkouts();
+  const session = useAuthStore((s) => s.session);
   const c = useTheme();
-  const list = s.examplesVisible ? [...s.workouts, ...examples] : s.workouts;
-  const stats = total(s.workouts);
+  const [tab, setTab] = useState("Fremgang");
+  const list = s.examplesVisible ? [...workouts, ...examples] : workouts;
+  const weekly = total(weekWorkouts(list));
   return (
     <Screen>
-      <Header eyebrow="Din reise, dine premisser" title="Min profil" />
-      <Card>
-        <View style={styles.row}>
-          <View
-            style={{
-              width: 64,
-              height: 64,
-              borderRadius: 24,
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: brand.lavender,
-            }}
-          >
-            <Txt size={30} weight="700" style={{ color: brand.navy }}>
-              {s.name.charAt(0).toUpperCase() || "V"}
-            </Txt>
-          </View>
-          <View style={{ flex: 1, gap: 6 }}>
-            <Txt size={24} weight="700">
-              {s.name || "Din VYRO"}
-            </Txt>
-            <Badge text="Lokal profil · privat" />
-          </View>
-        </View>
-        <View style={styles.row}>
-          <Metric value={km(stats.distance)} label="simulerte kilometer" />
-          <Metric
-            value={String(s.workouts.length)}
-            label="lagrede simuleringer"
-          />
-        </View>
-      </Card>
-      <Section title="Gjør det personlig" />
-      <Card>
-        <Txt size={13} muted>
-          Fornavn
+      <View style={styles.row}>
+        <Txt size={28} weight="700">
+          Du
         </Txt>
-        <TextInput
-          accessibilityLabel="Endre fornavn"
-          value={s.name}
-          onChangeText={(name) => s.preferences({ name })}
-          maxLength={30}
-          placeholder="Ditt fornavn"
-          placeholderTextColor={c.muted}
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => router.push("/settings")}
+          style={{ minHeight: 44, justifyContent: "center" }}
+        >
+          <Txt size={14}>Innstillinger</Txt>
+        </Pressable>
+      </View>
+      <View style={{ flexDirection: "row", gap: 16, alignItems: "center" }}>
+        <View
           style={{
-            color: c.text,
-            borderBottomWidth: 1,
-            borderColor: c.border,
-            paddingVertical: 12,
-            fontSize: 18,
+            width: 60,
+            height: 60,
+            borderRadius: 30,
+            backgroundColor: c.raised,
+            alignItems: "center",
+            justifyContent: "center",
           }}
-        />
-        <Txt size={13} muted>
-          Foretrukne aktiviteter
-        </Txt>
-        <View style={styles.wrap}>
-          {sports.map((v) => (
-            <Chip
-              key={v}
-              title={v}
-              selected={s.preferred.includes(v)}
-              onPress={() =>
-                s.preferences({
-                  preferred: s.preferred.includes(v)
-                    ? s.preferred.filter((x) => x !== v)
-                    : [...s.preferred, v],
-                })
-              }
-            />
-          ))}
-        </View>
-        <View style={styles.row}>
-          <View style={{ flex: 1 }}>
-            <Txt>Mørkt utseende</Txt>
-            <Txt size={12} muted>
-              VYRO i din stil
-            </Txt>
-          </View>
-          <Switch
-            accessibilityLabel="Mørkt utseende"
-            value={s.theme === "dark"}
-            onValueChange={(dark) =>
-              s.preferences({ theme: dark ? "dark" : "light" })
-            }
-            trackColor={{ true: "#567C44", false: "#B5BECD" }}
-            thumbColor={s.theme === "dark" ? brand.lime : "#FFFFFF"}
-          />
-        </View>
-        <View style={styles.row}>
-          <View style={{ flex: 1 }}>
-            <Txt>Vis eksempeløkter</Txt>
-            <Txt size={12} muted>
-              Gjelder hjem, fremgang og historikk
-            </Txt>
-          </View>
-          <Switch
-            accessibilityLabel="Vis eksempeløkter"
-            value={s.examplesVisible}
-            onValueChange={(value) => s.preferences({ examplesVisible: value })}
-            trackColor={{ true: "#567C44", false: "#B5BECD" }}
-          />
-        </View>
-      </Card>
-      <Card>
-        <View style={styles.row}>
-          <Icon name="lock" />
-          <Txt weight="600" style={{ flex: 1 }}>
-            Bare på denne enheten
+        >
+          <Txt size={26} weight="600">
+            {s.name.charAt(0).toUpperCase() || "V"}
           </Txt>
         </View>
-        <Txt muted size={14}>
-          Ingen konto er opprettet. Prototypen sender ikke øktene dine til
-          Supabase. Kontoinnstillinger, eksport og sletting av konto kommer med
-          innlogging.
-        </Txt>
-        <Button
-          title="Se introduksjonen igjen"
-          secondary
-          onPress={() => router.push("/onboarding")}
-        />
-      </Card>
-      <Section title="Aktivitetshistorikk" />
-      {list.length ? (
-        list.map((w) => <ActivityCard key={w.id} workout={w} />)
-      ) : (
-        <Card>
-          <Txt weight="600">Her kommer dine første steg.</Txt>
-          <Txt muted>Start en simulert økt fra Tren-fanen.</Txt>
-        </Card>
+        <View style={{ gap: 4 }}>
+          <Txt size={23} weight="700">
+            {session?.user.user_metadata.display_name || s.name || "Din profil"}
+          </Txt>
+          <Txt muted size={13}>
+            {workouts.length} lagrede aktiviteter på enheten
+          </Txt>
+        </View>
+      </View>
+      <Button
+        title={session ? "Konto" : "Logg inn"}
+        secondary
+        onPress={() => router.push("/account")}
+      />
+      <View
+        style={{
+          flexDirection: "row",
+          borderBottomWidth: 1,
+          borderColor: c.border,
+        }}
+      >
+        {["Fremgang", "Aktiviteter", "Mer"].map((t) => (
+          <Pressable
+            key={t}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: tab === t }}
+            onPress={() => setTab(t)}
+            style={{
+              flex: 1,
+              minHeight: 48,
+              alignItems: "center",
+              justifyContent: "center",
+              borderBottomWidth: tab === t ? 3 : 0,
+              borderColor: c.accent,
+            }}
+          >
+            <Txt size={14} weight={tab === t ? "700" : "400"}>
+              {t}
+            </Txt>
+          </Pressable>
+        ))}
+      </View>
+      {tab === "Fremgang" && (
+        <>
+          <Txt size={20} weight="700">
+            Denne uken
+          </Txt>
+          <View style={styles.row}>
+            {[
+              [km(weekly.distance), "km"],
+              [String(Math.round(weekly.seconds / 60)), "minutter"],
+              [String(weekWorkouts(list).length), "aktiviteter"],
+            ].map(([value, label]) => (
+              <View key={label} style={{ gap: 4 }}>
+                <Txt size={26} weight="700">
+                  {value}
+                </Txt>
+                <Txt size={12} muted>
+                  {label}
+                </Txt>
+              </View>
+            ))}
+          </View>
+          <Txt muted size={12}>
+            {s.examplesVisible
+              ? "Inkluderer eksempeldata"
+              : "Simulerte aktiviteter"}
+          </Txt>
+          <Button
+            title="Se treningslogg"
+            secondary
+            onPress={() => router.push("/progress")}
+          />
+          <View
+            style={{
+              borderTopWidth: 1,
+              borderColor: c.border,
+              paddingTop: 24,
+              gap: 12,
+            }}
+          >
+            <Txt size={20} weight="700">
+              Ukentlig mål
+            </Txt>
+            <Txt muted>
+              {km(weekly.distance)} av {s.goal} km
+            </Txt>
+            <View
+              style={{ height: 6, backgroundColor: c.raised, borderRadius: 3 }}
+            >
+              <View
+                style={{
+                  height: 6,
+                  width: `${Math.min(100, (weekly.distance / s.goal) * 100)}%`,
+                  backgroundColor: c.accent,
+                  borderRadius: 3,
+                }}
+              />
+            </View>
+            <Txt size={13} muted>
+              Endre målet i treningsloggen.
+            </Txt>
+          </View>
+        </>
       )}
-      <Txt size={11} muted style={{ textAlign: "center", letterSpacing: 2 }}>
-        VYRO 0.1 · MOVE BEYOND
-      </Txt>
+      {tab === "Aktiviteter" &&
+        (list.length ? (
+          list.map((w) => <ActivityCard key={w.id} workout={w} />)
+        ) : (
+          <Txt muted>Ingen lagrede aktiviteter ennå.</Txt>
+        ))}
+      {tab === "Mer" && (
+        <>
+          <Button
+            title="Rediger profil"
+            secondary
+            onPress={() => router.push("/settings")}
+          />
+          <Txt muted size={14}>
+            Aktivitetene er private og lagres på denne enheten. Konto og
+            synkronisering er ikke koblet til ennå.
+          </Txt>
+        </>
+      )}
     </Screen>
   );
 }

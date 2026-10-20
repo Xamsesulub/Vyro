@@ -17,7 +17,7 @@ export default function Track() {
   const r = useAppStore((s) => s.recording);
   const event = useAppStore((s) => s.event);
   const setSport = useAppStore((s) => s.sport);
-  const [showMap, setShowMap] = useState(true);
+  const [showMap, setShowMap] = useState(false);
   const [chooseSport, setChooseSport] = useState(false);
   const c = useTheme();
   const status = {
@@ -91,6 +91,10 @@ export default function Track() {
       </View>
       {r.status === "idle" && (
         <View style={{ gap: 16 }}>
+          <Button
+            title="Registrer ekte GPS-løpetur"
+            onPress={() => router.push("/record-gps")}
+          />
           <View style={{ borderRadius: 16, overflow: "hidden" }}>
             <WorkoutMap height={280} />
           </View>

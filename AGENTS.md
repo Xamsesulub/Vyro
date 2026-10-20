@@ -11,3 +11,5 @@
 - Keep `docs/roadmap.md` and `docs/testing.md` aligned with actual implementation.
 - Follow the user's mandatory REA analysis workflow for further redesign. If the REA MCP tool is unavailable, report that dependency instead of claiming REA analysis was performed. REA remains a development tool, not an app dependency.
 - Use `docs/design-references/strava/README.md` as the usability reference: clear hierarchy, simple rows, prominent workout metrics and controls. Reference screenshots are private design material, not app assets.
+- Current design direction: white background by default; Home, Maps, Record, Groups, You structure. Use `docs/strava-feature-map.md` to track actual parity and missing backend capabilities. Do not restore decorative dashboard features or fake social interactions.
+- Latest authorized product direction adds workout-only social posts and route-based turf competitions. Local example interactions must be explicitly labeled; simulations must never publish as real workouts or win real turf. See `docs/social-and-turf.md`.

@@ -11,7 +11,7 @@ export type Post = {
   seconds: number;
   recorded_at: string;
   created_at: string;
-  route: { latitude: number; longitude: number }[];
+  route: { latitude: number; longitude: number; breakBefore?: boolean }[];
   profiles: Profile;
 };
 export type Comment = {

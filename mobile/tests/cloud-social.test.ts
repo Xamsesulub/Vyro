@@ -18,7 +18,7 @@ const workout: Workout = {
   visibility: "private",
   route: [
     { latitude: 59.9, longitude: 10.7 },
-    { latitude: 59.91, longitude: 10.71 },
+    { latitude: 59.91, longitude: 10.71, breakBefore: true },
   ],
 };
 beforeEach(() => rpc.mockReset());

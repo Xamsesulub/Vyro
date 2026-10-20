@@ -14,12 +14,15 @@ import {
   useTheme,
 } from "../components/ui";
 
+import LiveMap from "../components/LiveMap";
 import { useAppStore } from "../stores/useAppStore";
 import { duration, km, pace } from "../features/activities/model";
+import { useAuthStore } from "../stores/useAuthStore";
 export default function Summary() {
   const s = useAppStore();
   const c = useTheme();
   const r = s.recording;
+  const userId = useAuthStore((s) => s.session?.user.id);
   const [title, setTitle] = useState(`Min ${r.sport.toLowerCase()}`);
   const [notes, setNotes] = useState("");
   const [discard, setDiscard] = useState(false);
@@ -30,7 +33,7 @@ export default function Summary() {
     padding: 16,
     fontSize: 16,
   };
-  if (r.status !== "finishing")
+  if (r.status !== "finishing" || (r.ownerId && r.ownerId !== userId))
     return (
       <Screen>
         <Header eyebrow="Øktoppsummering" title="Ingen avsluttet økt" />
@@ -47,7 +50,18 @@ export default function Summary() {
         title="Oppsummering"
         right={<Icon name="check" size={36} />}
       />
-      <Badge text="Simulert økt · ikke et GPS-opptak" />
+      <Badge
+        text={
+          r.mode === "gps"
+            ? "GPS-økt · privat"
+            : "Simulert økt · ikke et GPS-opptak"
+        }
+      />
+      {r.mode === "gps" && r.route.flat().length > 1 && (
+        <View style={{ borderRadius: 16, overflow: "hidden" }}>
+          <LiveMap height={200} route={r.route} />
+        </View>
+      )}
       <Card>
         <View style={styles.row}>
           <Metric value={km(r.distance)} label="kilometer" />
@@ -83,12 +97,17 @@ export default function Summary() {
       <View style={styles.row}>
         <Icon name="lock" size={18} />
         <Txt size={12} muted style={{ flex: 1 }}>
-          Privat · lagres på denne enheten · ingen opplasting
+          {r.mode === "gps"
+            ? "Privat · kart, tid og distanse lagres på denne enheten. Du velger selv om økten skal deles."
+            : "Privat · lagres på denne enheten · ingen opplasting"}
         </Txt>
       </View>
       <Button
-        title="Lagre simulert økt"
-        disabled={r.seconds < 1}
+        title={r.mode === "gps" ? "Lagre økten" : "Lagre simulert økt"}
+        disabled={
+          r.seconds < 1 ||
+          (r.mode === "gps" && (r.route.flat().length < 2 || r.distance <= 0))
+        }
         icon="check"
         onPress={() => {
           const id = s.save(title, notes);

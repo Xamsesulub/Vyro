@@ -9,7 +9,7 @@ export type Workout = {
   date: string;
   notes: string;
   source: "example" | "simulation" | "gps";
-  route?: { latitude: number; longitude: number }[];
+  route?: { latitude: number; longitude: number; breakBefore?: boolean }[];
   visibility: "private";
   ownerId?: string;
 };

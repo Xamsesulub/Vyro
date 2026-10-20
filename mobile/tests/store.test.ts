@@ -52,6 +52,12 @@ test("save is private and idempotent, and clears the pending session", () => {
       ...initialRecording,
       status: "finishing",
       seconds: 60,
+      route: [
+        [
+          { latitude: 59.9, longitude: 10.7 },
+          { latitude: 59.901, longitude: 10.7 },
+        ],
+      ],
       distance: 0.2,
     },
   });
@@ -62,7 +68,7 @@ test("save is private and idempotent, and clears the pending session", () => {
   expect(useAppStore.getState().workouts[0]).toMatchObject({
     title: "Test",
     notes: "Note",
-    source: "simulation",
+    source: "gps",
     visibility: "private",
   });
   expect(useAppStore.getState().recording.status).toBe("idle");
@@ -75,6 +81,47 @@ test("sport cannot change while recording and empty sessions cannot save", () =>
     recording: { ...initialRecording, status: "finishing" },
   });
   expect(useAppStore.getState().save("", "")).toBeNull();
+});
+test("a simulated session is saved as a simulation, never as GPS", () => {
+  useAppStore.setState({
+    recording: {
+      ...initialRecording,
+      mode: "simulation",
+      status: "finishing",
+      seconds: 60,
+      route: [
+        [
+          { latitude: 59.9, longitude: 10.7 },
+          { latitude: 59.901, longitude: 10.7 },
+        ],
+      ],
+      distance: 0.2,
+    },
+  });
+  useAppStore.getState().save("", "");
+  expect(useAppStore.getState().workouts[0].source).toBe("simulation");
+  expect(useAppStore.getState().recording.mode).toBe("simulation");
+});
+test("mode cannot change while recording", () => {
+  useAppStore.getState().event("start");
+  useAppStore.getState().mode("simulation");
+  expect(useAppStore.getState().recording.mode).toBe("gps");
+});
+test("GPS routes survive local persistence for recovery and sharing", async () => {
+  useAppStore.setState({
+    recording: {
+      ...initialRecording,
+      status: "paused",
+      seconds: 30,
+      distance: 0.1,
+      route: [[{ latitude: 59.9, longitude: 10.7 }]],
+    },
+  });
+  const raw = await AsyncStorage.getItem("vyro-prototype-v1");
+  expect(raw).toContain("59.9");
+  expect(JSON.parse(raw!).state.recording.route).toEqual([
+    [{ latitude: 59.9, longitude: 10.7 }],
+  ]);
 });
 test("persists an interrupted simulation as paused with no background time", async () => {
   useAppStore.setState({
@@ -105,4 +152,36 @@ test("a persistent storage failure reports an error without a write loop", async
   expect(useAppStore.getState().storageError).toContain("Lokal lagring feilet");
   expect(write.mock.calls.length).toBeLessThanOrEqual(2);
   write.mockResolvedValue(undefined);
+});
+
+test("saved GPS routes keep pause boundaries after rehydration", async () => {
+  const route = [
+    [
+      { latitude: 59.9, longitude: 10.7 },
+      { latitude: 59.901, longitude: 10.7 },
+    ],
+    [
+      { latitude: 59.95, longitude: 10.7 },
+      { latitude: 59.951, longitude: 10.7 },
+    ],
+  ];
+  useAppStore.setState({
+    recording: {
+      ...initialRecording,
+      status: "finishing",
+      seconds: 60,
+      distance: 0.2,
+      route,
+    },
+  });
+  const id = useAppStore.getState().save("GPS", "");
+  await useAppStore.persist.rehydrate();
+  expect(
+    useAppStore.getState().workouts.find((w) => w.id === id)?.route,
+  ).toEqual([
+    route[0][0],
+    route[0][1],
+    { ...route[1][0], breakBefore: true },
+    route[1][1],
+  ]);
 });

@@ -24,11 +24,14 @@
     },
     "plugins": [
       "expo-router",
-      ["expo-location", {
-        "locationWhenInUsePermission": "VYRO bruker posisjonen din til å registrere løypen mens du trener.",
-        "isIosBackgroundLocationEnabled": false,
-        "isAndroidBackgroundLocationEnabled": false
-      }],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "VYRO bruker posisjonen din for å vise kartet og måle distansen mens du trener.",
+          "isIosBackgroundLocationEnabled": false,
+          "isAndroidBackgroundLocationEnabled": false
+        }
+      ],
       [
         "expo-splash-screen",
         {

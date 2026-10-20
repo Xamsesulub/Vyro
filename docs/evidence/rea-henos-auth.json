@@ -1,0 +1,950 @@
+{
+  "evidence_id": "ev_5cc1a75ed92e70adc1976d6a33604e5ff358a7fc03d25f643b85e4e7cd80f11f",
+  "subject": null,
+  "provider": {
+    "id": "rea-playwright-browser-scenario",
+    "name": "REA Playwright browser scenario capture provider",
+    "version": "1"
+  },
+  "analysis_profile": null,
+  "predicate_type": "rea.browser-scenario-capture",
+  "operation": "capture_browser_scenario",
+  "parameters": {
+    "browser": {
+      "mode": "launch",
+      "executable_path": "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
+      "headless": true
+    },
+    "start_url": {
+      "url": "http://127.0.0.1:8101/",
+      "query": []
+    },
+    "environment": {
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "device_scale_factor": 1
+      },
+      "locale": "nb-NO",
+      "timezone": "UTC",
+      "color_scheme": "light",
+      "reduced_motion": "reduce",
+      "service_workers": "block"
+    },
+    "actions": [
+      {
+        "step_id": "ready",
+        "timeout_ms": 15000,
+        "action": "wait_for",
+        "locator": {
+          "kind": "role",
+          "role": "button",
+          "name": "Kom i gang"
+        },
+        "state": "visible"
+      },
+      {
+        "step_id": "begin",
+        "timeout_ms": 10000,
+        "action": "click",
+        "locator": {
+          "kind": "role",
+          "role": "button",
+          "name": "Kom i gang"
+        },
+        "button": "left",
+        "click_count": 1
+      },
+      {
+        "step_id": "account",
+        "timeout_ms": 10000,
+        "action": "click",
+        "locator": {
+          "kind": "role",
+          "role": "button",
+          "name": "Logg inn eller opprett konto"
+        },
+        "button": "left",
+        "click_count": 1
+      },
+      {
+        "step_id": "login_ready",
+        "action": "wait_for_timeout",
+        "duration_ms": 500
+      },
+      {
+        "step_id": "register",
+        "timeout_ms": 10000,
+        "action": "click",
+        "locator": {
+          "kind": "role",
+          "role": "button",
+          "name": "Ny her? Opprett konto"
+        },
+        "button": "left",
+        "click_count": 1
+      },
+      {
+        "step_id": "register_ready",
+        "action": "wait_for_timeout",
+        "duration_ms": 500
+      },
+      {
+        "step_id": "share_guard",
+        "timeout_ms": 15000,
+        "action": "goto",
+        "destination": {
+          "url": "http://127.0.0.1:8101/share-workout",
+          "query": []
+        },
+        "wait_until": "load"
+      },
+      {
+        "step_id": "share_ready",
+        "action": "wait_for_timeout",
+        "duration_ms": 800
+      },
+      {
+        "step_id": "gps",
+        "timeout_ms": 15000,
+        "action": "goto",
+        "destination": {
+          "url": "http://127.0.0.1:8101/track",
+          "query": []
+        },
+        "wait_until": "load"
+      },
+      {
+        "step_id": "map",
+        "action": "wait_for_timeout",
+        "duration_ms": 1500
+      },
+      {
+        "step_id": "gps_login",
+        "timeout_ms": 10000,
+        "action": "click",
+        "locator": {
+          "kind": "role",
+          "role": "button",
+          "name": "Start"
+        },
+        "button": "left",
+        "click_count": 1
+      },
+      {
+        "step_id": "login",
+        "action": "wait_for_timeout",
+        "duration_ms": 500
+      }
+    ],
+    "storage": {
+      "cookies": [],
+      "local_storage": [],
+      "session_storage": []
+    },
+    "secrets": [],
+    "capture": {
+      "after_each_step": [
+        "accessibility"
+      ],
+      "at_end": [
+        "url"
+      ],
+      "events": [
+        "page-errors"
+      ],
+      "network": {
+        "request_body": false,
+        "response_body": false,
+        "header_values": false
+      },
+      "limits": {
+        "max_events": 10000,
+        "max_event_allocation_bytes": 4194304,
+        "max_total_event_allocation_bytes": 16777216,
+        "max_network_transactions": 1024,
+        "max_network_body_bytes": 65536,
+        "max_network_body_allocation_bytes": 1048576,
+        "max_network_header_allocation_bytes": 1048576,
+        "max_network_metadata_allocation_bytes": 1048576
+      }
+    },
+    "scenario_sha256": "dad66ee74bd0732b8d5db0cd1d0d9399dd20630b1787ba26efc7b05911170ac8"
+  },
+  "raw_result": null,
+  "normalized_result": {
+    "browser": {
+      "mode": "launch",
+      "process_ownership": "provider-owned",
+      "cleanup": "terminated-owned-process",
+      "product": "Chromium",
+      "version": "155.0.4283.45"
+    },
+    "scenario": {
+      "start_origin": "http://127.0.0.1:8101",
+      "action_count": 12,
+      "secret_references": [],
+      "network_content": {
+        "request_body": false,
+        "response_body": false,
+        "header_values": false
+      },
+      "event_families": [
+        "page-errors"
+      ],
+      "limits": {
+        "max_events": 10000,
+        "max_event_allocation_bytes": 4194304,
+        "max_total_event_allocation_bytes": 16777216,
+        "max_network_transactions": 1024,
+        "max_network_body_bytes": 65536,
+        "max_network_body_allocation_bytes": 1048576,
+        "max_network_header_allocation_bytes": 1048576,
+        "max_network_metadata_allocation_bytes": 1048576
+      }
+    },
+    "duration_ms": 7504,
+    "steps": [
+      {
+        "step_index": 0,
+        "step_id": "scenario_start",
+        "action": "goto_start",
+        "elapsed_ms": 989,
+        "before_url": {
+          "url": "about:blank",
+          "origin": null,
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "not_requested"
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "56866acd9b713f351889ef2731ef171bade4c16f48aa1cda8687f17a1a21be2a",
+              "bytes": 10,
+              "text": "- document"
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 1,
+        "step_id": "ready",
+        "action": "wait_for",
+        "elapsed_ms": 859,
+        "before_url": {
+          "url": "http://127.0.0.1:8101/",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/onboarding",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "not_requested"
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "638938d862ed71d7a3959b12059d6d68e6daf9f2b0027a4b12579fd3547226c9",
+              "bytes": 298,
+              "text": "- document:\n  - text: VYRO Plass til din neste tur. Registrer aktiviteter og følg fremgangen din. Navn (valgfritt)\n  - textbox \"Fornavn (valgfritt)\":\n    - /placeholder: Ditt navn\n  - text: Dette er en forhåndsvisning med simulerte økter. Ingen GPS eller konto aktiveres.\n  - button \"Kom i gang\""
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 2,
+        "step_id": "begin",
+        "action": "click",
+        "elapsed_ms": 117,
+        "before_url": {
+          "url": "http://127.0.0.1:8101/onboarding",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "not_requested"
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "682ad07c4a5e58ecfe1e026ee117dfecec3fd93be572aac958bee3ed31788f4e",
+              "bytes": 352,
+              "text": "- document:\n  - tablist:\n    - tab \"Hjem\" [selected]:\n      - img\n      - img\n      - text: Hjem\n    - tab \"Kart\":\n      - img\n      - img\n      - text: Kart\n    - tab \"Registrer\":\n      - img\n      - img\n      - text: Registrer\n    - tab \"Løpere\":\n      - img\n      - img\n      - text: Løpere\n    - tab \"Du\":\n      - img\n      - img\n      - text: Du"
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 3,
+        "step_id": "account",
+        "action": "click",
+        "elapsed_ms": 375,
+        "before_url": {
+          "url": "http://127.0.0.1:8101/",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/account",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "not_requested"
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "56866acd9b713f351889ef2731ef171bade4c16f48aa1cda8687f17a1a21be2a",
+              "bytes": 10,
+              "text": "- document"
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 4,
+        "step_id": "login_ready",
+        "action": "wait_for_timeout",
+        "elapsed_ms": 517,
+        "before_url": {
+          "url": "http://127.0.0.1:8101/account",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/account",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "not_requested"
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "388ea63871566a24b52dec341c3770b3c6904340e4ed9de8cfd041e586f563b1",
+              "bytes": 162,
+              "text": "- document:\n  - button \"Tilbake\"\n  - text: Logg inn\n  - textbox \"E-post\"\n  - textbox \"Passord\"\n  - button \"Logg inn\" [disabled]\n  - button \"Ny her? Opprett konto\""
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 5,
+        "step_id": "register",
+        "action": "click",
+        "elapsed_ms": 59,
+        "before_url": {
+          "url": "http://127.0.0.1:8101/account",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/account",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "not_requested"
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "7c4ecffc4c5c6731e036a49c924155ef0540e9daeb93b8484311431c1cccfdae",
+              "bytes": 366,
+              "text": "- document:\n  - button \"Tilbake\"\n  - text: Opprett konto\n  - textbox \"Visningsnavn\":\n    - /placeholder: Navnet ditt\n  - textbox \"E-post\"\n  - textbox \"Passord\"\n  - text: Minst 8 tegn i passordet. Navnet ditt blir synlig for andre innloggede løpere. Økter deles bare når du selv velger det.\n  - button \"Opprett konto\" [disabled]\n  - button \"Har du konto? Logg inn\""
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 6,
+        "step_id": "register_ready",
+        "action": "wait_for_timeout",
+        "elapsed_ms": 524,
+        "before_url": {
+          "url": "http://127.0.0.1:8101/account",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/account",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "not_requested"
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "7c4ecffc4c5c6731e036a49c924155ef0540e9daeb93b8484311431c1cccfdae",
+              "bytes": 366,
+              "text": "- document:\n  - button \"Tilbake\"\n  - text: Opprett konto\n  - textbox \"Visningsnavn\":\n    - /placeholder: Navnet ditt\n  - textbox \"E-post\"\n  - textbox \"Passord\"\n  - text: Minst 8 tegn i passordet. Navnet ditt blir synlig for andre innloggede løpere. Økter deles bare når du selv velger det.\n  - button \"Opprett konto\" [disabled]\n  - button \"Har du konto? Logg inn\""
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 7,
+        "step_id": "share_guard",
+        "action": "goto",
+        "elapsed_ms": 279,
+        "before_url": {
+          "url": "http://127.0.0.1:8101/account",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/share-workout",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "not_requested"
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "56866acd9b713f351889ef2731ef171bade4c16f48aa1cda8687f17a1a21be2a",
+              "bytes": 10,
+              "text": "- document"
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 8,
+        "step_id": "share_ready",
+        "action": "wait_for_timeout",
+        "elapsed_ms": 816,
+        "before_url": {
+          "url": "http://127.0.0.1:8101/share-workout",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/share-workout",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "not_requested"
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "53284576f5edcc0f7403a84649fde563ca62a3c70c78bd43f794bf4ab93323b3",
+              "bytes": 187,
+              "text": "- document:\n  - text: Løp sammen Logg inn for å følge løpere og dele øktene dine med kart, distanse og tid.\n  - button \"Logg inn eller opprett konto\"\n  - button \"Registrer aktivitet\""
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 9,
+        "step_id": "gps",
+        "action": "goto",
+        "elapsed_ms": 154,
+        "before_url": {
+          "url": "http://127.0.0.1:8101/share-workout",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/track",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "not_requested"
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "56866acd9b713f351889ef2731ef171bade4c16f48aa1cda8687f17a1a21be2a",
+              "bytes": 10,
+              "text": "- document"
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 10,
+        "step_id": "map",
+        "action": "wait_for_timeout",
+        "elapsed_ms": 1519,
+        "before_url": {
+          "url": "http://127.0.0.1:8101/track",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/track",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "not_requested"
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "c5bc50dc85e6517cef17120b1dddaf2b9a832832a4c242a43b648e16966925cc",
+              "bytes": 999,
+              "text": "- document:\n  - text: Løping GPS · live posisjon\n  - button \"GPS\"\n  - button \"Simulering\"\n  - region \"Interaktivt kart\":\n    - img\n    - button \"Zoom in\"\n    - button \"Zoom out\"\n    - link \"Leaflet\":\n      - /url: https://leafletjs.com\n    - text: ©\n    - link \"OpenStreetMap\":\n      - /url: https://www.openstreetmap.org/copyright\n    - text: ©\n    - link \"CARTO\":\n      - /url: https://carto.com/attributions\n  - text: Eksempelkart · trykk Start for å slå på GPS\n  - button \"Aktivitet Løping · Endre\"\n  - text: Kartet følger deg mens du trener. Du kan pause og avslutte når du vil. Klar til start\n  - button \"Start\":\n    - text: Start\n    - img\n  - tablist:\n    - tab \"Hjem\":\n      - img\n      - img\n      - text: Hjem\n    - tab \"Kart\":\n      - img\n      - img\n      - text: Kart\n    - tab \"Registrer\" [selected]:\n      - img\n      - img\n      - text: Registrer\n    - tab \"Løpere\":\n      - img\n      - img\n      - text: Løpere\n    - tab \"Du\":\n      - img\n      - img\n      - text: Du"
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 11,
+        "step_id": "gps_login",
+        "action": "click",
+        "elapsed_ms": 64,
+        "before_url": {
+          "url": "http://127.0.0.1:8101/track",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/account",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "not_requested"
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "56866acd9b713f351889ef2731ef171bade4c16f48aa1cda8687f17a1a21be2a",
+              "bytes": 10,
+              "text": "- document"
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 12,
+        "step_id": "login",
+        "action": "wait_for_timeout",
+        "elapsed_ms": 530,
+        "before_url": {
+          "url": "http://127.0.0.1:8101/account",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/account",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "not_requested"
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "388ea63871566a24b52dec341c3770b3c6904340e4ed9de8cfd041e586f563b1",
+              "bytes": 162,
+              "text": "- document:\n  - button \"Tilbake\"\n  - text: Logg inn\n  - textbox \"E-post\"\n  - textbox \"Passord\"\n  - button \"Logg inn\" [disabled]\n  - button \"Ny her? Opprett konto\""
+            }
+          },
+          "url": {
+            "state": "captured",
+            "value": {
+              "url": "http://127.0.0.1:8101/account",
+              "origin": "http://127.0.0.1:8101",
+              "query_parameter_names": [],
+              "redacted": false
+            }
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      }
+    ],
+    "events": {
+      "retained": 0,
+      "dropped": 0,
+      "items": [],
+      "omissions": {
+        "by_kind": [],
+        "network_transactions": [],
+        "network_transaction_range": null
+      }
+    },
+    "completeness": {
+      "status": "complete",
+      "equality_eligible": true,
+      "missing_sections": [],
+      "truncated_sections": []
+    },
+    "limitations": [
+      "Event sequence records provider receipt order; simultaneous browser causality is not inferred.",
+      "Network content is retained only when selected; Playwright response-body bytes are API results and are not guaranteed to match wire bytes.",
+      "Request bytes are limited to what Playwright exposes; not_exposed does not establish body absence or multipart file coverage.",
+      "Network content reads settle within 5 seconds each and the observer does not request bodies from unfinished responses.",
+      "Playwright scenario events do not expose request initiator stacks; receipt order does not prove causality.",
+      "Storage values are hashed only after declared-secret redaction."
+    ]
+  },
+  "confidence": "observed",
+  "authority": "controlled-replay",
+  "environment": {
+    "id": "Chromium@155.0.4283.45",
+    "platform": "unknown",
+    "architecture": "unknown",
+    "isolation": "process"
+  },
+  "limitations": [
+    "Artifact identity is unavailable for this observation.",
+    "Event sequence records provider receipt order; simultaneous browser causality is not inferred.",
+    "Network content is retained only when selected; Playwright response-body bytes are API results and are not guaranteed to match wire bytes.",
+    "Request bytes are limited to what Playwright exposes; not_exposed does not establish body absence or multipart file coverage.",
+    "Network content reads settle within 5 seconds each and the observer does not request bodies from unfinished responses.",
+    "Playwright scenario events do not expose request initiator stacks; receipt order does not prove causality.",
+    "Storage values are hashed only after declared-secret redaction.",
+    "Browser host platform and architecture were not observed."
+  ],
+  "relationship_coverage": null,
+  "locations": [],
+  "evidence_links": []
+}

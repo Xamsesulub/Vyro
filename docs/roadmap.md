@@ -19,3 +19,7 @@ UX-prioritet: enkel trening først. Målinger og pause skal være umiddelbart ti
 
 REA-basert nettleserkontroll er startet via CLI. Startvisningen for trening er skilt fra aktive målinger, og fellesskapet bruker enklere seksjoner. Se `docs/analysis/README.md` for evidens og avgrensning; dette er fortsatt en prototype med simulering.
 
+
+## Integrert 20. oktober: Henos sitt kart
+
+Henos sitt GPS-opptak og LiveMap er flettet inn med lyst design og eksisterende Supabase-innlogging, følgerforhold og deling. Private ruter og pausegrenser beholdes lokalt og ved eksplisitt deling. Neste validering er en fysisk løpetur og deling mellom to innloggede brukere. Turf har fortsatt ingen serververifisert konkurranselogikk.

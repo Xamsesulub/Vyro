@@ -8,13 +8,21 @@ import { useReducedMotion } from "react-native-reanimated";
 import { useAppStore } from "../stores/useAppStore";
 import { useTheme } from "../components/ui";
 import { manageSupabaseSession } from "../lib/supabase";
-import { observeAuth } from "../stores/useAuthStore";
+import { observeAuth, useAuthStore } from "../stores/useAuthStore";
+
+import { LocationWatcher } from "../components/LocationWatcher";
 
 export default function RootLayout() {
   const ready = useAppStore((s) => s.ready);
   const theme = useAppStore((s) => s.theme);
   const c = useTheme();
   const reduced = useReducedMotion();
+  const userId = useAuthStore((s) => s.session?.user.id);
+  useEffect(() => {
+    const r = useAppStore.getState().recording;
+    if (r.ownerId && r.ownerId !== userId)
+      useAppStore.getState().event("pause");
+  }, [userId]);
   useEffect(manageSupabaseSession, []);
   useEffect(observeAuth, []);
   useEffect(() => {
@@ -33,6 +41,7 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
+        <LocationWatcher />
         <StatusBar style={theme === "dark" ? "light" : "dark"} />
         {!ready ? (
           <View

@@ -56,3 +56,9 @@ Ekte GPS krever separate fysiske tester: låst skjerm, bakgrunn, unøyaktig sign
 20. oktober 2026: Supabase-klient konfigurert. Skrivebeskyttet Auth settings-kontroll returnerte HTTP 200 og godkjente publishable key. Typecheck, lint, 17 tester og web-eksport bestod. Ingen kontoer eller databaseposter ble opprettet; innlogging, RLS og native sesjonsfornyelse er ikke ende-til-ende-verifisert.
 
 Databaseutrulling 20. oktober 2026: SQL Editor rapporterte suksess. Kontroll i produksjonsprosjektet bekreftet 7 tabeller med RLS, 18 policies, ingen anon SELECT-rettigheter, authenticated EXECUTE på publish_workout og aktiv profil-trigger. Skrivebeskyttede REST-kall til alle 7 tabellene returnerte 401/42501 uten brukerinnlogging. To-konto-flyt og fysisk GPS gjenstår.
+
+## Henos-fletting, 20. oktober 2026
+
+Integrert commit 9b1a569 med beholdt lyst design og Supabase-funksjoner. Ruter lagres nå lokalt og sendes med delte GPS-økter. Pausegrenser lagres som breakBefore og vises som separate kartlinjer. Henos sitt LiveMap brukes i opptak, historikk og innlegg. Web har lyse CARTO-fliser; native bruker react-native-maps.
+
+Kontrollert: typecheck, lint, 32 Jest-tester, 24 lokale PostgreSQL/RLS-kontroller og web-export. REA-scenarioene i docs/evidence/rea-henos-merge.json og rea-henos-auth.json fullførte start/pause/oppsummering, kartlasting, registreringsskjerm og innloggingskrav ved GPS-start/deling uten page-errors. Ingen ekte konto eller økt ble opprettet av testene. Fysisk GPS, native kart og deling mellom to ekte brukere er fortsatt ikke ende-til-ende-testet.

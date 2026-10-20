@@ -1,3 +1,4 @@
+import WorkoutMap from "../../components/WorkoutMap";
 import { useState } from "react";
 import { View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
@@ -53,6 +54,7 @@ export default function Activity() {
               : "Lagret simulering"
         }
       />
+      {w.route && w.route.length > 1 && <WorkoutMap points={w.route} />}
       <Card>
         <View style={styles.row}>
           <Metric value={km(w.distance)} label="kilometer" />
@@ -66,6 +68,7 @@ export default function Activity() {
           />
         </View>
       </Card>
+
       <Card>
         <View style={styles.row}>
           <Icon name="lock" />

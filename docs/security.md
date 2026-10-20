@@ -1,13 +1,11 @@
 # Sikkerhet og personvernstatus
 
-Prototypen har ingen autentisering, secrets, posisjonstillatelser eller treningsopplasting. Eksempelprofiler er fiktive. Alle lagrede simuleringer er private. Fellesskapets knapper endrer bare lokal demotilstand.
+Supabase Auth og PostgreSQL med eierbasert RLS brukes for profiler, følgerforhold, økter, innlegg, likes, kommentarer og reposts. Klienten bruker bare publiserbar nøkkel. SQL-policytester finnes i mobile/scripts/test-database.cjs.
 
-AsyncStorage er ikke kryptert og skal ikke brukes til autentiseringstokens eller sensitive GPS-historikker. Før ekte opptak: sikker tokenlagring, gjennomgått lokal datahåndtering, eierbasert RLS, samtykkeflyter og slette-/eksportfunksjoner.
+GPS-ruter og aktive utkast lagres privat på enheten med AsyncStorage. Denne lagringen er ikke kryptert. Deling er eksplisitt og sender rute, distanse og tid til Supabase via publish_workout; private notater sendes ikke. Lokal sletting trekker ikke tilbake et delt innlegg: dette gjøres separat fra Hjem. Kontoens økter filtreres etter eier.
 
-Før lansering må teamet avklare behandlingsansvar, databehandleravtaler, regionvalg, lagringstid, rettighetsforespørsler og aldersgrenser. Dette dokumentet er en teknisk status, ingen juridisk godkjenning.
+Posisjon samles bare i forgrunnen. Opptak pauser ved bakgrunnsbytte; bakgrunnstillatelser er av. Fysiske telefonprøver og gjennomgang av tokenlagring, lagringstid og slette-/eksportflyter gjenstår før lansering.
 
-Kartleverandørens plattformoppsett, Google Maps-nøkkelrestriksjoner og vilkår må verifiseres før distribusjon. Ingen slik konto er opprettet her.
+Webkart bruker lokalt pakket Leaflet og CARTO/OpenStreetMap-fliser (eller konfigurert Mapbox). Kartleverandøren mottar IP-adresse og kartutsnitt. Native bruker react-native-maps. Plattformnøkler og leverandørvilkår må verifiseres før distribusjon.
 
-## Avhengighetskontroll 19. oktober 2026
-
-`npm audit` rapporterte 57 varslede pakker (26 moderate, 31 høye, ingen kritiske), inkludert videreførte varsler i Expo/Metro/Jest-kjeden. Underliggende meldinger omfatter `braces`, `node-forge`, `sprintf-js` og `uuid`. Audit foreslår blant annet inkompatible nedgraderinger av Expo og React Native; `audit fix --force` er derfor ikke brukt. Dette er et åpent punkt før release, ikke en sikkerhetsgodkjent avhengighetskjede. Expo Doctor sin kompatibilitetssjekk erstatter ikke en sårbarhetsvurdering.
+Tidligere avhengighetskontroll rapporterte åpne sårbarhetsvarsler i verktøykjeden. Dette arbeidet er ingen sikkerhetsgodkjenning for produksjon.

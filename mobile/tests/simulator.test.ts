@@ -11,9 +11,10 @@ import {
   Workout,
 } from "../src/features/activities/model";
 
+const sim = { ...initialRecording, mode: "simulation" as const };
 describe("simulator lifecycle", () => {
   test("only records elapsed time while running", () => {
-    const running = transition(initialRecording, "start", 1000);
+    const running = transition(sim, "start", 1000);
     const paused = transition(running, "pause", 61000);
     expect(paused.seconds).toBe(60);
     expect(paused.distance).toBeCloseTo(1 / 6);
@@ -23,6 +24,12 @@ describe("simulator lifecycle", () => {
     expect(finished.seconds).toBe(120);
     expect(finished.distance).toBeCloseTo(1 / 3);
     expect(finished.startedAt).toBeNull();
+  });
+  test("GPS mode never adds simulated distance", () => {
+    const running = transition(initialRecording, "start", 1000);
+    const paused = transition(running, "pause", 61000);
+    expect(paused.seconds).toBe(60);
+    expect(paused.distance).toBe(0);
   });
   test("invalid transitions cannot reset or restart a session", () => {
     expect(transition(initialRecording, "resume")).toEqual(initialRecording);
@@ -41,10 +48,10 @@ describe("simulator lifecycle", () => {
   test("discard clears metrics but retains sport", () => {
     expect(
       transition(
-        { ...initialRecording, sport: "Sykling", seconds: 90, distance: 2 },
+        { ...sim, sport: "Sykling", seconds: 90, distance: 2 },
         "discard",
       ),
-    ).toEqual({ ...initialRecording, sport: "Sykling" });
+    ).toEqual({ ...sim, sport: "Sykling" });
   });
 });
 describe("metrics", () => {

@@ -26,7 +26,7 @@ test("save is private and idempotent, and clears the pending session", () => {
   expect(useAppStore.getState().workouts[0]).toMatchObject({
     title: "Test",
     notes: "Note",
-    source: "simulation",
+    source: "gps",
     visibility: "private",
   });
   expect(useAppStore.getState().recording.status).toBe("idle");
@@ -39,6 +39,39 @@ test("sport cannot change while recording and empty sessions cannot save", () =>
     recording: { ...initialRecording, status: "finishing" },
   });
   expect(useAppStore.getState().save("", "")).toBeNull();
+});
+test("a simulated session is saved as a simulation, never as GPS", () => {
+  useAppStore.setState({
+    recording: {
+      ...initialRecording,
+      mode: "simulation",
+      status: "finishing",
+      seconds: 60,
+      distance: 0.2,
+    },
+  });
+  useAppStore.getState().save("", "");
+  expect(useAppStore.getState().workouts[0].source).toBe("simulation");
+  expect(useAppStore.getState().recording.mode).toBe("simulation");
+});
+test("mode cannot change while recording", () => {
+  useAppStore.getState().event("start");
+  useAppStore.getState().mode("simulation");
+  expect(useAppStore.getState().recording.mode).toBe("gps");
+});
+test("GPS coordinates are never written to storage", async () => {
+  useAppStore.setState({
+    recording: {
+      ...initialRecording,
+      status: "paused",
+      seconds: 30,
+      distance: 0.1,
+      route: [[{ latitude: 59.9, longitude: 10.7 }]],
+    },
+  });
+  const raw = await AsyncStorage.getItem("vyro-prototype-v1");
+  expect(raw).not.toContain("59.9");
+  expect(JSON.parse(raw!).state.recording.route).toEqual([]);
 });
 test("persists an interrupted simulation as paused with no background time", async () => {
   useAppStore.setState({
@@ -65,7 +98,7 @@ test("a persistent storage failure reports an error without a write loop", async
   write.mockRejectedValue(new Error("Disk full"));
   write.mockClear();
   useAppStore.getState().preferences({ name: "Storage test" });
-  await new Promise(resolve => setTimeout(resolve, 0));
+  await new Promise((resolve) => setTimeout(resolve, 0));
   expect(useAppStore.getState().storageError).toContain("Lokal lagring feilet");
   expect(write.mock.calls.length).toBeLessThanOrEqual(2);
   write.mockResolvedValue(undefined);

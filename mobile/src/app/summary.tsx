@@ -14,6 +14,7 @@ import {
   useTheme,
 } from "../components/ui";
 
+import LiveMap from "../components/LiveMap";
 import { useAppStore } from "../stores/useAppStore";
 import { duration, km, pace } from "../features/activities/model";
 export default function Summary() {
@@ -47,7 +48,18 @@ export default function Summary() {
         title="Oppsummering"
         right={<Icon name="check" size={36} />}
       />
-      <Badge text="Simulert økt · ikke et GPS-opptak" />
+      <Badge
+        text={
+          r.mode === "gps"
+            ? "GPS-økt · privat"
+            : "Simulert økt · ikke et GPS-opptak"
+        }
+      />
+      {r.mode === "gps" && r.route.flat().length > 1 && (
+        <View style={{ borderRadius: 16, overflow: "hidden" }}>
+          <LiveMap height={200} route={r.route} />
+        </View>
+      )}
       <Card>
         <View style={styles.row}>
           <Metric value={km(r.distance)} label="kilometer" />
@@ -83,11 +95,13 @@ export default function Summary() {
       <View style={styles.row}>
         <Icon name="lock" size={18} />
         <Txt size={12} muted style={{ flex: 1 }}>
-          Privat · lagres på denne enheten · ingen opplasting
+          {r.mode === "gps"
+            ? "Privat · tid og distanse lagres på denne enheten · ruten lagres ikke"
+            : "Privat · lagres på denne enheten · ingen opplasting"}
         </Txt>
       </View>
       <Button
-        title="Lagre simulert økt"
+        title={r.mode === "gps" ? "Lagre økten" : "Lagre simulert økt"}
         disabled={r.seconds < 1}
         icon="check"
         onPress={() => {

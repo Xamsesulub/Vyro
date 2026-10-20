@@ -51,11 +51,8 @@ export default function Profile() {
           </View>
         </View>
         <View style={styles.row}>
-          <Metric value={km(stats.distance)} label="simulerte kilometer" />
-          <Metric
-            value={String(s.workouts.length)}
-            label="lagrede simuleringer"
-          />
+          <Metric value={km(stats.distance)} label="egne kilometer" />
+          <Metric value={String(s.workouts.length)} label="lagrede økter" />
         </View>
       </Card>
       <Section title="Gjør det personlig" />
@@ -153,7 +150,7 @@ export default function Profile() {
       ) : (
         <Card>
           <Txt weight="600">Her kommer dine første steg.</Txt>
-          <Txt muted>Start en simulert økt fra Tren-fanen.</Txt>
+          <Txt muted>Start en økt fra Tren-fanen.</Txt>
         </Card>
       )}
       <Txt size={11} muted style={{ textAlign: "center", letterSpacing: 2 }}>

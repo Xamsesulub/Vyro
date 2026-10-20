@@ -20,3 +20,11 @@ Native kart bruker `react-native-maps`. `.web.tsx`-varianten viser en original S
 - REA brukes kun ved et relevant og autorisert teknisk analysebehov.
 
 Ingen betalt tjeneste, EAS-build, Supabase-prosjekt eller ekstern publisering er opprettet.
+
+## Live GPS (20. oktober 2026)
+
+`features/tracking/gps.ts` legger ekte posisjoner inn i samme tilstandsmaskin som simulatoren. Økten har `mode: "gps" | "simulation"`; GPS-distanse kommer kun fra posisjoner, aldri fra antatt fart. Posisjoner med dårligere nøyaktighet enn 30 m, steg under 3 m og hopp over 15 m/s forkastes. Hver aktiv strekning er et eget rutesegment, så pauser verken tegnes eller telles.
+
+`components/LocationWatcher.tsx` har én `expo-location`-watcher i forgrunnen. Den kjører bare mens en GPS-økt pågår eller en skjerm viser live-kart. `useLocationStore` er ikke persistert. Ruten lever bare i minnet; lagrede økter har bare tid og distanse.
+
+`LiveMap.tsx` bruker `react-native-maps` og følger posisjonen. `LiveMap.web.tsx` laster Leaflet 1.9.4 fra unpkg med OpenStreetMap/CARTO-fliser, fordi `react-native-maps` ikke støtter web. Simuleringsmodus bruker fortsatt det illustrerte eksempelkartet.

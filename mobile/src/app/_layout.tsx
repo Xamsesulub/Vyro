@@ -7,6 +7,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useReducedMotion } from "react-native-reanimated";
 import { useAppStore } from "../stores/useAppStore";
 import { useTheme } from "../components/ui";
+import { LocationWatcher } from "../components/LocationWatcher";
 
 export default function RootLayout() {
   const ready = useAppStore((s) => s.ready);
@@ -30,6 +31,7 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <StatusBar style={theme === "dark" ? "light" : "dark"} />
+        <LocationWatcher />
         {!ready ? (
           <View
             style={{ flex: 1, backgroundColor: c.bg, justifyContent: "center" }}

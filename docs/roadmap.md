@@ -14,3 +14,5 @@ Ikke bland simulerte og ekte økter ved migrering. Prototypeøkter skal ikke opp
 UX-prioritet: enkel trening først. Målinger og pause skal være umiddelbart tilgjengelige. Hjem og fellesskap er forenklet med kortere innhold og færre dekorative flater. Ingen nye funksjoner før grunnflyten er behagelig å bruke.
 
 REA-basert nettleserkontroll er startet via CLI. Startvisningen for trening er skilt fra aktive målinger, og fellesskapet bruker enklere seksjoner. Se `docs/analysis/README.md` for evidens og avgrensning; dette er fortsatt en prototype med simulering.
+
+Live GPS i forgrunnen er lagt inn på brukerens forespørsel (Hjem og Tren): ekte posisjon, kart som følger løperen, rute og distanse fra GPS. Simulering er fortsatt et eget valg og merkes aldri som GPS. Bakgrunnssporing, journalføring av ruter og fysisk enhetstest gjenstår.

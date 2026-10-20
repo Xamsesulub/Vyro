@@ -72,9 +72,7 @@ export default function Progress() {
       </View>
       <Badge
         text={
-          s.examplesVisible
-            ? "Inkluderer eksempeldata"
-            : "Kun dine simulerte økter"
+          s.examplesVisible ? "Inkluderer eksempeldata" : "Kun dine egne økter"
         }
       />
       <Card>
@@ -186,8 +184,8 @@ export default function Progress() {
         })}
       </Card>
       <Txt muted size={12}>
-        Statistikken viser eksempeldata og simuleringer. Personlige rekorder
-        beregnes først fra faktiske opptak i en senere fase.
+        Statistikken kan inkludere eksempeldata og simuleringer. Personlige
+        rekorder beregnes først fra faktiske opptak i en senere fase.
       </Txt>
     </Screen>
   );

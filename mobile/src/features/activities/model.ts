@@ -8,7 +8,7 @@ export type Workout = {
   seconds: number;
   date: string;
   notes: string;
-  source: "example" | "simulation";
+  source: "example" | "simulation" | "gps";
   visibility: "private";
 };
 export function duration(seconds: number) {

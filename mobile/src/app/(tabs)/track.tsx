@@ -9,14 +9,26 @@ import {
   styles,
   useTheme,
 } from "../../components/ui";
+import LiveMap from "../../components/LiveMap";
 import WorkoutMap from "../../components/WorkoutMap";
 import { useAppStore } from "../../stores/useAppStore";
+import { useLiveLocation } from "../../features/tracking/useLiveLocation";
+import { RecordingMode } from "../../features/tracking/simulator";
 import { duration, km, pace, sports } from "../../features/activities/model";
+import { brand } from "../../theme/tokens";
 
+const modes: { mode: RecordingMode; title: string }[] = [
+  { mode: "gps", title: "GPS" },
+  { mode: "simulation", title: "Simulering" },
+];
 export default function Track() {
   const r = useAppStore((s) => s.recording);
   const event = useAppStore((s) => s.event);
   const setSport = useAppStore((s) => s.sport);
+  const setMode = useAppStore((s) => s.mode);
+  const gps = r.mode === "gps";
+  const loc = useLiveLocation(gps);
+  const [denied, setDenied] = useState(false);
   const [showMap, setShowMap] = useState(true);
   const [chooseSport, setChooseSport] = useState(false);
   const c = useTheme();
@@ -32,9 +44,16 @@ export default function Track() {
   };
   const primary = {
     idle: {
-      title: "Start simulering",
+      title: gps ? "Start" : "Start simulering",
       icon: "play" as const,
-      action: () => event("start"),
+      action: async () => {
+        if (gps && loc.permission !== "granted" && !(await loc.request())) {
+          setDenied(true);
+          return;
+        }
+        setDenied(false);
+        event("start");
+      },
     },
     recording: {
       title: "Pause",
@@ -86,16 +105,46 @@ export default function Track() {
           {r.sport}
         </Txt>
         <Txt size={12} muted>
-          Simulering · ingen GPS
+          {gps ? "GPS · live posisjon" : "Simulering · ingen GPS"}
         </Txt>
       </View>
       {r.status === "idle" && (
         <View style={{ gap: 16 }}>
-          <View style={{ borderRadius: 16, overflow: "hidden" }}>
-            <WorkoutMap height={280} />
+          <View style={styles.wrap}>
+            {modes.map((m) => (
+              <Chip
+                key={m.mode}
+                title={m.title}
+                selected={r.mode === m.mode}
+                onPress={() => {
+                  setMode(m.mode);
+                  setDenied(false);
+                }}
+              />
+            ))}
           </View>
-          <Txt size={12} muted>
-            Eksempelkart · ingen posisjon samles inn
+          <View style={{ borderRadius: 16, overflow: "hidden" }}>
+            {gps && loc.permission === "granted" ? (
+              <LiveMap height={280} position={loc.position} follow />
+            ) : (
+              <WorkoutMap height={280} />
+            )}
+          </View>
+          <Txt
+            size={12}
+            muted={!denied}
+            style={denied ? { color: brand.coral } : undefined}
+          >
+            {!gps
+              ? "Eksempelkart · ingen posisjon samles inn"
+              : denied
+                ? "VYRO fikk ikke tilgang til posisjon. Slå den på i innstillingene, eller velg simulering."
+                : loc.permission !== "granted"
+                  ? "Eksempelkart · trykk Start for å slå på GPS"
+                  : (loc.error ??
+                    (loc.position
+                      ? "Din posisjon · brukes bare mens appen er åpen"
+                      : "Leter etter GPS-signal …"))}
           </Txt>
           <Pressable
             accessibilityRole="button"
@@ -114,7 +163,9 @@ export default function Track() {
             <Txt weight="600">{r.sport} · Endre</Txt>
           </Pressable>
           <Txt size={14} muted>
-            Prøv en økt med eksempelfart. Du kan pause og avslutte når du vil.
+            {gps
+              ? "Kartet følger deg mens du trener. Du kan pause og avslutte når du vil."
+              : "Prøv en økt med eksempelfart. Du kan pause og avslutte når du vil."}
           </Txt>
         </View>
       )}
@@ -181,17 +232,36 @@ export default function Track() {
             style={{ minHeight: 44, justifyContent: "center" }}
           >
             <Txt size={14} style={{ color: c.accent }}>
-              {showMap ? "Skjul eksempelkart" : "Vis eksempelkart"}
+              {showMap
+                ? gps
+                  ? "Skjul kart"
+                  : "Skjul eksempelkart"
+                : gps
+                  ? "Vis kart"
+                  : "Vis eksempelkart"}
             </Txt>
           </Pressable>
           {showMap && (
             <View style={{ borderRadius: 16, overflow: "hidden" }}>
-              <WorkoutMap height={160} />
+              {gps ? (
+                <LiveMap
+                  height={220}
+                  position={loc.position}
+                  route={r.route}
+                  follow={r.status === "recording"}
+                />
+              ) : (
+                <WorkoutMap height={160} />
+              )}
             </View>
           )}
           <Txt size={12} muted>
-            Fast eksempelfart og illustrert rute. Pauses når appen går i
-            bakgrunnen.
+            {gps
+              ? (loc.error ??
+                (r.status === "recording" && !r.lastFix
+                  ? "Venter på presist GPS-signal …"
+                  : "Kartet følger deg. Pauses når appen går i bakgrunnen."))
+              : "Fast eksempelfart og illustrert rute. Pauses når appen går i bakgrunnen."}
           </Txt>
         </View>
       )}

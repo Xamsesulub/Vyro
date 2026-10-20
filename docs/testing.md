@@ -44,3 +44,10 @@ Kontrollert i nettleseren etter forenklingen: aktiv økt ved 320 × 640 viser al
 REA CLI 6.7.0: start → pause → fortsett bestod etter siste forenkling ved 390 × 844. Full evidens og skjermbilder er lagret under `docs/analysis/`. Typecheck, lint, 10 tester og web-eksport bestod. Dette gjelder nettleserprototypen, ikke native GPS.
 
 Ekte GPS krever separate fysiske tester: låst skjerm, bakgrunn, unøyaktig signal, nettbrudd, appavbrudd, lavt batteri, pause/resume, filtrering, duplikatfri sync og korrekt distanse mot kjent strekning. Simulatorresultater må aldri rapporteres som GPS-testresultater.
+
+## Live GPS 20. oktober 2026
+
+- TypeScript, ESLint og web-eksport: bestått.
+- Jest: 3 suites / 19 tester bestått, inkludert GPS-filtrering, pausesegmenter, at simulering aldri lagres som GPS og at koordinater ikke skrives til lagring.
+- Nettlesertest (Chromium, 390 × 844) med simulert geolokasjon: Hjem viser «Vis min posisjon» uten tillatelse og live-kart med tillatelse. Tren i GPS-modus følger posisjonen, tegner ruten og teller 0,11 km over omtrent 110 m gange. Oppsummeringen viser ruten og merkes «GPS-økt». Kartfliser og unpkg var blokkert i testmiljøet, så Leaflet ble servert lokalt og bakgrunnskartet er ikke visuelt kontrollert.
+- Ikke testet: ekte GPS på telefon, Apple/Google-kart med live-posisjon, nøyaktighet mot kjent strekning, batteribruk. Expo Go har `expo-location` og `react-native-maps`; Android-bygg utenfor Expo Go trenger Google Maps-nøkkel.

@@ -63,8 +63,12 @@ export function ActivityCard({ workout }: { workout: Workout }) {
           />
         </View>
         <Txt size={10} muted>
-          {workout.source === "example" ? "EKSEMPELDATA" : "SIMULERT ØKT"} ·
-          PRIVAT
+          {workout.source === "example"
+            ? "EKSEMPELDATA"
+            : workout.source === "gps"
+              ? "GPS-ØKT"
+              : "SIMULERT ØKT"}{" "}
+          · PRIVAT
         </Txt>
       </Card>
     </Pressable>

@@ -5,9 +5,11 @@ import { Sport, Workout } from "../features/activities/model";
 import {
   initialRecording,
   Recording,
+  RecordingMode,
   snapshot,
   transition,
 } from "../features/tracking/simulator";
+import { addFix, GpsFix } from "../features/tracking/gps";
 
 type State = {
   ready: boolean;
@@ -41,6 +43,8 @@ type State = {
     >,
   ) => void;
   sport: (sport: Sport) => void;
+  mode: (mode: RecordingMode) => void;
+  gpsFix: (fix: GpsFix) => void;
   event: (event: Parameters<typeof transition>[1]) => void;
   tick: () => void;
   save: (title: string, notes: string) => string | null;
@@ -68,12 +72,21 @@ export const useAppStore = create<State>()(
         if (get().recording.status === "idle")
           set({ recording: { ...get().recording, sport } });
       },
+      mode: (mode) => {
+        if (get().recording.status === "idle")
+          set({ recording: { ...get().recording, mode } });
+      },
+      gpsFix: (fix) => {
+        const next = addFix(get().recording, fix);
+        if (next !== get().recording) set({ recording: next });
+      },
       event: (event) => set({ recording: transition(get().recording, event) }),
       tick: () => set({ recording: snapshot(get().recording, Date.now()) }),
       save: (title, notes) => {
         const r = get().recording;
         if (r.status !== "finishing" || r.seconds < 1) return null;
-        const id = `sim-${Date.now()}`;
+        const gps = r.mode === "gps";
+        const id = `${gps ? "gps" : "sim"}-${Date.now()}`;
         set({
           workouts: [
             {
@@ -84,12 +97,12 @@ export const useAppStore = create<State>()(
               distance: r.distance,
               seconds: r.seconds,
               date: new Date().toISOString(),
-              source: "simulation",
+              source: gps ? "gps" : "simulation",
               visibility: "private",
             },
             ...get().workouts,
           ],
-          recording: { ...initialRecording, sport: r.sport },
+          recording: { ...initialRecording, sport: r.sport, mode: r.mode },
         });
         return id;
       },
@@ -98,6 +111,18 @@ export const useAppStore = create<State>()(
     }),
     {
       name: "vyro-prototype-v1",
+      version: 1,
+      // v0 sessions predate GPS and were all simulations.
+      migrate: (persisted, version) => {
+        const state = persisted as Partial<State>;
+        if (version < 1 && state.recording)
+          state.recording = {
+            ...initialRecording,
+            ...state.recording,
+            mode: "simulation",
+          };
+        return state as State;
+      },
       storage: createJSONStorage(() => ({
         getItem: (key: string) => AsyncStorage.getItem(key),
         setItem: async (key: string, value: string) => {
@@ -117,11 +142,17 @@ export const useAppStore = create<State>()(
         removeItem: (key: string) => AsyncStorage.removeItem(key),
       })),
       partialize: ({ ready, storageError, ...state }) => {
-        // A restarted simulator resumes paused; it never invents time while closed.
-        const recording =
-          state.recording.status === "recording"
-            ? { ...state.recording, status: "paused" as const, startedAt: null }
-            : state.recording;
+        // A restarted session resumes paused; it never invents time while closed.
+        // Coordinates stay in memory only: AsyncStorage is unencrypted (docs/security.md).
+        const recording = {
+          ...state.recording,
+          ...(state.recording.status === "recording" && {
+            status: "paused" as const,
+            startedAt: null,
+          }),
+          route: [],
+          lastFix: null,
+        };
         return { ...state, recording };
       },
       onRehydrateStorage: () => (state, error) => {

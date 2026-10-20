@@ -164,8 +164,8 @@ export default function Onboarding() {
             <Badge text="Du har kontroll" />
             <Txt weight="600">Privat fra første steg</Txt>
             <Txt muted size={14}>
-              Prototypen bruker simulerte treningsdata. Ingen GPS, konto eller
-              varsling aktiveres. Innlogging kommer med Supabase i neste fase.
+              GPS slås bare på når du ber om det, og kun mens appen er åpen.
+              Ruter lagres ikke. Ingen konto eller varsling aktiveres ennå.
             </Txt>
           </Card>
           <Button title="La oss komme i gang" icon="arrow" onPress={finish} />

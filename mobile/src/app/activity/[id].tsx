@@ -43,7 +43,13 @@ export default function Activity() {
         title={w.title}
       />
       <Badge
-        text={w.source === "example" ? "Eksempeløkt" : "Lagret simulering"}
+        text={
+          w.source === "example"
+            ? "Eksempeløkt"
+            : w.source === "gps"
+              ? "GPS-økt"
+              : "Lagret simulering"
+        }
       />
       <Card>
         <View style={styles.row}>
@@ -71,13 +77,21 @@ export default function Activity() {
         <Txt muted size={12}>
           {w.source === "example"
             ? "Dette er en fiktiv økt for å vise produktet."
-            : "Simuleringen er lagret lokalt. Den teller ikke som et ekte treningsopptak."}
+            : w.source === "gps"
+              ? "Målt med GPS og lagret lokalt. Ruten lagres ikke."
+              : "Simuleringen er lagret lokalt. Den teller ikke som et ekte treningsopptak."}
         </Txt>
       </Card>
-      {w.source === "simulation" && (
+      {w.source !== "example" && (
         <>
           <Button
-            title={confirm ? "Bekreft sletting" : "Slett simuleringen"}
+            title={
+              confirm
+                ? "Bekreft sletting"
+                : w.source === "gps"
+                  ? "Slett økten"
+                  : "Slett simuleringen"
+            }
             secondary={!confirm}
             danger={confirm}
             onPress={() => {

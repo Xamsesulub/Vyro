@@ -1,6 +1,7 @@
 import { Pressable, View } from "react-native";
 import { router } from "expo-router";
 import { ActivityCard } from "../../components/ActivityCard";
+import { PositionCard } from "../../components/PositionCard";
 import {
   Badge,
   Button,
@@ -60,7 +61,11 @@ export default function Home() {
         }
         icon="play"
         onPress={() => router.push("/(tabs)/track")}
-      />{" "}
+      />
+      <View style={{ gap: 12 }}>
+        <Section title="Din posisjon" />
+        <PositionCard />
+      </View>
       <View style={{ gap: 12 }}>
         <Section
           title="Denne uken"
@@ -111,7 +116,7 @@ export default function Home() {
           <Card>
             <Icon name="run" />
             <Txt weight="700">Din historie starter her</Txt>
-            <Txt muted>Fullfør en simulert økt for å utforske historikken.</Txt>
+            <Txt muted>Fullfør en økt for å bygge historikken din.</Txt>
           </Card>
         )}
       </View>

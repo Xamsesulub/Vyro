@@ -4,7 +4,17 @@ import { router, useFocusEffect } from "expo-router";
 import { AccountGate } from "../../components/AccountGate";
 import { CloudPost } from "../../components/CloudPost";
 import { ActivityCard } from "../../components/ActivityCard";
-import { Button, Chip, Screen, Txt, styles } from "../../components/ui";
+import {
+  Button,
+  Chip,
+  Screen,
+  Txt,
+  styles,
+  Logo,
+  useTheme,
+} from "../../components/ui";
+import { Reveal } from "../../components/motion";
+import { TurfEvents } from "../../components/TurfEvents";
 import { useAuthStore } from "../../stores/useAuthStore";
 import { useAppStore } from "../../stores/useAppStore";
 import { client, Post, socialError } from "../../features/social/api";
@@ -13,6 +23,7 @@ export default function Home() {
   return <AccountGate>{id && <Feed key={id} userId={id} />}</AccountGate>;
 }
 function Feed({ userId }: { userId: string }) {
+  const c = useTheme();
   const [tab, setTab] = useState("Følger");
   const [posts, setPosts] = useState<Post[]>([]);
   const [error, setError] = useState("");
@@ -81,11 +92,23 @@ function Feed({ userId }: { userId: string }) {
   return (
     <Screen>
       <View style={styles.row}>
-        <Txt size={28} weight="700">
-          Hjem
-        </Txt>
-        <Button title="Del økt" onPress={() => router.push("/share-workout")} />
+        <Logo small color={c.text} />
+        <Button
+          title="Del økt"
+          icon="arrow"
+          onPress={() => router.push("/share-workout")}
+        />
       </View>
+      <Reveal>
+        <View style={{ gap: 5 }}>
+          <Txt size={30} weight="800" style={{ letterSpacing: -0.8 }}>
+            Turer å dele.
+          </Txt>
+          <Txt muted size={14}>
+            Små øyeblikk. Flere kilometer sammen.
+          </Txt>
+        </View>
+      </Reveal>
       <View style={styles.wrap}>
         {["Følger", "Delt på nytt", "Mine økter"].map((t) => (
           <Chip
@@ -103,6 +126,7 @@ function Feed({ userId }: { userId: string }) {
         onPress={() => setRevision((n) => n + 1)}
       />
       {!!error && <Txt>{error}</Txt>}
+      {tab === "Følger" && <TurfEvents key={revision} userId={userId} />}
       {tab === "Mine økter" ? (
         <>
           {!own.length && (

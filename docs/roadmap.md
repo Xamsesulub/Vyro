@@ -1,5 +1,19 @@
 # Leveranseplan
 
+## Kartbasert opptak, 20. oktober 2026
+
+Aktiv økt viser Mapbox fra start, flytende tid/tempo/distanse og stor Pause-knapp. Pauset økt har Fortsett og Fullfør. Navy, lime og lavender skiller VYRO fra referansen. Målinger kan forstørres, og økten kan minimeres til kartfanen. Kartkontroller skjules ved forstørrede målinger for å unngå overlapp på små skjermer.
+
+Valgt konkurransesone følger med fra «Løp denne løypa», tegnes lilla og beholdes ved pause/gjenoppretting. Den lagrede GPS-økten beholder sone-ID for senere eksplisitt innsending. Ingen automatisk publisering eller overtakelse. Simulering og bytte til annen aktivitet fjerner sonevalget. Henos sin GPS-beregning og Supabase-regler er beholdt. Dette er visuell løypeveiledning, ikke svingvarsler.
+
+## Voksende soner, 20. oktober 2026
+
+Appflyt og PostgreSQL-migrering 004 implementerer overtakelse med valgfri utvidelse. Neste utfordrer må slå hele den nye løypa. Revisjonslås, idempotent kvittering, serverberegning, personvernforhåndsvisning og sonehendelser i feed er testet lokalt. Produksjonsmigrering 004 er aktiv etter eksplisitt godkjenning og vellykket etterkontroll. Fysisk GPS/antijuks og to ekte kontoer er ikke verifisert. Se `social-and-turf.md` for oppdatert regel og presis status; dette erstatter tidligere merknader om at utvidelser ikke er definert.
+
+## Identitet og bevegelse, 20. oktober 2026
+
+Egen linjeillustrasjon, tydeligere start/onboarding, kort åpningssignatur, diskret fanerespons, fremdriftslinje og avslutning av økt er implementert med Reanimated. Kokonut UI, Motion og Anime.js er inspirasjonskilder; ingen nye web-animasjonsbiblioteker er installert. Strava-strukturen, kartet, Henos sitt GPS-opptak og Supabase beholdes. REA-scenarioer og 47 tester består; fysisk native kontroll gjenstår. Se `design-motion.md`.
+
 Siste produktendring: aktivitetsbasert sosial feed og turf-konkurranser er prioritert. Lokal UI og kandidatregler finnes; ekte flerbrukerfunksjon krever Auth/backend og verifiserte GPS-opptak. Ekte kartfliser er lagt til. Se `social-and-turf.md` for presis status.
 
 20. oktober 2026: Lys utforming og Strava-lignende hovedstruktur implementeres. Fremgang samles under Du, og Grupper får Utfordringer/Klubber. Full funksjonslikhet er ikke levert. Funksjonskart og backend-/GPS-avhengigheter står i `strava-feature-map.md`; disse erstatter tidligere idéer om egne motivasjons- og AI-funksjoner som prioritet.
@@ -23,3 +37,25 @@ REA-basert nettleserkontroll er startet via CLI. Startvisningen for trening er s
 ## Integrert 20. oktober: Henos sitt kart
 
 Henos sitt GPS-opptak og LiveMap er flettet inn med lyst design og eksisterende Supabase-innlogging, følgerforhold og deling. Private ruter og pausegrenser beholdes lokalt og ved eksplisitt deling. Neste validering er en fysisk løpetur og deling mellom to innloggede brukere. Turf har fortsatt ingen serververifisert konkurranselogikk.
+
+## Mapbox klargjort, 20. oktober 2026
+
+Kartvisningen bruker nå @rnmapbox/maps på native og Mapbox GL JS 3 på web, med en felles lys Standard-stil. Henos sitt GPS-opptak og Supabase-funksjonene er beholdt. CARTO-fallback er fjernet. Manglende nøkkel gir en tydelig tomtilstand. Oppsett: docs/mapbox-setup.md. Aktivering og visuell kontroll med ekte Mapbox-konto gjenstår.
+
+Kartskjermen er nå en full kartflate med flytende filter, rute-/posisjonsknapper og kompakt turfpanel. Kontrastlinje med hvit kant, stier/veinavn/POI og høydekurver i Mapbox Standard. Turf er fortsatt tydelig merket eksempel; ingen Strava-varmekart eller reelle konkurranser er lagt til.
+
+## Kartkontroller, 20. oktober 2026
+
+Blå posisjonsmarkør med hvit kant og blå glød viser fersk, tillatt GPS-posisjon også når kartet panoreres. Gløden er visuell, ikke en målt nøyaktighetsradius. Samme LocationWatcher benyttes; ingen ny opplasting. Kartet har stedsøk (midlertidige Mapbox Geocoding-resultater), lokalt lagrede rute-ID-er, lengdefilter, Standard/Satellitt/Hybrid, høydekurver, POI, 2D/3D og nord opp. Private GPS-ruter er bare synlige for den lokale øktens innloggede eier; eksempler er fortsatt merket. Supabase og opptaksalgoritmen er beholdt.
+
+Stravas varmekart, vinterkart, underlags-/vanskelighetsdata og automatiske ruteanbefalinger er ikke implementert. Turf-konkurranse trenger fortsatt serververifisering. Kartet er en VYRO-implementering med referansens bruksmønstre, ikke full funksjonsparitet.
+
+## Kartytelse og sikkerhet, 20. oktober 2026
+
+Kartmotoren forhåndslastes på web og worker-ressurser varmes opp. Første kamera starter ved rutens utsnitt. Høydekurver er av som standard og lastes ved valg; terreng lastes ved 3D. POI, høydekurver og 3D endres uten full kartstil-rekonstruksjon på web; native bruker StyleImport og separate kildelag. Standard/satellitt-bytte bytter fortsatt basemap. Hash-navngitte preview-assets får immutable caching. Ingen dokumentert prosentvis forbedring på fysisk telefon ennå.
+
+Native sesjoner flyttes fra AsyncStorage til SecureStore. Testet sikkerhetsmigrering 202610200002 er aktiv i Supabase etter eksplisitt brukergodkjenning. Rutevalidering, private skrivemengdetellere og atomiske per-bruker-grenser er lagt til. Uavklarte sikkerhetskrav før lansering er samlet i docs/security.md.
+
+## Personvern og kryptering, 20. oktober 2026
+
+GPS-ruter/utkast og lokale sosiale kopier lagres med AES-GCM, med kontrollert migrering fra klartekst. Native bruker SecureStore-nøkkel; web bruker ikke-eksporterbar IndexedDB-nøkkel. Nye delinger viser en rute skjermet 500 m rundt start og slutt og har følgerpublikum som standard. Publisering på nytt oppdaterer kart og publikum atomisk. SQL-migrering 202610200003 er testet lokalt og aktivert i produksjon etter eksplisitt godkjenning 20. oktober. Eksisterende publiserte kart endres ikke automatisk. UUID-varselet er rettet; tre avhengighetsadvisories uten tilgjengelig patch gjenstår. Fysisk native test og enhetens gjenopprettingsatferd gjenstår.

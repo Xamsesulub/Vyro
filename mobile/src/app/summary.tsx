@@ -18,6 +18,7 @@ import LiveMap from "../components/LiveMap";
 import { useAppStore } from "../stores/useAppStore";
 import { duration, km, pace } from "../features/activities/model";
 import { useAuthStore } from "../stores/useAuthStore";
+import { FinishStamp, Reveal } from "../components/motion";
 export default function Summary() {
   const s = useAppStore();
   const c = useTheme();
@@ -45,11 +46,20 @@ export default function Summary() {
     );
   return (
     <Screen>
-      <Header
-        eyebrow="Et steg videre"
-        title="Oppsummering"
-        right={<Icon name="check" size={36} />}
-      />
+      <Reveal>
+        <View style={{ gap: 18 }}>
+          <FinishStamp />
+          <View style={{ gap: 6 }}>
+            <Txt muted size={11} weight="600" style={{ letterSpacing: 2 }}>
+              ØKTOPPSUMMERING
+            </Txt>
+            <Txt size={36} weight="800" style={{ letterSpacing: -1.2 }}>
+              {r.mode === "gps" ? "En tur videre." : "Simulering fullført."}
+            </Txt>
+            <Txt muted>Ta et pust. Her er økten din.</Txt>
+          </View>
+        </View>
+      </Reveal>
       <Badge
         text={
           r.mode === "gps"

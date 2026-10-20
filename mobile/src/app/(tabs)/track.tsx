@@ -9,12 +9,13 @@ import {
   styles,
   useTheme,
 } from "../../components/ui";
+import RecordingMap from "../../components/RecordingMap";
 import LiveMap from "../../components/LiveMap";
 import WorkoutMap from "../../components/WorkoutMap";
 import { useAppStore } from "../../stores/useAppStore";
 import { useLiveLocation } from "../../features/tracking/useLiveLocation";
 import { RecordingMode } from "../../features/tracking/simulator";
-import { duration, km, pace, sports } from "../../features/activities/model";
+import { sports } from "../../features/activities/model";
 import { brand } from "../../theme/tokens";
 import { useAuthStore } from "../../stores/useAuthStore";
 
@@ -31,7 +32,7 @@ export default function Track() {
   const gps = r.mode === "gps";
   const loc = useLiveLocation(gps);
   const [denied, setDenied] = useState(false);
-  const [showMap, setShowMap] = useState(false);
+
   const [chooseSport, setChooseSport] = useState(false);
   const c = useTheme();
   const status = {
@@ -40,10 +41,6 @@ export default function Track() {
     paused: "Økten er pauset",
     finishing: "Økten er avsluttet",
   }[r.status];
-  const numbers = {
-    fontVariant: ["tabular-nums"] as "tabular-nums"[],
-    letterSpacing: -1,
-  };
   const primary = {
     idle: {
       title: gps ? "Start" : "Start simulering",
@@ -87,26 +84,27 @@ export default function Track() {
         />
       </Screen>
     );
+  if (r.status !== "idle")
+    return (
+      <RecordingMap
+        recording={r}
+        position={loc.position}
+        error={loc.error}
+        pause={() => event("pause")}
+        resume={() => event("resume")}
+        finish={() => {
+          event("finish");
+          router.push("/summary");
+        }}
+      />
+    );
   return (
     <Screen
       footer={
         <>
-          {r.status === "paused" ? (
-            <Button
-              title="Avslutt økten"
-              secondary
-              onPress={() => {
-                event("finish");
-                router.push("/summary");
-              }}
-            />
-          ) : (
-            <View style={{ minHeight: 54, justifyContent: "center" }}>
-              <Txt size={14} muted style={{ textAlign: "center" }}>
-                {status}
-              </Txt>
-            </View>
-          )}
+          <Txt size={14} muted style={{ textAlign: "center" }}>
+            {status}
+          </Txt>
           <Button
             title={primary.title}
             icon={primary.icon}
@@ -140,8 +138,25 @@ export default function Track() {
             ))}
           </View>
           <View style={{ borderRadius: 16, overflow: "hidden" }}>
-            {gps && loc.permission === "granted" ? (
-              <LiveMap height={280} position={loc.position} follow />
+            {gps && (loc.permission === "granted" || r.challenge) ? (
+              <LiveMap
+                height={280}
+                position={loc.position}
+                follow={!r.challenge}
+                overlays={
+                  r.challenge
+                    ? [
+                        {
+                          id: r.challenge.id,
+                          name: r.challenge.name,
+                          owner: "Sone · start",
+                          points: r.challenge.route,
+                          color: "#7353C6",
+                        },
+                      ]
+                    : []
+                }
+              />
             ) : (
               <WorkoutMap height={280} />
             )}
@@ -156,12 +171,28 @@ export default function Track() {
               : denied
                 ? "VYRO fikk ikke tilgang til posisjon. Slå den på i innstillingene, eller velg simulering."
                 : loc.permission !== "granted"
-                  ? "Eksempelkart · trykk Start for å slå på GPS"
+                  ? r.challenge
+                    ? "Valgt løype · trykk Start for å slå på GPS"
+                    : "Eksempelkart · trykk Start for å slå på GPS"
                   : (loc.error ??
                     (loc.position
                       ? "Din posisjon · brukes bare mens appen er åpen"
                       : "Leter etter GPS-signal …"))}
           </Txt>
+          {!!r.challenge && (
+            <View style={{ gap: 8 }}>
+              <Txt weight="700">Valgt sone: {r.challenge.name}</Txt>
+              <Txt size={12} muted>
+                Løypa vises i lilla. Start opptaket og følg løypa. Ingen
+                svingvarsler.
+              </Txt>
+              <Button
+                title="Fjern valgt sone"
+                secondary
+                onPress={() => useAppStore.getState().selectTurf()}
+              />
+            </View>
+          )}
           <Pressable
             accessibilityRole="button"
             accessibilityState={{ expanded: chooseSport }}
@@ -198,87 +229,6 @@ export default function Track() {
               }}
             />
           ))}
-        </View>
-      )}
-      {r.status !== "idle" && (
-        <View style={{ gap: 20 }}>
-          <View style={{ alignItems: "center" }}>
-            <Txt size={14} muted>
-              Distanse · km
-            </Txt>
-            <Txt size={76} weight="700" style={numbers}>
-              {km(r.distance)}
-            </Txt>
-          </View>
-          <View
-            style={{
-              flexDirection: "row",
-              borderTopWidth: 1,
-              borderBottomWidth: 1,
-              borderColor: c.border,
-              paddingVertical: 20,
-            }}
-          >
-            <View style={{ flex: 1, alignItems: "center", gap: 6 }}>
-              <Txt size={14} muted>
-                Aktiv tid
-              </Txt>
-              <Txt size={36} weight="700" style={numbers}>
-                {duration(r.seconds)}
-              </Txt>
-            </View>
-            <View style={{ width: 1, backgroundColor: c.border }} />
-            <View style={{ flex: 1, alignItems: "center", gap: 6 }}>
-              <Txt size={14} muted>
-                Snittempo · min/km
-              </Txt>
-              <Txt size={36} weight="700" style={numbers}>
-                {pace(r.distance, r.seconds)}
-              </Txt>
-            </View>
-          </View>
-        </View>
-      )}
-      {r.status !== "idle" && (
-        <View style={{ gap: 8 }}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityState={{ expanded: showMap }}
-            onPress={() => setShowMap(!showMap)}
-            style={{ minHeight: 44, justifyContent: "center" }}
-          >
-            <Txt size={14} style={{ color: c.accent }}>
-              {showMap
-                ? gps
-                  ? "Skjul kart"
-                  : "Skjul eksempelkart"
-                : gps
-                  ? "Vis kart"
-                  : "Vis eksempelkart"}
-            </Txt>
-          </Pressable>
-          {showMap && (
-            <View style={{ borderRadius: 16, overflow: "hidden" }}>
-              {gps ? (
-                <LiveMap
-                  height={220}
-                  position={loc.position}
-                  route={r.route}
-                  follow={r.status === "recording"}
-                />
-              ) : (
-                <WorkoutMap height={160} />
-              )}
-            </View>
-          )}
-          <Txt size={12} muted>
-            {gps
-              ? (loc.error ??
-                (r.status === "recording" && !r.lastFix
-                  ? "Venter på presist GPS-signal …"
-                  : "Ruten lagres privat. Hold skjermen på; opptaket pauser i bakgrunnen."))
-              : "Fast eksempelfart og illustrert rute. Pauses når appen går i bakgrunnen."}
-          </Txt>
         </View>
       )}
     </Screen>

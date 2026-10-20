@@ -14,6 +14,7 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
+  withSpring,
 } from "react-native-reanimated";
 import Svg, { Circle, Path, Rect } from "react-native-svg";
 import { useAppStore } from "../stores/useAppStore";
@@ -52,6 +53,9 @@ export function Txt({
   );
 }
 const paths = {
+  locate:
+    "M12 2v3 M12 19v3 M2 12h3 M19 12h3 M19 12a7 7 0 1 1-14 0 7 7 0 0 1 14 0 M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0",
+  layers: "m12 3 9 5-9 5-9-5 9-5Z M3 12l9 5 9-5 M3 16l9 5 9-5",
   map: "M3 5l6-2 6 2 6-2v16l-6 2-6-2-6 2V5Zm6-2v16m6-14v16",
   record:
     "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18 M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10",
@@ -99,7 +103,13 @@ export function Icon({
     </Svg>
   );
 }
-export function Logo({ small = false }: { small?: boolean }) {
+export function Logo({
+  small = false,
+  color = brand.lime,
+}: {
+  small?: boolean;
+  color?: string;
+}) {
   return (
     <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
       <Svg width={small ? 27 : 36} height={small ? 27 : 36} viewBox="0 0 40 40">
@@ -109,13 +119,13 @@ export function Logo({ small = false }: { small?: boolean }) {
           width={34}
           height={34}
           rx={10}
-          stroke={brand.lime}
+          stroke={color}
           strokeWidth={2.8}
           fill="none"
         />
         <Path
           d="m9 24 7 5 9-18 6 5"
-          stroke={brand.lime}
+          stroke={color}
           strokeWidth={3.2}
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -125,7 +135,7 @@ export function Logo({ small = false }: { small?: boolean }) {
       <Txt
         size={small ? 24 : 32}
         weight="800"
-        style={{ color: brand.lime, letterSpacing: -1 }}
+        style={{ color, letterSpacing: -1 }}
       >
         VYRO
       </Txt>
@@ -173,12 +183,17 @@ export function Button({
         }}
         onPressOut={() => {
           scale.set(
-            withTiming(1, { duration: 100, reduceMotion: ReduceMotion.System }),
+            withSpring(1, {
+              damping: 24,
+              stiffness: 380,
+              mass: 0.6,
+              reduceMotion: ReduceMotion.System,
+            }),
           );
         }}
         style={{
           minHeight: large ? 76 : 54,
-          borderRadius: 28,
+          borderRadius: large ? 24 : 16,
           backgroundColor: danger
             ? brand.coral
             : secondary

@@ -1,6 +1,6 @@
 import "react-native-url-polyfill/auto";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { createClient, processLock } from "@supabase/supabase-js";
+import { createClient } from "@supabase/supabase-js";
+import { authStorage } from "./authStorage";
 import { AppState, Platform } from "react-native";
 
 const url = process.env.EXPO_PUBLIC_SUPABASE_URL ?? "";
@@ -17,11 +17,10 @@ const isServer = Platform.OS === "web" && typeof window === "undefined";
 export const supabase = supabaseConfigured
   ? createClient(url, key, {
       auth: {
-        ...(Platform.OS !== "web" ? { storage: AsyncStorage } : {}),
+        ...(Platform.OS !== "web" ? { storage: authStorage } : {}),
         persistSession: !isServer,
         autoRefreshToken: !isServer,
         detectSessionInUrl: false,
-        lock: processLock,
       },
     })
   : null;

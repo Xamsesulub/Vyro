@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { TextInput, View } from "react-native";
 import { router } from "expo-router";
-import { Button, Screen, Txt, useTheme } from "../components/ui";
+import { Button, Screen, Txt, useTheme, Logo } from "../components/ui";
+import { MovementLine, Reveal } from "../components/motion";
 import { useAppStore } from "../stores/useAppStore";
 export default function Onboarding() {
   const c = useTheme();
@@ -11,6 +12,7 @@ export default function Onboarding() {
       footer={
         <Button
           title="Kom i gang"
+          icon="arrow"
           onPress={() => {
             useAppStore
               .getState()
@@ -20,15 +22,33 @@ export default function Onboarding() {
         />
       }
     >
-      <Txt size={24} weight="800" style={{ color: c.accent }}>
-        VYRO
-      </Txt>
-      <View style={{ paddingTop: 70, gap: 20 }}>
-        <Txt size={36} weight="700">
-          Plass til din neste tur.
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <Logo small color={c.text} />
+        <Txt size={10} muted weight="600" style={{ letterSpacing: 2 }}>
+          MOVE BEYOND
         </Txt>
-        <Txt muted>Registrer aktiviteter og følg fremgangen din.</Txt>
       </View>
+      <Reveal>
+        <View style={{ paddingTop: 16, gap: 16 }}>
+          <Txt
+            size={48}
+            weight="800"
+            style={{ letterSpacing: -2, lineHeight: 51 }}
+          >
+            Ut døra.{"\n"}Litt videre.
+          </Txt>
+          <Txt muted>
+            Finn din rytme. Ta vare på turene.{"\n"}Del dem med folkene dine.
+          </Txt>
+        </View>
+      </Reveal>
+      <MovementLine />
       <Txt size={14} weight="600">
         Navn (valgfritt)
       </Txt>
@@ -43,14 +63,14 @@ export default function Onboarding() {
           padding: 16,
           borderWidth: 1,
           borderColor: c.border,
-          borderRadius: 10,
+          borderRadius: 14,
           fontSize: 18,
           color: c.text,
         }}
       />
       <Txt size={13} muted>
-        Dette er en forhåndsvisning med simulerte økter. Ingen GPS eller konto
-        aktiveres.
+        Ingen konto eller GPS aktiveres her. Du velger selv når du vil
+        registrere deg eller starte et opptak.
       </Txt>
     </Screen>
   );

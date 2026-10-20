@@ -9,6 +9,10 @@ import { useAuthStore } from "../stores/useAuthStore";
 import { publish, socialError } from "../features/social/api";
 import { AccountGate } from "../components/AccountGate";
 import { km, duration } from "../features/activities/model";
+import {
+  sharedRoute,
+  hasVisibleSegment,
+} from "../features/social/routePrivacy";
 export default function ShareWorkout() {
   const id = useAuthStore((s) => s.session?.user.id);
   return <AccountGate>{id && <ShareForm key={id} userId={id} />}</AccountGate>;
@@ -18,8 +22,13 @@ function ShareForm({ userId }: { userId: string }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [selected, setSelected] = useState<string | null>(null);
+  const [audience, setAudience] = useState<"followers" | "everyone">(
+    "followers",
+  );
   const eligible = workouts.filter((w) => shareable(w) && w.ownerId === userId);
   const workout = eligible.find((w) => w.id === selected);
+  const route = sharedRoute(workout?.route);
+  const canShare = hasVisibleSegment(route);
   return (
     <Screen>
       <Button title="Tilbake" secondary onPress={() => router.back()} />
@@ -31,8 +40,20 @@ function ShareForm({ userId }: { userId: string }) {
         følger alltid med.
       </Txt>
       <Txt muted size={12}>
-        Innlegget blir synlig for alle innloggede VYRO-brukere.
+        Velg hvem som får se økten. Følgere er standard.
       </Txt>
+      <Button
+        secondary
+        title={
+          audience === "followers"
+            ? "Synlig for: Følgere"
+            : "Synlig for: Alle innloggede"
+        }
+        onPress={() =>
+          setAudience(audience === "followers" ? "everyone" : "followers")
+        }
+        disabled={busy}
+      />
       {eligible.map((w) => (
         <Button
           key={w.id}
@@ -54,20 +75,26 @@ function ShareForm({ userId }: { userId: string }) {
           <Txt>
             {km(workout.distance)} km · {duration(workout.seconds)}
           </Txt>
-          <WorkoutMap points={workout.route} height={220} />
+          <WorkoutMap points={route} height={220} />
           <Txt muted size={13}>
-            Hele denne ruten blir synlig i innlegget. Kontroller start og slutt
-            før du deler.
+            Kartet skjuler punkter innen 500 meter fra start og slutt, også når
+            du passerer dem senere. Distanse og tid gjelder hele økten.
+            Kontroller kartet: andre detaljer kan fortsatt avsløre hvor du bor.
+            Deling på nytt oppdaterer kart og publikum på det eksisterende
+            innlegget.
           </Txt>
+          {!canShare && (
+            <Txt>Ruten er for kort til å dele med skjermet start og slutt.</Txt>
+          )}
           <Button
             title={busy ? "Publiserer …" : "Publiser økten med kart"}
-            disabled={busy}
+            disabled={busy || !canShare}
             onPress={async () => {
               if (busy) return;
               setBusy(true);
               setError("");
               try {
-                await publish(workout, userId);
+                await publish(workout, userId, audience);
                 router.replace("/(tabs)");
               } catch (e) {
                 setError(socialError(e));

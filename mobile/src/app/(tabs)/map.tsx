@@ -1,82 +1,695 @@
-import { useMemo, useState } from "react";
-import { View } from "react-native";
-import { Screen, Txt, Chip, styles } from "../../components/ui";
-import WorkoutMap from "../../components/WorkoutMap";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  Pressable,
+  StyleSheet,
+  View,
+  Modal,
+  ScrollView,
+  TextInput,
+  Switch,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { router } from "expo-router";
+import { Txt, Icon } from "../../components/ui";
+import LiveMap from "../../components/LiveMap";
 import { demoTurfs, people } from "../../features/social/demo";
 import { useSocialStore } from "../../stores/useSocialStore";
 import { useAppStore } from "../../stores/useAppStore";
+import { useLiveLocation } from "../../features/tracking/useLiveLocation";
 import { duration, km } from "../../features/activities/model";
-import { hasMapbox } from "../../features/maps/config";
+import { useSavedRoutes } from "../../stores/useSavedRoutes";
+import { searchPlaces, type Place } from "../../features/maps/search";
+import type { MapKind } from "../../features/maps/config";
+import { useVisibleWorkouts } from "../../features/activities/useVisibleWorkouts";
 export default function Maps() {
+  const saved = useSavedRoutes();
+  const workouts = useVisibleWorkouts();
+  const [savedOnly, setSavedOnly] = useState(false);
+  const [length, setLength] = useState(0);
+  const [sheet, setSheet] = useState<"layers" | "search" | null>(null);
+  const [mapKind, setMapKind] = useState<MapKind>("standard");
+  const [poi, setPoi] = useState(true);
+  const [contours, setContours] = useState(false);
+  const [threeD, setThreeD] = useState(false);
+  const [north, setNorth] = useState(0);
+  const [target, setTarget] = useState<Place | null>(null);
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<Place[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState("");
+  const searchController = useRef<AbortController | null>(null);
+  useEffect(() => () => searchController.current?.abort(), []);
+  async function search() {
+    searchController.current?.abort();
+    const controller = new AbortController();
+    searchController.current = controller;
+    setSearching(true);
+    setSearchError("");
+    setResults([]);
+    try {
+      const places = await searchPlaces(query, controller.signal);
+      if (!controller.signal.aborted) {
+        setResults(places);
+        if (!places.length) setSearchError("Ingen steder funnet.");
+      }
+    } catch (e) {
+      if (!controller.signal.aborted)
+        setSearchError(e instanceof Error ? e.message : "Søket feilet.");
+    } finally {
+      if (!controller.signal.aborted) setSearching(false);
+    }
+  }
   const following = useSocialStore((s) => s.following);
   const examples = useAppStore((s) => s.examplesVisible);
   const [filter, setFilter] = useState("Følger");
-  const turfs = useMemo(
-    () =>
-      examples
-        ? demoTurfs.filter(
+  const [index, setIndex] = useState(0);
+  const [expanded, setExpanded] = useState(false);
+  const [height, setHeight] = useState(700);
+  const [follow, setFollow] = useState(false);
+  const [recenter, setRecenter] = useState(0);
+  const [message, setMessage] = useState("");
+  const [locating, setLocating] = useState(false);
+  const loc = useLiveLocation(true);
+  const [now, setNow] = useState(Date.now);
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 5000);
+    return () => clearInterval(timer);
+  }, []);
+  const position =
+    loc.permission === "granted" &&
+    loc.position &&
+    now - loc.position.timestamp < 30000
+      ? loc.position
+      : null;
+  const insets = useSafeAreaInsets();
+  const turfs = useMemo(() => {
+    const own = workouts
+      .filter((w) => w.source === "gps" && w.route?.length)
+      .map((w) => ({
+        id: w.id,
+        name: w.title,
+        ownerId: "self",
+        seconds: w.seconds,
+        distance: w.distance,
+        points: w.route!,
+        color: "#DF4B20",
+        example: false,
+      }));
+    const demo = examples
+      ? demoTurfs
+          .filter(
             (t) => filter === "Alle eksempler" || following.includes(t.ownerId),
           )
-        : [],
-    [examples, following, filter],
-  );
+          .map((t) => ({ ...t, example: true }))
+      : [];
+    return [...own, ...demo].filter(
+      (t) =>
+        (!savedOnly || saved.ids.includes(t.id)) &&
+        (!length ||
+          (length === 1
+            ? t.distance < 3
+            : length === 2
+              ? t.distance >= 3 && t.distance <= 10
+              : t.distance > 10)),
+    );
+  }, [workouts, examples, filter, following, savedOnly, saved.ids, length]);
+  const turf = turfs[index % Math.max(1, turfs.length)];
+  const owner =
+    turf?.ownerId === "self"
+      ? { name: "Deg", initials: "DU" }
+      : people.find((p) => p.id === turf?.ownerId);
   const routes = useMemo(
     () =>
-      turfs.map((t) => ({
-        id: t.id,
-        name: t.name,
-        owner: people.find((p) => p.id === t.ownerId)?.name ?? "Ukjent",
-        points: t.points,
-        color: t.color,
-      })),
-    [turfs],
+      turf
+        ? [
+            {
+              id: turf.id,
+              name: turf.name,
+              owner: owner?.name ?? "",
+              points: turf.points,
+              color: "#DF4B20",
+            },
+          ]
+        : [],
+    [turf, owner?.name],
   );
-  const empty = useMemo(() => [], []);
+  const padding = useMemo(
+    () => ({
+      top: 150 + insets.top,
+      right: 68,
+      bottom: expanded ? 360 : 280,
+      left: 35,
+    }),
+    [expanded, insets.top],
+  );
   return (
-    <Screen>
-      <Txt size={28} weight="700">
-        Turf
-      </Txt>
-      <View style={styles.wrap}>
-        {["Følger", "Alle eksempler"].map((t) => (
-          <Chip
-            key={t}
-            title={t}
-            selected={t === filter}
-            onPress={() => setFilter(t)}
-          />
-        ))}
+    <View
+      style={{ flex: 1, backgroundColor: "#E5EDE4" }}
+      onLayout={(e) => setHeight(e.nativeEvent.layout.height)}
+    >
+      <LiveMap
+        height={height}
+        overlays={routes}
+        position={position}
+        follow={follow}
+        recenter={recenter}
+        padding={padding}
+        onPan={() => setFollow(false)}
+        mapKind={mapKind}
+        poi={poi}
+        contours={contours}
+        threeD={threeD}
+        north={north}
+        target={target}
+        explorer
+      />
+      <View pointerEvents="box-none" style={[s.top, { top: insets.top + 16 }]}>
+        <View style={s.heading}>
+          <View style={s.brand}>
+            <Icon name="run" color="#DF4B20" size={24} />
+          </View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Søk etter sted"
+            onPress={() => setSheet("search")}
+            style={{ flex: 1, minHeight: 44, justifyContent: "center" }}
+          >
+            <Txt muted>Søk etter sted</Txt>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Vis lagrede ruter"
+            accessibilityState={{ selected: savedOnly }}
+            onPress={() => {
+              setSavedOnly(!savedOnly);
+              setIndex(0);
+              setTarget(null);
+              setFollow(false);
+            }}
+            style={{
+              minHeight: 44,
+              justifyContent: "center",
+              paddingHorizontal: 8,
+            }}
+          >
+            <Txt
+              weight="600"
+              size={13}
+              style={{ color: savedOnly ? "#DF4B20" : "#11182C" }}
+            >
+              ☆ Lagret
+            </Txt>
+          </Pressable>
+        </View>{" "}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={{ marginTop: 10 }}
+          contentContainerStyle={{ gap: 8 }}
+        >
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Åpne ekte soner"
+            onPress={() => router.push("/turf")}
+            style={s.chip}
+          >
+            <Txt size={13} weight="700">
+              Soner ↗
+            </Txt>
+          </Pressable>
+          {["Følger", "Alle eksempler"].map((t) => (
+            <Pressable
+              key={t}
+              accessibilityRole="button"
+              accessibilityState={{ selected: t === filter }}
+              onPress={() => {
+                setFilter(t);
+                setIndex(0);
+                setFollow(false);
+              }}
+              style={[s.chip, t === filter && { backgroundColor: "#11182C" }]}
+            >
+              <Txt
+                size={13}
+                weight="600"
+                style={{ color: t === filter ? "white" : "#11182C" }}
+              >
+                {t}
+              </Txt>
+            </Pressable>
+          ))}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Filtrer på lengde"
+            onPress={() => {
+              setLength((v) => (v + 1) % 4);
+              setIndex(0);
+            }}
+            style={s.chip}
+          >
+            <Txt size={13} weight="600">
+              {["Lengde", "Under 3 km", "3–10 km", "Over 10 km"][length]}
+            </Txt>
+          </Pressable>
+        </ScrollView>
       </View>
-      <WorkoutMap height={340} points={empty} routes={routes} />
-      <Txt size={12} muted>
-        {hasMapbox ? "Mapbox" : "Ekte kart · Mapbox ikke konfigurert"} · turfene
-        er eksempler
-      </Txt>
-      {turfs.map((t) => (
-        <View key={t.id} style={{ gap: 6, paddingVertical: 12 }}>
-          <Txt size={20} weight="700">
-            {t.name}
+      <View style={[s.controls, { top: insets.top + 145 }]}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Nord opp"
+          onPress={() => setNorth((v) => v + 1)}
+          style={s.control}
+        >
+          <Txt weight="700">N ↑</Txt>
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Kartlag"
+          onPress={() => setSheet("layers")}
+          style={s.control}
+        >
+          <Icon name="layers" size={24} color="#11182C" />
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={threeD ? "Vis i 2D" : "Vis i 3D"}
+          onPress={() => setThreeD(!threeD)}
+          style={s.control}
+        >
+          <Txt weight="700">{threeD ? "2D" : "3D"}</Txt>
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Vis hele ruten"
+          onPress={() => {
+            setFollow(false);
+            setTarget(null);
+            setRecenter((v) => v + 1);
+            setMessage("");
+          }}
+          style={s.control}
+        >
+          <Icon name="map" size={22} color="#11182C" />
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Vis min posisjon"
+          disabled={locating}
+          onPress={async () => {
+            setLocating(true);
+            try {
+              if (await loc.request()) {
+                setTarget(null);
+                setFollow(true);
+                setRecenter((v) => v + 1);
+                setMessage("");
+              } else
+                setMessage(
+                  "Gi tilgang til posisjon for å finne deg på kartet.",
+                );
+            } finally {
+              setLocating(false);
+            }
+          }}
+          style={[s.control, follow && { backgroundColor: "#EAF5DF" }]}
+        >
+          <Icon
+            name="locate"
+            color={follow ? "#1689F8" : "#11182C"}
+            size={22}
+          />
+        </Pressable>
+      </View>
+      <View style={s.bottom}>
+        {!!(message || loc.error || (follow && !position)) && (
+          <View style={s.notice}>
+            <Txt size={13}>
+              {message || loc.error || "Finner posisjonen din …"}
+            </Txt>
+          </View>
+        )}
+        <View style={s.card}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <View style={s.tag}>
+              <View style={s.dot} />
+              <Txt size={11} weight="700">
+                {turf?.example
+                  ? "EKSEMPEL-TURF"
+                  : turf
+                    ? "DIN LAGREDE GPS-RUTE"
+                    : "RUTER"}
+              </Txt>
+            </View>
+            {!!turf && (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={
+                  saved.ids.includes(turf.id)
+                    ? "Fjern lagret rute"
+                    : "Lagre ruten"
+                }
+                onPress={() => saved.toggle(turf.id)}
+                style={{ padding: 12, marginLeft: "auto" }}
+              >
+                <Txt size={20}>{saved.ids.includes(turf.id) ? "★" : "☆"}</Txt>
+              </Pressable>
+            )}
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={expanded ? "Skjul detaljer" : "Vis detaljer"}
+              onPress={() => setExpanded(!expanded)}
+              style={{
+                minHeight: 44,
+                minWidth: 44,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Txt size={20}>{expanded ? "−" : "+"}</Txt>
+            </Pressable>
+          </View>
+          <Txt size={21} weight="700">
+            {turf?.name ?? "Ingen ruter å vise"}
           </Txt>
-          <Txt>
-            {people.find((p) => p.id === t.ownerId)?.name} eier denne
-            eksempel-turfen
-          </Txt>
-          <Txt muted>
-            {km(t.distance)} km · tid å slå: {duration(t.seconds)}
-          </Txt>
+          {turf ? (
+            <>
+              <View style={s.metrics}>
+                <Txt weight="700">{km(turf.distance)} km</Txt>
+                <Txt muted>·</Txt>
+                <Txt weight="600">
+                  {duration(turf.seconds)}
+                  {turf.example ? " å slå" : " totalt"}
+                </Txt>
+              </View>
+              <View
+                style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
+              >
+                <View style={s.avatar}>
+                  <Txt size={11} weight="700">
+                    {owner?.initials}
+                  </Txt>
+                </View>
+                <Txt size={13} muted>
+                  {turf.example
+                    ? `${owner?.name} eier eksempelruten`
+                    : "Din private GPS-rute"}
+                </Txt>
+                {turfs.length > 1 && (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Neste turf"
+                    onPress={() => {
+                      setIndex((v) => v + 1);
+                      setFollow(false);
+                      setTarget(null);
+                    }}
+                    style={{ marginLeft: "auto", padding: 10 }}
+                  >
+                    <Txt size={13} weight="600">
+                      Neste →
+                    </Txt>
+                  </Pressable>
+                )}
+              </View>
+            </>
+          ) : (
+            <Txt muted size={14}>
+              {savedOnly
+                ? "Trykk på stjernen på en rute for å finne den her."
+                : "Ingen ruter passer filteret. Lagre en GPS-økt, eller velg eksempler i innstillingene."}
+            </Txt>
+          )}
+          {expanded && (
+            <Txt muted size={13}>
+              Dette panelet viser private ruter og merkede eksempler. Åpne Soner
+              for konkurranseløyper. Slå hele løypa og velg om du vil utvide den
+              med resten av turen.
+            </Txt>
+          )}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Start en økt"
+            onPress={() => router.push("/(tabs)/track")}
+            style={s.start}
+          >
+            <Icon name="record" size={20} color="#11182C" />
+            <Txt weight="700">Start en økt</Txt>
+          </Pressable>
         </View>
-      ))}
-      {!turfs.length && <Txt muted>Ingen turfs fra løpere du følger.</Txt>}
-      <Txt weight="700">Slik overtar du</Txt>
-      <Txt muted size={14}>
-        Løp hele løypen i samme retning. Laveste totaltid fra start til mål
-        vinner. Pauser teller med. Ekstra kilometer etter mål endrer ikke denne
-        turf-tiden.
-      </Txt>
-      <Txt muted size={12}>
-        Ekte overtakelse krever GPS-opptak og serverkontroll. Simuleringer kan
-        ikke vinne turf.
-      </Txt>
-    </Screen>
+      </View>
+      <Modal
+        visible={sheet !== null}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setSheet(null)}
+      >
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "#11182C55",
+            justifyContent: "flex-end",
+          }}
+        >
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Lukk kartpanel"
+            style={{ flex: 1 }}
+            onPress={() => setSheet(null)}
+          />
+          <View
+            style={{
+              backgroundColor: "white",
+              borderTopLeftRadius: 24,
+              borderTopRightRadius: 24,
+              padding: 24,
+              paddingBottom: 24 + insets.bottom,
+              maxHeight: "75%",
+              gap: 16,
+            }}
+          >
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <Txt weight="700" size={22}>
+                {sheet === "layers" ? "Karttyper og lag" : "Finn et sted"}
+              </Txt>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Lukk"
+                onPress={() => setSheet(null)}
+                style={{ padding: 12 }}
+              >
+                <Txt size={23}>×</Txt>
+              </Pressable>
+            </View>
+            {sheet === "layers" ? (
+              <ScrollView contentContainerStyle={{ gap: 16 }}>
+                <View style={{ flexDirection: "row", gap: 8 }}>
+                  {(
+                    [
+                      ["standard", "Standard"],
+                      ["satellite", "Satellitt"],
+                      ["hybrid", "Hybrid"],
+                    ] as const
+                  ).map(([kind, title]) => (
+                    <Pressable
+                      key={kind}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected: kind === mapKind }}
+                      onPress={() => setMapKind(kind)}
+                      style={{
+                        flex: 1,
+                        borderWidth: 2,
+                        borderColor: mapKind === kind ? "#DF4B20" : "#E7E9E5",
+                        borderRadius: 14,
+                        padding: 12,
+                        alignItems: "center",
+                        gap: 12,
+                      }}
+                    >
+                      <View
+                        style={{
+                          height: 48,
+                          width: "100%",
+                          borderRadius: 8,
+                          backgroundColor:
+                            kind === "standard"
+                              ? "#C4DDA9"
+                              : kind === "satellite"
+                                ? "#224C38"
+                                : "#5C7050",
+                        }}
+                      />
+                      <Txt size={12} weight="600">
+                        {title}
+                      </Txt>
+                    </Pressable>
+                  ))}
+                </View>
+                {(
+                  [
+                    ["Stedsnavn og interessepunkter", poi, setPoi],
+                    ["Høydekurver", contours, setContours],
+                    ["3D-terreng", threeD, setThreeD],
+                  ] as const
+                ).map(([label, value, set]) => (
+                  <View
+                    key={label}
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      minHeight: 48,
+                    }}
+                  >
+                    <Txt size={15}>{label}</Txt>
+                    <Switch
+                      accessibilityLabel={label}
+                      value={value}
+                      onValueChange={set}
+                    />
+                  </View>
+                ))}
+                <Txt muted size={13}>
+                  Varmekart er ikke tilgjengelig ennå. Det krever ekte
+                  aktivitetsdata.
+                </Txt>
+              </ScrollView>
+            ) : (
+              <>
+                <TextInput
+                  accessibilityLabel="Søk etter adresse eller sted"
+                  value={query}
+                  onChangeText={setQuery}
+                  placeholder="Adresse eller sted"
+                  maxLength={200}
+                  onSubmitEditing={search}
+                  returnKeyType="search"
+                  style={{
+                    borderWidth: 1,
+                    borderColor: "#DDE1D9",
+                    padding: 14,
+                    borderRadius: 12,
+                    fontSize: 16,
+                  }}
+                />
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Søk"
+                  disabled={searching || !query.trim()}
+                  onPress={search}
+                  style={s.start}
+                >
+                  <Txt weight="700">{searching ? "Søker …" : "Søk"}</Txt>
+                </Pressable>
+                {!!searchError && <Txt>{searchError}</Txt>}
+                <ScrollView keyboardShouldPersistTaps="handled">
+                  {results.map((place) => (
+                    <Pressable
+                      key={place.id}
+                      accessibilityRole="button"
+                      onPress={() => {
+                        setTarget(place);
+                        setFollow(false);
+                        setSheet(null);
+                        setMessage(place.name);
+                      }}
+                      style={{
+                        paddingVertical: 14,
+                        borderBottomWidth: 1,
+                        borderColor: "#EEF0EC",
+                      }}
+                    >
+                      <Txt>{place.name}</Txt>
+                    </Pressable>
+                  ))}
+                </ScrollView>
+              </>
+            )}
+          </View>
+        </View>
+      </Modal>{" "}
+    </View>
   );
 }
+const s = StyleSheet.create({
+  top: { position: "absolute", left: 16, right: 16, maxWidth: 460 },
+  heading: {
+    backgroundColor: "white",
+    borderRadius: 18,
+    padding: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    boxShadow: "0 3px 16px #11182C18",
+  },
+  brand: { padding: 8, backgroundColor: "#EFF5E9", borderRadius: 12 },
+  sport: { flexDirection: "row", alignItems: "center", gap: 4 },
+  chip: {
+    backgroundColor: "white",
+    borderRadius: 24,
+    paddingHorizontal: 16,
+    minHeight: 44,
+    justifyContent: "center",
+    boxShadow: "0 2px 8px #11182C14",
+  },
+  controls: { position: "absolute", right: 16, gap: 10 },
+  control: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "white",
+    justifyContent: "center",
+    alignItems: "center",
+    boxShadow: "0 2px 12px #11182C25",
+  },
+  bottom: {
+    position: "absolute",
+    bottom: 36,
+    left: 16,
+    right: 16,
+    maxWidth: 460,
+    gap: 8,
+  },
+  card: {
+    backgroundColor: "white",
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingBottom: 14,
+    paddingTop: 4,
+    gap: 8,
+    boxShadow: "0 4px 24px #11182C22",
+  },
+  tag: { flexDirection: "row", gap: 6, alignItems: "center" },
+  dot: { width: 7, height: 7, borderRadius: 4, backgroundColor: "#DF4B20" },
+  metrics: { flexDirection: "row", gap: 10, alignItems: "center" },
+  avatar: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: "#EDF3E7",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  start: {
+    backgroundColor: "#B2FF78",
+    borderRadius: 12,
+    minHeight: 46,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    marginTop: 4,
+  },
+  notice: { backgroundColor: "white", padding: 12, borderRadius: 12 },
+});

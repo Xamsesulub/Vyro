@@ -87,6 +87,21 @@ export default function Activity() {
       </Card>
       {w.source !== "example" && (
         <>
+          {w.source === "gps" && w.sport === "Løping" && (
+            <Button
+              title="Bruk økten i en sone"
+              icon="trophy"
+              onPress={() =>
+                router.push({
+                  pathname: "/turf",
+                  params: {
+                    workoutId: w.id,
+                    ...(w.turfId ? { turfId: w.turfId } : {}),
+                  },
+                })
+              }
+            />
+          )}
           <Button
             title={
               confirm

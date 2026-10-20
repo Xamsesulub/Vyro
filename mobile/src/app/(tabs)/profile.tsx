@@ -8,6 +8,7 @@ import { km, total, weekWorkouts } from "../../features/activities/model";
 import { useAppStore } from "../../stores/useAppStore";
 import { useVisibleWorkouts } from "../../features/activities/useVisibleWorkouts";
 import { useAuthStore } from "../../stores/useAuthStore";
+import { ProgressLine, Reveal } from "../../components/motion";
 
 export default function Profile() {
   const s = useAppStore();
@@ -31,30 +32,34 @@ export default function Profile() {
           <Txt size={14}>Innstillinger</Txt>
         </Pressable>
       </View>
-      <View style={{ flexDirection: "row", gap: 16, alignItems: "center" }}>
-        <View
-          style={{
-            width: 60,
-            height: 60,
-            borderRadius: 30,
-            backgroundColor: c.raised,
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Txt size={26} weight="600">
-            {s.name.charAt(0).toUpperCase() || "V"}
-          </Txt>
+      <Reveal>
+        <View style={{ flexDirection: "row", gap: 16, alignItems: "center" }}>
+          <View
+            style={{
+              width: 60,
+              height: 60,
+              borderRadius: 30,
+              backgroundColor: c.raised,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Txt size={26} weight="600">
+              {s.name.charAt(0).toUpperCase() || "V"}
+            </Txt>
+          </View>
+          <View style={{ gap: 4 }}>
+            <Txt size={23} weight="700">
+              {session?.user.user_metadata.display_name ||
+                s.name ||
+                "Din profil"}
+            </Txt>
+            <Txt muted size={13}>
+              {workouts.length} lagrede aktiviteter på enheten
+            </Txt>
+          </View>
         </View>
-        <View style={{ gap: 4 }}>
-          <Txt size={23} weight="700">
-            {session?.user.user_metadata.display_name || s.name || "Din profil"}
-          </Txt>
-          <Txt muted size={13}>
-            {workouts.length} lagrede aktiviteter på enheten
-          </Txt>
-        </View>
-      </View>
+      </Reveal>
       <Button
         title={session ? "Konto" : "Logg inn"}
         secondary
@@ -112,7 +117,7 @@ export default function Profile() {
           <Txt muted size={12}>
             {s.examplesVisible
               ? "Inkluderer eksempeldata"
-              : "Simulerte aktiviteter"}
+              : "Lokalt lagrede økter"}
           </Txt>
           <Button
             title="Se treningslogg"
@@ -133,18 +138,11 @@ export default function Profile() {
             <Txt muted>
               {km(weekly.distance)} av {s.goal} km
             </Txt>
-            <View
-              style={{ height: 6, backgroundColor: c.raised, borderRadius: 3 }}
-            >
-              <View
-                style={{
-                  height: 6,
-                  width: `${Math.min(100, (weekly.distance / s.goal) * 100)}%`,
-                  backgroundColor: c.accent,
-                  borderRadius: 3,
-                }}
-              />
-            </View>
+            <ProgressLine
+              value={weekly.distance / s.goal}
+              color={c.accent}
+              background={c.raised}
+            />
             <Txt size={13} muted>
               Endre målet i treningsloggen.
             </Txt>

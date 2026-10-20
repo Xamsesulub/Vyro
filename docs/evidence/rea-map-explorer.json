@@ -1,0 +1,1124 @@
+{
+  "evidence_id": "ev_8ae5166331adeed01694237b0ce7c32c995bee888399a20f4ff0030e15aa689a",
+  "subject": null,
+  "provider": {
+    "id": "rea-playwright-browser-scenario",
+    "name": "REA Playwright browser scenario capture provider",
+    "version": "1"
+  },
+  "analysis_profile": null,
+  "predicate_type": "rea.browser-scenario-capture",
+  "operation": "capture_browser_scenario",
+  "parameters": {
+    "browser": {
+      "mode": "launch",
+      "executable_path": "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
+      "headless": true
+    },
+    "start_url": {
+      "url": "http://127.0.0.1:8101/",
+      "query": []
+    },
+    "environment": {
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "device_scale_factor": 1
+      },
+      "locale": "nb-NO",
+      "timezone": "UTC",
+      "color_scheme": "light",
+      "reduced_motion": "reduce",
+      "service_workers": "block"
+    },
+    "actions": [
+      {
+        "step_id": "ready",
+        "timeout_ms": 15000,
+        "action": "wait_for",
+        "locator": {
+          "kind": "role",
+          "role": "button",
+          "name": "Kom i gang"
+        },
+        "state": "visible"
+      },
+      {
+        "step_id": "begin",
+        "timeout_ms": 10000,
+        "action": "click",
+        "locator": {
+          "kind": "role",
+          "role": "button",
+          "name": "Kom i gang"
+        },
+        "button": "left",
+        "click_count": 1
+      },
+      {
+        "step_id": "map",
+        "timeout_ms": 15000,
+        "action": "goto",
+        "destination": {
+          "url": "http://127.0.0.1:8101/map",
+          "query": []
+        },
+        "wait_until": "load"
+      },
+      {
+        "step_id": "ready_map",
+        "action": "wait_for_timeout",
+        "duration_ms": 8000
+      },
+      {
+        "step_id": "all",
+        "timeout_ms": 10000,
+        "action": "click",
+        "locator": {
+          "kind": "role",
+          "role": "button",
+          "name": "Alle eksempler"
+        },
+        "button": "left",
+        "click_count": 1
+      },
+      {
+        "step_id": "next",
+        "timeout_ms": 10000,
+        "action": "click",
+        "locator": {
+          "kind": "role",
+          "role": "button",
+          "name": "Neste turf"
+        },
+        "button": "left",
+        "click_count": 1
+      },
+      {
+        "step_id": "expand",
+        "timeout_ms": 10000,
+        "action": "click",
+        "locator": {
+          "kind": "role",
+          "role": "button",
+          "name": "Vis detaljer"
+        },
+        "button": "left",
+        "click_count": 1
+      },
+      {
+        "step_id": "overview",
+        "timeout_ms": 10000,
+        "action": "click",
+        "locator": {
+          "kind": "role",
+          "role": "button",
+          "name": "Vis hele ruten"
+        },
+        "button": "left",
+        "click_count": 1
+      },
+      {
+        "step_id": "settled",
+        "action": "wait_for_timeout",
+        "duration_ms": 1000
+      },
+      {
+        "step_id": "collapse",
+        "timeout_ms": 10000,
+        "action": "click",
+        "locator": {
+          "kind": "role",
+          "role": "button",
+          "name": "Skjul detaljer"
+        },
+        "button": "left",
+        "click_count": 1
+      },
+      {
+        "step_id": "final_map",
+        "action": "wait_for_timeout",
+        "duration_ms": 600
+      },
+      {
+        "step_id": "start",
+        "timeout_ms": 10000,
+        "action": "click",
+        "locator": {
+          "kind": "role",
+          "role": "button",
+          "name": "Start en økt"
+        },
+        "button": "left",
+        "click_count": 1
+      },
+      {
+        "step_id": "record",
+        "action": "wait_for_timeout",
+        "duration_ms": 800
+      }
+    ],
+    "storage": {
+      "cookies": [],
+      "local_storage": [],
+      "session_storage": []
+    },
+    "secrets": [],
+    "capture": {
+      "after_each_step": [
+        "accessibility",
+        "screenshot"
+      ],
+      "at_end": [
+        "url"
+      ],
+      "events": [
+        "page-errors",
+        "console"
+      ],
+      "network": {
+        "request_body": false,
+        "response_body": false,
+        "header_values": false
+      },
+      "limits": {
+        "max_events": 10000,
+        "max_event_allocation_bytes": 4194304,
+        "max_total_event_allocation_bytes": 16777216,
+        "max_network_transactions": 1024,
+        "max_network_body_bytes": 65536,
+        "max_network_body_allocation_bytes": 1048576,
+        "max_network_header_allocation_bytes": 1048576,
+        "max_network_metadata_allocation_bytes": 1048576
+      }
+    },
+    "scenario_sha256": "da83004ab5e3525940bdf8e999d26b031787afd8a2cc2ad91b1857fa1406382a"
+  },
+  "raw_result": null,
+  "normalized_result": {
+    "browser": {
+      "mode": "launch",
+      "process_ownership": "provider-owned",
+      "cleanup": "terminated-owned-process",
+      "product": "Chromium",
+      "version": "155.0.4283.45"
+    },
+    "scenario": {
+      "start_origin": "http://127.0.0.1:8101",
+      "action_count": 13,
+      "secret_references": [],
+      "network_content": {
+        "request_body": false,
+        "response_body": false,
+        "header_values": false
+      },
+      "event_families": [
+        "console",
+        "page-errors"
+      ],
+      "limits": {
+        "max_events": 10000,
+        "max_event_allocation_bytes": 4194304,
+        "max_total_event_allocation_bytes": 16777216,
+        "max_network_transactions": 1024,
+        "max_network_body_bytes": 65536,
+        "max_network_body_allocation_bytes": 1048576,
+        "max_network_header_allocation_bytes": 1048576,
+        "max_network_metadata_allocation_bytes": 1048576
+      }
+    },
+    "duration_ms": 18191,
+    "steps": [
+      {
+        "step_index": 0,
+        "step_id": "scenario_start",
+        "action": "goto_start",
+        "elapsed_ms": 2064,
+        "before_url": {
+          "url": "about:blank",
+          "origin": null,
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/onboarding",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 1,
+        "artifacts": {
+          "screenshot": {
+            "state": "captured",
+            "value": {
+              "sha256": "fb32313e11bc8ffbd5310a1660e630b64cedb4622f8462a5eae2d5464ac8279e",
+              "bytes": 2740,
+              "media_type": "image/png"
+            }
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "56866acd9b713f351889ef2731ef171bade4c16f48aa1cda8687f17a1a21be2a",
+              "bytes": 10,
+              "text": "- document"
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 1,
+        "step_id": "ready",
+        "action": "wait_for",
+        "elapsed_ms": 374,
+        "before_url": {
+          "url": "http://127.0.0.1:8101/onboarding",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/onboarding",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 2,
+        "event_sequence_end": 1,
+        "artifacts": {
+          "screenshot": {
+            "state": "captured",
+            "value": {
+              "sha256": "19f55a67e823e6a246368242437f7d55a300b79678c49475c435aa48f6ca0a8a",
+              "bytes": 19528,
+              "media_type": "image/png"
+            }
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "638938d862ed71d7a3959b12059d6d68e6daf9f2b0027a4b12579fd3547226c9",
+              "bytes": 298,
+              "text": "- document:\n  - text: VYRO Plass til din neste tur. Registrer aktiviteter og følg fremgangen din. Navn (valgfritt)\n  - textbox \"Fornavn (valgfritt)\":\n    - /placeholder: Ditt navn\n  - text: Dette er en forhåndsvisning med simulerte økter. Ingen GPS eller konto aktiveres.\n  - button \"Kom i gang\""
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 2,
+        "step_id": "begin",
+        "action": "click",
+        "elapsed_ms": 248,
+        "before_url": {
+          "url": "http://127.0.0.1:8101/onboarding",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 2,
+        "event_sequence_end": 1,
+        "artifacts": {
+          "screenshot": {
+            "state": "captured",
+            "value": {
+              "sha256": "68c4804a7cb31980087caf7e04aab096f3943ed9823f50efe916087e80898bcf",
+              "bytes": 6670,
+              "media_type": "image/png"
+            }
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "682ad07c4a5e58ecfe1e026ee117dfecec3fd93be572aac958bee3ed31788f4e",
+              "bytes": 352,
+              "text": "- document:\n  - tablist:\n    - tab \"Hjem\" [selected]:\n      - img\n      - img\n      - text: Hjem\n    - tab \"Kart\":\n      - img\n      - img\n      - text: Kart\n    - tab \"Registrer\":\n      - img\n      - img\n      - text: Registrer\n    - tab \"Løpere\":\n      - img\n      - img\n      - text: Løpere\n    - tab \"Du\":\n      - img\n      - img\n      - text: Du"
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 3,
+        "step_id": "map",
+        "action": "goto",
+        "elapsed_ms": 404,
+        "before_url": {
+          "url": "http://127.0.0.1:8101/",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/map",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 2,
+        "event_sequence_end": 2,
+        "artifacts": {
+          "screenshot": {
+            "state": "captured",
+            "value": {
+              "sha256": "fb32313e11bc8ffbd5310a1660e630b64cedb4622f8462a5eae2d5464ac8279e",
+              "bytes": 2740,
+              "media_type": "image/png"
+            }
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "56866acd9b713f351889ef2731ef171bade4c16f48aa1cda8687f17a1a21be2a",
+              "bytes": 10,
+              "text": "- document"
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 4,
+        "step_id": "ready_map",
+        "action": "wait_for_timeout",
+        "elapsed_ms": 8150,
+        "before_url": {
+          "url": "http://127.0.0.1:8101/map",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/map",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 3,
+        "event_sequence_end": 2,
+        "artifacts": {
+          "screenshot": {
+            "state": "captured",
+            "value": {
+              "sha256": "c496b20a7fc447d9458171781a67af3c426bf2387cc5179cf2670c8d46a75759",
+              "bytes": 195338,
+              "media_type": "image/png"
+            }
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "b9fedbd0018f0fadac6081beece84b8282dca1a49e9858c1deb13182d783d814",
+              "bytes": 902,
+              "text": "- document:\n  - region \"Mapbox-kart\":\n    - region \"Map\"\n    - button \"Toggle attribution\"\n    - link \"Mapbox homepage\":\n      - /url: https://www.mapbox.com/\n  - img\n  - text: Utforsk Finn din neste løpetur\n  - img\n  - text: Løping\n  - button \"Følger\"\n  - button \"Alle eksempler\"\n  - button \"Vis hele ruten\":\n    - img\n  - button \"Vis min posisjon\":\n    - img\n  - text: EKSEMPEL-TURF\n  - button \"Vis detaljer\": +\n  - text: Akerselva nordover 2,20 km · 11:40 å slå AL Alex eier eksempelruten\n  - button \"Start en økt\":\n    - img\n    - text: Start en økt\n  - tablist:\n    - tab \"Hjem\":\n      - img\n      - img\n      - text: Hjem\n    - tab \"Kart\" [selected]:\n      - img\n      - img\n      - text: Kart\n    - tab \"Registrer\":\n      - img\n      - img\n      - text: Registrer\n    - tab \"Løpere\":\n      - img\n      - img\n      - text: Løpere\n    - tab \"Du\":\n      - img\n      - img\n      - text: Du"
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 5,
+        "step_id": "all",
+        "action": "click",
+        "elapsed_ms": 185,
+        "before_url": {
+          "url": "http://127.0.0.1:8101/map",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/map",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 3,
+        "event_sequence_end": 2,
+        "artifacts": {
+          "screenshot": {
+            "state": "captured",
+            "value": {
+              "sha256": "06e1af55f80723a515b9e727c1cb3f74beb7f97c4eb07973b062c2aef5bd0523",
+              "bytes": 192035,
+              "media_type": "image/png"
+            }
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "30d9bc52a794119184bc6991a7e02d59b630f1ceafc20cc86377369bb49a876b",
+              "bytes": 937,
+              "text": "- document:\n  - region \"Mapbox-kart\":\n    - region \"Map\"\n    - button \"Toggle attribution\"\n    - link \"Mapbox homepage\":\n      - /url: https://www.mapbox.com/\n  - img\n  - text: Utforsk Finn din neste løpetur\n  - img\n  - text: Løping\n  - button \"Følger\"\n  - button \"Alle eksempler\"\n  - button \"Vis hele ruten\":\n    - img\n  - button \"Vis min posisjon\":\n    - img\n  - text: EKSEMPEL-TURF\n  - button \"Vis detaljer\": +\n  - text: Akerselva nordover 2,20 km · 11:40 å slå AL Alex eier eksempelruten\n  - button \"Neste turf\": Neste →\n  - button \"Start en økt\":\n    - img\n    - text: Start en økt\n  - tablist:\n    - tab \"Hjem\":\n      - img\n      - img\n      - text: Hjem\n    - tab \"Kart\" [selected]:\n      - img\n      - img\n      - text: Kart\n    - tab \"Registrer\":\n      - img\n      - img\n      - text: Registrer\n    - tab \"Løpere\":\n      - img\n      - img\n      - text: Løpere\n    - tab \"Du\":\n      - img\n      - img\n      - text: Du"
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 6,
+        "step_id": "next",
+        "action": "click",
+        "elapsed_ms": 434,
+        "before_url": {
+          "url": "http://127.0.0.1:8101/map",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/map",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 3,
+        "event_sequence_end": 2,
+        "artifacts": {
+          "screenshot": {
+            "state": "captured",
+            "value": {
+              "sha256": "eadfe3c0c5d8e882d233a47542f1e0382cb282e4da67fb832e8909994fba36a5",
+              "bytes": 192473,
+              "media_type": "image/png"
+            }
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "7fb4cbba86cb45923be77533126b305ad0f0700a906ca0d67c4815e315a959c5",
+              "bytes": 937,
+              "text": "- document:\n  - region \"Mapbox-kart\":\n    - region \"Map\"\n    - button \"Toggle attribution\"\n    - link \"Mapbox homepage\":\n      - /url: https://www.mapbox.com/\n  - img\n  - text: Utforsk Finn din neste løpetur\n  - img\n  - text: Løping\n  - button \"Følger\"\n  - button \"Alle eksempler\"\n  - button \"Vis hele ruten\":\n    - img\n  - button \"Vis min posisjon\":\n    - img\n  - text: EKSEMPEL-TURF\n  - button \"Vis detaljer\": +\n  - text: Akerselva sørover 2,20 km · 12:20 å slå NO Nora eier eksempelruten\n  - button \"Neste turf\": Neste →\n  - button \"Start en økt\":\n    - img\n    - text: Start en økt\n  - tablist:\n    - tab \"Hjem\":\n      - img\n      - img\n      - text: Hjem\n    - tab \"Kart\" [selected]:\n      - img\n      - img\n      - text: Kart\n    - tab \"Registrer\":\n      - img\n      - img\n      - text: Registrer\n    - tab \"Løpere\":\n      - img\n      - img\n      - text: Løpere\n    - tab \"Du\":\n      - img\n      - img\n      - text: Du"
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 7,
+        "step_id": "expand",
+        "action": "click",
+        "elapsed_ms": 442,
+        "before_url": {
+          "url": "http://127.0.0.1:8101/map",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/map",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 3,
+        "event_sequence_end": 2,
+        "artifacts": {
+          "screenshot": {
+            "state": "captured",
+            "value": {
+              "sha256": "fbd673544b417a6da98a0e488f82fde3fff42d5e2117d72f0420fbee7131092c",
+              "bytes": 202092,
+              "media_type": "image/png"
+            }
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "0292bc43d07177ca7ee4c40e7ac347972c6b3f6c596a952476b7ef4a55bc05b6",
+              "bytes": 1058,
+              "text": "- document:\n  - region \"Mapbox-kart\":\n    - region \"Map\"\n    - button \"Toggle attribution\"\n    - link \"Mapbox homepage\":\n      - /url: https://www.mapbox.com/\n  - img\n  - text: Utforsk Finn din neste løpetur\n  - img\n  - text: Løping\n  - button \"Følger\"\n  - button \"Alle eksempler\"\n  - button \"Vis hele ruten\":\n    - img\n  - button \"Vis min posisjon\":\n    - img\n  - text: EKSEMPEL-TURF\n  - button \"Skjul detaljer\": −\n  - text: Akerselva sørover 2,20 km · 12:20 å slå NO Nora eier eksempelruten\n  - button \"Neste turf\": Neste →\n  - text: Løp samme løype i samme retning. Laveste totaltid vinner. Ekte turf-konkurranser er ikke aktivert ennå.\n  - button \"Start en økt\":\n    - img\n    - text: Start en økt\n  - tablist:\n    - tab \"Hjem\":\n      - img\n      - img\n      - text: Hjem\n    - tab \"Kart\" [selected]:\n      - img\n      - img\n      - text: Kart\n    - tab \"Registrer\":\n      - img\n      - img\n      - text: Registrer\n    - tab \"Løpere\":\n      - img\n      - img\n      - text: Løpere\n    - tab \"Du\":\n      - img\n      - img\n      - text: Du"
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 8,
+        "step_id": "overview",
+        "action": "click",
+        "elapsed_ms": 305,
+        "before_url": {
+          "url": "http://127.0.0.1:8101/map",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/map",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 3,
+        "event_sequence_end": 2,
+        "artifacts": {
+          "screenshot": {
+            "state": "captured",
+            "value": {
+              "sha256": "a557d74f4b2b3e62613474055ba9b5a6a8c6feb3d193f5bed68da9d62cca5f85",
+              "bytes": 198450,
+              "media_type": "image/png"
+            }
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "0292bc43d07177ca7ee4c40e7ac347972c6b3f6c596a952476b7ef4a55bc05b6",
+              "bytes": 1058,
+              "text": "- document:\n  - region \"Mapbox-kart\":\n    - region \"Map\"\n    - button \"Toggle attribution\"\n    - link \"Mapbox homepage\":\n      - /url: https://www.mapbox.com/\n  - img\n  - text: Utforsk Finn din neste løpetur\n  - img\n  - text: Løping\n  - button \"Følger\"\n  - button \"Alle eksempler\"\n  - button \"Vis hele ruten\":\n    - img\n  - button \"Vis min posisjon\":\n    - img\n  - text: EKSEMPEL-TURF\n  - button \"Skjul detaljer\": −\n  - text: Akerselva sørover 2,20 km · 12:20 å slå NO Nora eier eksempelruten\n  - button \"Neste turf\": Neste →\n  - text: Løp samme løype i samme retning. Laveste totaltid vinner. Ekte turf-konkurranser er ikke aktivert ennå.\n  - button \"Start en økt\":\n    - img\n    - text: Start en økt\n  - tablist:\n    - tab \"Hjem\":\n      - img\n      - img\n      - text: Hjem\n    - tab \"Kart\" [selected]:\n      - img\n      - img\n      - text: Kart\n    - tab \"Registrer\":\n      - img\n      - img\n      - text: Registrer\n    - tab \"Løpere\":\n      - img\n      - img\n      - text: Løpere\n    - tab \"Du\":\n      - img\n      - img\n      - text: Du"
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 9,
+        "step_id": "settled",
+        "action": "wait_for_timeout",
+        "elapsed_ms": 1181,
+        "before_url": {
+          "url": "http://127.0.0.1:8101/map",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/map",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 3,
+        "event_sequence_end": 2,
+        "artifacts": {
+          "screenshot": {
+            "state": "captured",
+            "value": {
+              "sha256": "a557d74f4b2b3e62613474055ba9b5a6a8c6feb3d193f5bed68da9d62cca5f85",
+              "bytes": 198450,
+              "media_type": "image/png"
+            }
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "0292bc43d07177ca7ee4c40e7ac347972c6b3f6c596a952476b7ef4a55bc05b6",
+              "bytes": 1058,
+              "text": "- document:\n  - region \"Mapbox-kart\":\n    - region \"Map\"\n    - button \"Toggle attribution\"\n    - link \"Mapbox homepage\":\n      - /url: https://www.mapbox.com/\n  - img\n  - text: Utforsk Finn din neste løpetur\n  - img\n  - text: Løping\n  - button \"Følger\"\n  - button \"Alle eksempler\"\n  - button \"Vis hele ruten\":\n    - img\n  - button \"Vis min posisjon\":\n    - img\n  - text: EKSEMPEL-TURF\n  - button \"Skjul detaljer\": −\n  - text: Akerselva sørover 2,20 km · 12:20 å slå NO Nora eier eksempelruten\n  - button \"Neste turf\": Neste →\n  - text: Løp samme løype i samme retning. Laveste totaltid vinner. Ekte turf-konkurranser er ikke aktivert ennå.\n  - button \"Start en økt\":\n    - img\n    - text: Start en økt\n  - tablist:\n    - tab \"Hjem\":\n      - img\n      - img\n      - text: Hjem\n    - tab \"Kart\" [selected]:\n      - img\n      - img\n      - text: Kart\n    - tab \"Registrer\":\n      - img\n      - img\n      - text: Registrer\n    - tab \"Løpere\":\n      - img\n      - img\n      - text: Løpere\n    - tab \"Du\":\n      - img\n      - img\n      - text: Du"
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 10,
+        "step_id": "collapse",
+        "action": "click",
+        "elapsed_ms": 357,
+        "before_url": {
+          "url": "http://127.0.0.1:8101/map",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/map",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 3,
+        "event_sequence_end": 2,
+        "artifacts": {
+          "screenshot": {
+            "state": "captured",
+            "value": {
+              "sha256": "d15eaaa15314f181b69e21183610c0d84980830b932e930ba22d8bdf9e2a0cd5",
+              "bytes": 192140,
+              "media_type": "image/png"
+            }
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "7fb4cbba86cb45923be77533126b305ad0f0700a906ca0d67c4815e315a959c5",
+              "bytes": 937,
+              "text": "- document:\n  - region \"Mapbox-kart\":\n    - region \"Map\"\n    - button \"Toggle attribution\"\n    - link \"Mapbox homepage\":\n      - /url: https://www.mapbox.com/\n  - img\n  - text: Utforsk Finn din neste løpetur\n  - img\n  - text: Løping\n  - button \"Følger\"\n  - button \"Alle eksempler\"\n  - button \"Vis hele ruten\":\n    - img\n  - button \"Vis min posisjon\":\n    - img\n  - text: EKSEMPEL-TURF\n  - button \"Vis detaljer\": +\n  - text: Akerselva sørover 2,20 km · 12:20 å slå NO Nora eier eksempelruten\n  - button \"Neste turf\": Neste →\n  - button \"Start en økt\":\n    - img\n    - text: Start en økt\n  - tablist:\n    - tab \"Hjem\":\n      - img\n      - img\n      - text: Hjem\n    - tab \"Kart\" [selected]:\n      - img\n      - img\n      - text: Kart\n    - tab \"Registrer\":\n      - img\n      - img\n      - text: Registrer\n    - tab \"Løpere\":\n      - img\n      - img\n      - text: Løpere\n    - tab \"Du\":\n      - img\n      - img\n      - text: Du"
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 11,
+        "step_id": "final_map",
+        "action": "wait_for_timeout",
+        "elapsed_ms": 703,
+        "before_url": {
+          "url": "http://127.0.0.1:8101/map",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/map",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 3,
+        "event_sequence_end": 2,
+        "artifacts": {
+          "screenshot": {
+            "state": "captured",
+            "value": {
+              "sha256": "4bf4b799772cb4b108366de6db23d9cc3a74a95fb46b92ca9f4a3970ea570f51",
+              "bytes": 192937,
+              "media_type": "image/png"
+            }
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "7fb4cbba86cb45923be77533126b305ad0f0700a906ca0d67c4815e315a959c5",
+              "bytes": 937,
+              "text": "- document:\n  - region \"Mapbox-kart\":\n    - region \"Map\"\n    - button \"Toggle attribution\"\n    - link \"Mapbox homepage\":\n      - /url: https://www.mapbox.com/\n  - img\n  - text: Utforsk Finn din neste løpetur\n  - img\n  - text: Løping\n  - button \"Følger\"\n  - button \"Alle eksempler\"\n  - button \"Vis hele ruten\":\n    - img\n  - button \"Vis min posisjon\":\n    - img\n  - text: EKSEMPEL-TURF\n  - button \"Vis detaljer\": +\n  - text: Akerselva sørover 2,20 km · 12:20 å slå NO Nora eier eksempelruten\n  - button \"Neste turf\": Neste →\n  - button \"Start en økt\":\n    - img\n    - text: Start en økt\n  - tablist:\n    - tab \"Hjem\":\n      - img\n      - img\n      - text: Hjem\n    - tab \"Kart\" [selected]:\n      - img\n      - img\n      - text: Kart\n    - tab \"Registrer\":\n      - img\n      - img\n      - text: Registrer\n    - tab \"Løpere\":\n      - img\n      - img\n      - text: Løpere\n    - tab \"Du\":\n      - img\n      - img\n      - text: Du"
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 12,
+        "step_id": "start",
+        "action": "click",
+        "elapsed_ms": 149,
+        "before_url": {
+          "url": "http://127.0.0.1:8101/map",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/track",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 3,
+        "event_sequence_end": 2,
+        "artifacts": {
+          "screenshot": {
+            "state": "captured",
+            "value": {
+              "sha256": "db607d399f57b00b60100c5a210f23c8c7401f090cb078fab08af3f53c3ff01f",
+              "bytes": 6737,
+              "media_type": "image/png"
+            }
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "d06927fd19f59da166da40418235e204f573403eabc71d5a036fb276fc57eb27",
+              "bytes": 352,
+              "text": "- document:\n  - tablist:\n    - tab \"Hjem\":\n      - img\n      - img\n      - text: Hjem\n    - tab \"Kart\":\n      - img\n      - img\n      - text: Kart\n    - tab \"Registrer\" [selected]:\n      - img\n      - img\n      - text: Registrer\n    - tab \"Løpere\":\n      - img\n      - img\n      - text: Løpere\n    - tab \"Du\":\n      - img\n      - img\n      - text: Du"
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 13,
+        "step_id": "record",
+        "action": "wait_for_timeout",
+        "elapsed_ms": 1483,
+        "before_url": {
+          "url": "http://127.0.0.1:8101/track",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/track",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 3,
+        "event_sequence_end": 2,
+        "artifacts": {
+          "screenshot": {
+            "state": "captured",
+            "value": {
+              "sha256": "421f0e3bf85575b9cefd20e402c9590220a1f9761a8e892ffc43e47654227164",
+              "bytes": 32673,
+              "media_type": "image/png"
+            }
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "41b4f484e17783bb5753279cc07dacb50d0a8cb8f1fe1f1a01ff3afaca3d14d1",
+              "bytes": 870,
+              "text": "- document:\n  - text: Løping GPS · live posisjon\n  - button \"GPS\"\n  - button \"Simulering\"\n  - region \"Mapbox-kart\":\n    - region \"Map\"\n    - button \"Zoom in\"\n    - button \"Zoom out\"\n    - button \"Toggle attribution\"\n    - link \"Mapbox homepage\":\n      - /url: https://www.mapbox.com/\n  - text: Eksempelkart · trykk Start for å slå på GPS\n  - button \"Aktivitet Løping · Endre\"\n  - text: Kartet følger deg mens du trener. Du kan pause og avslutte når du vil. Klar til start\n  - button \"Start\":\n    - text: Start\n    - img\n  - tablist:\n    - tab \"Hjem\":\n      - img\n      - img\n      - text: Hjem\n    - tab \"Kart\":\n      - img\n      - img\n      - text: Kart\n    - tab \"Registrer\" [selected]:\n      - img\n      - img\n      - text: Registrer\n    - tab \"Løpere\":\n      - img\n      - img\n      - text: Løpere\n    - tab \"Du\":\n      - img\n      - img\n      - text: Du"
+            }
+          },
+          "url": {
+            "state": "captured",
+            "value": {
+              "url": "http://127.0.0.1:8101/track",
+              "origin": "http://127.0.0.1:8101",
+              "query_parameter_names": [],
+              "redacted": false
+            }
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      }
+    ],
+    "events": {
+      "retained": 2,
+      "dropped": 0,
+      "items": [
+        {
+          "sequence": 1,
+          "step_index": 0,
+          "kind": "console",
+          "level": "warning",
+          "text": "GoTrueClient@sb-diviitenhbidwrcpmkxr-auth-token:0 (2.118.0) 2026-10-20T10:34:34.375Z The \"lock\" option is deprecated and will be removed in v3. The client now coordinates session refreshes without a lock, so most apps can drop the option. See https://github.com/supabase/supabase-js/blob/master/packages/core/auth-js/migrations/lockless-coordination.md",
+          "url": {
+            "url": "http://127.0.0.1:8101/_expo/static/js/web/__common-2d85a18387587e8dc1ae1bf2dbf94f69.js",
+            "origin": "http://127.0.0.1:8101",
+            "query_parameter_names": [],
+            "redacted": false
+          }
+        },
+        {
+          "sequence": 2,
+          "step_index": 3,
+          "kind": "console",
+          "level": "warning",
+          "text": "GoTrueClient@sb-diviitenhbidwrcpmkxr-auth-token:0 (2.118.0) 2026-10-20T10:34:35.515Z The \"lock\" option is deprecated and will be removed in v3. The client now coordinates session refreshes without a lock, so most apps can drop the option. See https://github.com/supabase/supabase-js/blob/master/packages/core/auth-js/migrations/lockless-coordination.md",
+          "url": {
+            "url": "http://127.0.0.1:8101/_expo/static/js/web/__common-2d85a18387587e8dc1ae1bf2dbf94f69.js",
+            "origin": "http://127.0.0.1:8101",
+            "query_parameter_names": [],
+            "redacted": false
+          }
+        }
+      ],
+      "omissions": {
+        "by_kind": [],
+        "network_transactions": [],
+        "network_transaction_range": null
+      }
+    },
+    "completeness": {
+      "status": "complete",
+      "equality_eligible": true,
+      "missing_sections": [],
+      "truncated_sections": []
+    },
+    "limitations": [
+      "Event sequence records provider receipt order; simultaneous browser causality is not inferred.",
+      "Network content is retained only when selected; Playwright response-body bytes are API results and are not guaranteed to match wire bytes.",
+      "Request bytes are limited to what Playwright exposes; not_exposed does not establish body absence or multipart file coverage.",
+      "Network content reads settle within 5 seconds each and the observer does not request bodies from unfinished responses.",
+      "Playwright scenario events do not expose request initiator stacks; receipt order does not prove causality.",
+      "Storage values are hashed only after declared-secret redaction."
+    ]
+  },
+  "confidence": "observed",
+  "authority": "controlled-replay",
+  "environment": {
+    "id": "Chromium@155.0.4283.45",
+    "platform": "unknown",
+    "architecture": "unknown",
+    "isolation": "process"
+  },
+  "limitations": [
+    "Artifact identity is unavailable for this observation.",
+    "Event sequence records provider receipt order; simultaneous browser causality is not inferred.",
+    "Network content is retained only when selected; Playwright response-body bytes are API results and are not guaranteed to match wire bytes.",
+    "Request bytes are limited to what Playwright exposes; not_exposed does not establish body absence or multipart file coverage.",
+    "Network content reads settle within 5 seconds each and the observer does not request bodies from unfinished responses.",
+    "Playwright scenario events do not expose request initiator stacks; receipt order does not prove causality.",
+    "Storage values are hashed only after declared-secret redaction.",
+    "Browser host platform and architecture were not observed."
+  ],
+  "relationship_coverage": null,
+  "locations": [],
+  "evidence_links": []
+}

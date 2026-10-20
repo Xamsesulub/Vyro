@@ -1,0 +1,26 @@
+{
+  "date": "2026-10-20",
+  "project": "diviitenhbidwrcpmkxr",
+  "migration": "202610200004_growing_turfs.sql",
+  "authorization": "Explicit user approval: Ja, aktiver soner",
+  "deployment_observation": "Supabase SQL Editor: Success. No rows returned",
+  "verification": {
+    "rls_tables": 3,
+    "policies": 4,
+    "authenticated_rpc": true,
+    "anon_rpc": false,
+    "client_update_owner": false,
+    "client_insert_event": false,
+    "anon_read_route": false,
+    "normalized_rpc_md5": "fdbf8a8c21ecf8225b8a230be5d2bdac",
+    "local_normalized_rpc_md5": "fdbf8a8c21ecf8225b8a230be5d2bdac",
+    "initial_zone_count": 0
+  },
+  "method": "Read-only catalog SQL through the authenticated dashboard. Values transcribed from observed result grid. Function comparison ignores comments and whitespace.",
+  "limitations": [
+    "No real users, GPS activities, or competitive zones created for verification.",
+    "Local PGlite tests exercise the RPC; no two-account production run was performed.",
+    "Device GPS accuracy, loops and parallel roads require physical field testing.",
+    "Plausible forged GPS input is not prevented by device attestation."
+  ]
+}

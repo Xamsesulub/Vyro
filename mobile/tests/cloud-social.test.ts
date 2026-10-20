@@ -4,6 +4,7 @@ jest.mock("../src/lib/supabase", () => ({
 import { supabase } from "../src/lib/supabase";
 import { publish } from "../src/features/social/api";
 import { Workout } from "../src/features/activities/model";
+import { sharedRoute } from "../src/features/social/routePrivacy";
 const rpc = supabase!.rpc as jest.Mock;
 const workout: Workout = {
   id: "gps-test",
@@ -18,7 +19,9 @@ const workout: Workout = {
   visibility: "private",
   route: [
     { latitude: 59.9, longitude: 10.7 },
-    { latitude: 59.91, longitude: 10.71, breakBefore: true },
+    { latitude: 59.91, longitude: 10.71 },
+    { latitude: 59.92, longitude: 10.72 },
+    { latitude: 59.93, longitude: 10.73 },
   ],
 };
 beforeEach(() => rpc.mockReset());
@@ -37,7 +40,7 @@ test("publishes only explicit workout fields, never private notes or an owner ov
   await expect(publish(workout, "alice")).resolves.toBe("post-id");
   expect(rpc.mock.calls[0][0]).toBe("publish_workout");
   const payload = rpc.mock.calls[0][1];
-  expect(payload.p_route).toEqual(workout.route);
+  expect(payload.p_route).toEqual(sharedRoute(workout.route));
   expect(payload.p_distance_km).toBe(2);
   expect(JSON.stringify(payload)).not.toContain("private notes");
   expect(payload).not.toHaveProperty("owner_id");

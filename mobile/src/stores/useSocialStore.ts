@@ -1,4 +1,4 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { workoutStorage } from "../lib/workoutStorage";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { ActivityPost, demoPosts, people } from "../features/social/demo";
@@ -117,11 +117,11 @@ export const useSocialStore = create<State>()(
     {
       name: "vyro-social-preview-v1",
       storage: createJSONStorage(() => ({
-        getItem: (key: string) => AsyncStorage.getItem(key),
-        removeItem: (key: string) => AsyncStorage.removeItem(key),
+        getItem: (key: string) => workoutStorage.getItem(key),
+        removeItem: (key: string) => workoutStorage.removeItem(key),
         setItem: async (key: string, value: string) => {
           try {
-            await AsyncStorage.setItem(key, value);
+            await workoutStorage.setItem(key, value);
           } catch {
             if (!useSocialStore.getState().error)
               useSocialStore.setState({

@@ -1,6 +1,43 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+// State/persistence payload tests; cipher/migration failures are tested separately.
+jest.mock("../src/lib/workoutStorage", () => ({
+  workoutStorage: require("@react-native-async-storage/async-storage"),
+}));
 import { useAppStore } from "../src/stores/useAppStore";
 import { initialRecording } from "../src/features/tracking/simulator";
+
+test("selected turf survives pause and recovery, cannot change mid-run, and stays linked on save", async () => {
+  useAppStore.setState({ recording: initialRecording, workouts: [] });
+  const challenge = {
+    id: "zone-1",
+    name: "Test",
+    route: [
+      { latitude: 59.9, longitude: 10.7 },
+      { latitude: 59.901, longitude: 10.7 },
+    ],
+  };
+  expect(useAppStore.getState().selectTurf(challenge)).toBe(true);
+  useAppStore.getState().event("start");
+  expect(useAppStore.getState().selectTurf()).toBe(false);
+  useAppStore.getState().event("pause");
+  await useAppStore.persist.rehydrate();
+  expect(useAppStore.getState().recording.challenge).toEqual(challenge);
+  useAppStore.setState({
+    recording: {
+      ...useAppStore.getState().recording,
+      status: "finishing",
+      seconds: 60,
+      distance: 0.2,
+      route: [challenge.route],
+    },
+  });
+  expect(useAppStore.getState().save("Test", "")).toBeTruthy();
+  expect(useAppStore.getState().workouts[0].turfId).toBe("zone-1");
+  expect(useAppStore.getState().recording.challenge).toBeUndefined();
+  useAppStore.getState().selectTurf(challenge);
+  useAppStore.getState().mode("simulation");
+  expect(useAppStore.getState().recording.challenge).toBeUndefined();
+});
 
 beforeEach(async () => {
   await AsyncStorage.clear();

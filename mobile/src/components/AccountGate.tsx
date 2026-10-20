@@ -1,10 +1,13 @@
 import { PropsWithChildren } from "react";
+import { View } from "react-native";
 import { router } from "expo-router";
 import { useAuthStore } from "../stores/useAuthStore";
-import { Button, Screen, Txt } from "./ui";
+import { Button, Screen, Txt, Logo, Icon, useTheme } from "./ui";
+import { MovementLine, Reveal } from "./motion";
 
 export function AccountGate({ children }: PropsWithChildren) {
   const { ready, session } = useAuthStore();
+  const c = useTheme();
   if (!ready)
     return (
       <Screen>
@@ -14,21 +17,69 @@ export function AccountGate({ children }: PropsWithChildren) {
   if (!session)
     return (
       <Screen>
-        <Txt size={28} weight="700">
-          Løp sammen
-        </Txt>
-        <Txt muted>
-          Logg inn for å følge løpere og dele øktene dine med kart, distanse og
-          tid.
-        </Txt>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <Logo small color={c.text} />
+          <Txt size={10} muted weight="600" style={{ letterSpacing: 2 }}>
+            MOVE BEYOND
+          </Txt>
+        </View>
+        <Reveal>
+          <View style={{ gap: 14, paddingTop: 12 }}>
+            <Txt
+              size={46}
+              weight="800"
+              style={{ letterSpacing: -2, lineHeight: 49 }}
+            >
+              Din tur.{"\n"}Ditt tempo.
+            </Txt>
+            <Txt muted style={{ maxWidth: 310 }}>
+              Noen turer er best alene. Andre er fine å dele.
+            </Txt>
+          </View>
+        </Reveal>
+        <MovementLine />
+        <Reveal delay={60}>
+          <View style={{ gap: 16 }}>
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 14 }}
+            >
+              <Icon name="people" color={c.accent} size={21} />
+              <View style={{ flex: 1, gap: 3 }}>
+                <Txt weight="600">Dine folk. Deres turer.</Txt>
+                <Txt muted size={13}>
+                  Følg løpere og del økten med kart og tempo.
+                </Txt>
+              </View>
+            </View>
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 14 }}
+            >
+              <Icon name="lock" color={c.accent} size={21} />
+              <View style={{ flex: 1, gap: 3 }}>
+                <Txt weight="600">Du velger hva du deler.</Txt>
+                <Txt muted size={13}>
+                  Økten er privat til du publiserer den.
+                </Txt>
+              </View>
+            </View>
+          </View>
+        </Reveal>
         <Button
           title="Logg inn eller opprett konto"
+          icon="arrow"
           onPress={() => router.push("/account")}
         />
         <Button
-          title="Registrer aktivitet"
+          title="Utforsk kartet først"
           secondary
-          onPress={() => router.push("/track")}
+          icon="map"
+          onPress={() => router.push("/map")}
         />
       </Screen>
     );

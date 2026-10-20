@@ -2,6 +2,7 @@ import { Tabs } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Icon, IconName, useTheme } from "../../components/ui";
 import { useAppStore } from "../../stores/useAppStore";
+import { SelectionMotion } from "../../components/motion";
 const tabs: { name: string; title: string; icon: IconName }[] = [
   { name: "index", title: "Hjem", icon: "home" },
   { name: "map", title: "Kart", icon: "map" },
@@ -40,11 +41,13 @@ export default function TabLayout() {
               : {}),
             title: t.title,
             tabBarIcon: ({ focused }) => (
-              <Icon
-                name={t.icon}
-                color={focused ? c.accent : c.muted}
-                size={23}
-              />
+              <SelectionMotion selected={focused} background={c.raised}>
+                <Icon
+                  name={t.icon}
+                  color={focused ? c.accent : c.muted}
+                  size={23}
+                />
+              </SelectionMotion>
             ),
           }}
         />

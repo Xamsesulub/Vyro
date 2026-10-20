@@ -11,10 +11,13 @@ import { manageSupabaseSession } from "../lib/supabase";
 import { observeAuth, useAuthStore } from "../stores/useAuthStore";
 
 import { LocationWatcher } from "../components/LocationWatcher";
+import { prewarmMap } from "../features/maps/prewarm";
+import { LaunchSignature } from "../components/motion";
 
 export default function RootLayout() {
   const ready = useAppStore((s) => s.ready);
   const theme = useAppStore((s) => s.theme);
+  const idle = useAppStore((s) => s.recording.status === "idle");
   const c = useTheme();
   const reduced = useReducedMotion();
   const userId = useAuthStore((s) => s.session?.user.id);
@@ -25,6 +28,10 @@ export default function RootLayout() {
   }, [userId]);
   useEffect(manageSupabaseSession, []);
   useEffect(observeAuth, []);
+  useEffect(() => {
+    const timer = setTimeout(prewarmMap, 500);
+    return () => clearTimeout(timer);
+  }, []);
   useEffect(() => {
     const timer = setInterval(() => {
       if (useAppStore.getState().recording.status === "recording")
@@ -70,6 +77,7 @@ export default function RootLayout() {
             <Stack.Screen name="activity/[id]" />
           </Stack>
         )}
+        <LaunchSignature ready={ready} idle={idle} />
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

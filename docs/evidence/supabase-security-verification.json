@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-20",
+  "project": "diviitenhbidwrcpmkxr",
+  "migration": "202610200002_security.sql",
+  "authorization": "User explicitly approved production deployment after reviewing the changes and rate limits.",
+  "deployment": "SQL Editor returned Success. No rows returned.",
+  "read_only_verification": {
+    "rls_tables": 8,
+    "rls_policies": 18,
+    "write_limit_triggers": 5,
+    "authenticated_can_read_write_limits": false,
+    "anonymous_can_read_activities": false,
+    "accepts_extra_route_fields": false
+  },
+  "anonymous_rest_status": {
+    "activities": 401,
+    "posts": 401,
+    "write_limits": 401
+  },
+  "public_auth_settings": {
+    "email_autoconfirm": false,
+    "signup_disabled": false
+  },
+  "limits": "No customer records were created, read into the report, deleted or modified. Authorization and rate-limit write tests used local PGlite, not production accounts. CAPTCHA, full password policy, backups and physical device security remain unverified."
+}

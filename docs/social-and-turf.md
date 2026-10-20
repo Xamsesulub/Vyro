@@ -1,36 +1,48 @@
-# Sosial aktivitetsfeed og turf
+# Sosial aktivitetsfeed og voksende soner
 
-**Oppdatert:** Hjem og Løpere er nå koblet til Supabase i kode, med konto og eksplisitt publisering. Databasemigreringen er kjørt i Supabase 20. oktober 2026. Se `live-social-setup.md` for gjeldende status; beskrivelsen nedenfor dokumenterer den tidligere lokale forhåndsvisningen. Turf er fortsatt eksempeldata.
+Oppdatert 20. oktober 2026. Supabase Auth, følgerforhold og eksplisitt deling av GPS-økter er implementert. Migreringer 001–003 er aktive. Migrering 004 er aktiv i produksjon etter eksplisitt godkjenning og vellykket etterkontroll 20. oktober 2026. Ingen testsoner publiseres til Supabase.
 
-## Implementert 20. oktober 2026
+## Konkurranseregelen
 
-Dette er en lokal, interaktiv forhåndsvisning. Det er ikke en flerbrukertjeneste ennå. Ingen følger, kommentar, like eller repost sendes til andre. Eksempelpersonene er fiktive og kan skjules i innstillingene.
+En sone er en sammenhengende løype for løping. Utfordreren må passere hele den gjeldende traseen i samme retning. Laveste totaltid mellom løypas start og mål vinner; pauser inngår. Lik tid beholder eieren.
 
-- Hjem har Følger, Delt på nytt og Mine økter. Innlegg er alltid knyttet til en økt, med kart, distanse, tid, tempo og original forfatter.
-- Følg/slutt å følge, lik/angre, kommenter/slett egen kommentar og repost/angre lagres lokalt. Repost peker på originalen, og tilbaketrekking fjerner avhengige reaksjoner.
-- Del økt tillater bare fullførte GPS-økter med gyldige rutepunkter og positive målinger. Brukeren forhåndsviser ruten og bekrefter kartdelingen. Ingen fri tekst-post eller bilde-post kan opprettes.
-- Nåværende opptaker er fortsatt en simulator, så den kan ikke produsere delbare GPS-økter. Deling er heller ikke publisering på nett før backend er implementert.
-- Kartet viser turf-eiere blant dem du følger, eller alle eksempel-turfs. Eierskap er eksempeldata og endres ikke av simuleringer.
+Etter lagring kan løperen velge:
 
-## Konkurranseregel
+- **Send forsøk:** overta den eksisterende løypa hvis tiden er bedre.
+- **Overta og utvid:** slå tiden på den eksisterende løypa, og legg til resten av den synlige, sammenhengende turen. Utvidelsen må være minst 100 m.
 
-En turf er en definert løype med faste kontrollpunkter, retning og aktivitetstype. Distanse bestemmer hvilken løype som konkurreres om. Laveste **totaltid** mellom start og mål vinner; pauser inngår. Ekstra distanse etter mål endrer ikke turf-resultatet. Ved lik tid beholder nåværende eier turfen.
+Eksempel: Henos eier 3 km på 18 minutter. Xamse passerer samme løype på 17 minutter og løper 2 km videre. Ved eksplisitt utvidelse blir hele 5 km-løypa Xamses sone. Den nye rekorden er Xamses totaltid på alle 5 km. Neste utfordrer må løpe hele den nye løypa. Den gamle løypa beholdes som uendret prefiks; dette er løypesoner, ikke eierskap til geografiske flater.
 
-`features/turf/rules.ts` beregner en kandidat ved å kontrollere rekkefølge, GPS-nøyaktighet, dekning, tidsrekkefølge, signalhull og urealistisk fart. Dette er ikke juksesikker GPS-verifisering. Klientberegnede resultater må aldri få oppdatere ekte eierskap direkte. Løypepunktene må samples tett nok i produksjon, og backend må håndtere kryssende ruter, løkker, stopp og GPS-støy med dokumenterte toleranser.
+## Brukerflyt
 
-## Ekte kart
+- Kart → **Soner**: egne soner og soner fra faktiske følgerforhold, eller alle soner. Listen viser inntil 100 nylig oppdaterte soner.
+- Hver sone viser kart, eier og gjeldende lengde/tid. «Løp denne løypa» åpner eksisterende opptaker. Etter lagring: **Bruk økten i en sone**, velg sone og lagret GPS-løpetur.
+- Alternativt opprett en ny sone fra egen lagret løpetur.
+- Kartforhåndsvisning, valgfri utvidelse og avkrysning for deling kreves før innsending. Ingen automatisk opplasting.
+- Hjem viser de tre siste sonehendelsene fra deg og dem du følger, f.eks. «Xamse har tatt over sonen til Henos. Utvidet til 5 km.» Dette er feedinnhold, ikke pushvarsler.
+- Nåværende eier kan trekke tilbake sonen med bekreftelse. Sonehendelser og forsøk fjernes sammen med sonen.
+- Private ruter og eksempel-turfs i det tidligere kartpanelet er fortsatt separat merket. Simuleringer blir aldri konkurranseforsøk.
 
-Web bruker Leaflet og ekte OpenStreetMap-fliser uten nøkkel. Ingen forhåndsnedlasting/offline-cache er implementert; leverandørens cache-headere og synlig attribution beholdes. Offentlig OSM-flisetjeneste er for begrenset forhåndsvisning, ikke en lovnad om produksjonskapasitet.
+## Server og personvern
 
-Med `EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN=pk.…` i `mobile/.env.local` bruker web og native kart Mapbox Outdoors rasterfliser. Native bruker ellers plattformkart gjennom react-native-maps. Offentlig token må ha riktige URL-/appbegrensninger. Ingen hemmelig Mapbox-token skal legges i appen. Restart/build er nødvendig ved endring av Expo-miljøvariabler.
+`202610200004_growing_turfs.sql` oppretter `turfs`, `turf_attempts`, `turf_events` og RPC `submit_turf_run`. Klienten kan ikke skrive eierskap, tider, hendelser eller forsøk direkte. RPC kontrollerer auth, aktivitetstype, koordinater, nøyaktighet, tidsrekkefølge, signalhull, fart, løypedekning og valgt utvidelse. Kilder merket simulering avvises.
 
-Strava dokumenterer Mapbox og OpenStreetMap som kartkilder: https://support.strava.com/en-us/articles/15402176-about-strava-maps. VYRO bruker egen konto og token, ingen Strava-nøkler eller private API-er. Leaflet: https://leafletjs.com/reference.html. OSM-policy: https://operations.osmfoundation.org/policies/tiles/.
+- Raden låses under overtakelse. Klienten må sende gjeldende revisjon; et forsøk mot en endret løype avvises for ny vurdering.
+- En lås og unik kvittering per bruker/lokal økt gjør gjentatt innsending idempotent. Samme økt kan brukes til ett innsendt soneforsøk; et avvist valideringsforsøk oppretter ingen kvittering.
+- Maksimalt fem godkjente innsendinger per bruker/minutt. RPC-feil ruller tilbake transaksjonen, også telleren; dette er ikke et fullstendig vern mot nettverksmisbruk.
+- Konkurranse krever nye GPS-tidsstempler. De lagres kryptert lokalt via eksisterende lagringsadapter. Eldre økter uten slike data oppgraderes ikke automatisk.
+- Før innsending skjermes 500 m rundt hele øktens start/slutt. Ingen sammenkobling gjennom skjulte områder. Flere adskilte synlige deler må tas opp på nytt som en sammenhengende tur. Korte turer kan derfor mangle konkurranseløype.
+- Bare det synlige utsnittet med tidsstempler sendes til kontroll. Serveren lagrer geometri, totaltid og resultat, ikke rå nøyaktighet/tidsstempler. Den private originalen ligger fortsatt på enheten.
+- Konkurranseløypa og sonehendelser er, etter eget samtykke, synlige for innloggede løpere. Vanlige øktinnlegg beholder separat følgerpublikum og egne delingsregler.
 
-## Backend som gjenstår
+## Toleranser og kjente grenser
 
-Supabase Auth med ekte brukeridentitet; PostgreSQL-tabeller for profiler, følgerelasjoner, GPS-aktiviteter, øktinnlegg, reaksjoner, kommentarer, reposts, turfs og verifiserte forsøk. RLS skal håndheve eier, originalinnleggets publiseringsstatus, publikum og blokkering også ved repost. Unike relasjoner hindrer doble likes/følger/reposts. Sletting/tilbaketrekking må skjule originalruten og avledede delinger.
+Kontrollen er en konservativ sekvensiell GPS-matching: endepunkter innen 15 m, fremdrift mot kontrollpunkter innen 25 m, korridor 35 m, 95–110 % av løypelengden. GPS-nøyaktighet maksimalt 30 m; steg maksimalt 40 m og 12 m/s. Hull over 15 sekunder aksepteres bare ved høyst 10 m forflytning, og aldri over én time. Hele tidsintervallet telles. Nye spor må være fra siste syv dager. Synlig løype må være 200 m–100 km.
 
-Turf-verifisering må kjøre på serveren og lagre forsøk og eventuelt nytt eierskap atomisk med låsing av turf-raden. To samtidige forsøk skal ikke overskrive en raskere vinner. Rå GPS-data, rutematching og totaltid skal verifiseres før rangering; bare et kontrollert serverforløp kan skrive eierskap. Separate sesonger/varighet og soneutvidelser er ennå ikke definert.
+Dette er ikke en attestering av fysisk løping. En modifisert klient kan forfalske plausible GPS-data. Komplekse sløyfer, parallelle stier, tett bymiljø og uvanlige samplingsintervaller må felttestes før generell lansering. Ingen premier eller offisiell rangering. Avviste opptak skal aldri få eierskap.
 
-Supabase-prosjektet ble konfigurert og Auth-forbindelsen verifisert senere 20. oktober 2026; se `supabase-setup.md`. Mapbox-token mangler fortsatt. `.env.example` beskriver variablene. Kontooppretting i appen, leverandørbetaling, databaseutrulling og ekte GPS/enhetstest er ikke utført.
+## Verifikasjon
 
+51 Jest-tester, typecheck, lint, web-export, 38 eksisterende databasekontroller og 35 nye sonekontroller bestod. REA kjørte hele opt-in/utvidelse/resultat/feed-flyten ved 390 × 844 mot en isolert lokal PGlite-database, med syntetiske data tydelig merket i skjermen. Null page-errors/console-hendelser. Evidens: `evidence/rea-growing-turf.json` og `evidence/growing-turf.png`.
+
+Fysisk GPS-test på iOS/Android og konkurranse mellom to ekte kontoer gjenstår. Ingen påstand om full Strava-paritet.

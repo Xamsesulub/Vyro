@@ -9,3 +9,7 @@ useAppStore lagrer private økter og avbrutte opptak lokalt. Lagret rute bruker 
 Supabase Auth identifiserer eier. publish_workout lagrer aktivitet og offentlig delt snapshot atomisk og idempotent, med rute og målinger, uten private notater. Supabase RLS avgrenser tilgang. Simuleringer kan ikke deles som GPS. Turf-konkurranser er fortsatt eksempelbasert, ikke serververifiserte resultater.
 
 Den tidligere /record-gps-ruten tilbyr gjenoppretting av eldre lokale utkast og leder deretter til det felles opptaket. REA brukes for runtime-inspeksjon, ikke som appavhengighet.
+
+## Mapbox-renderer
+
+LiveMap bruker nå Mapbox GL JS 3 på web og @rnmapbox/maps på native, med delt GeoJSON-adapter i features/maps/geometry.ts. GPS og Supabase-lagring er uendret. GL JS 3 er installert under aliaset mapbox-gl-v3 fordi native-pakken deklarerer et eldre valgfritt GL JS 2-peerkrav; VYRO bruker ikke native-pakkens web-renderer. Ingen CARTO-fliser brukes lenger.

@@ -1,14 +1,16 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { workoutStorage } from "../lib/workoutStorage";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { Sport, Workout } from "../features/activities/model";
 import { useSocialStore } from "./useSocialStore";
 import { useAuthStore } from "./useAuthStore";
 import { addFix, GpsFix, storedRoute } from "../features/tracking/gps";
+import { appendTurfFix } from "../features/turf/trace";
 import {
   initialRecording,
   Recording,
   RecordingMode,
+  RecordingChallenge,
   snapshot,
   transition,
 } from "../features/tracking/simulator";
@@ -46,6 +48,7 @@ type State = {
   ) => void;
   sport: (sport: Sport) => void;
   mode: (mode: RecordingMode) => void;
+  selectTurf: (challenge?: RecordingChallenge) => boolean;
   gpsFix: (fix: GpsFix) => void;
   event: (event: Parameters<typeof transition>[1]) => void;
   tick: () => void;
@@ -72,7 +75,14 @@ export const useAppStore = create<State>()(
       preferences: (patch) => set(patch),
       sport: (sport) => {
         if (get().recording.status === "idle")
-          set({ recording: { ...get().recording, sport } });
+          set({
+            recording: {
+              ...get().recording,
+              sport,
+              challenge:
+                sport === "Løping" ? get().recording.challenge : undefined,
+            },
+          });
       },
       mode: (mode) => {
         if (get().recording.status === "idle")
@@ -84,11 +94,22 @@ export const useAppStore = create<State>()(
             },
           });
       },
+      selectTurf: (challenge) => {
+        if (get().recording.status !== "idle") return false;
+        set({ recording: { ...initialRecording, challenge } });
+        return true;
+      },
       gpsFix: (fix) => {
         const r = get().recording;
         if (r.ownerId && r.ownerId !== useAuthStore.getState().session?.user.id)
           return;
-        set({ recording: addFix(r, fix) });
+        if (r.mode !== "gps" || r.status !== "recording") return;
+        set({
+          recording: {
+            ...addFix(r, fix),
+            turfTrace: appendTurfFix(r.turfTrace ?? [], fix, !r.lastFix),
+          },
+        });
       },
       event: (event) => {
         const r = get().recording;
@@ -132,7 +153,14 @@ export const useAppStore = create<State>()(
               seconds: r.seconds,
               date: new Date().toISOString(),
               source: gps ? "gps" : "simulation",
-              ...(gps ? { route, ownerId: r.ownerId } : {}),
+              ...(gps
+                ? {
+                    route,
+                    ownerId: r.ownerId,
+                    turfTrace: r.turfTrace,
+                    turfId: r.challenge?.id,
+                  }
+                : {}),
               visibility: "private",
             },
             ...get().workouts,
@@ -169,10 +197,10 @@ export const useAppStore = create<State>()(
         };
       },
       storage: createJSONStorage(() => ({
-        getItem: (key: string) => AsyncStorage.getItem(key),
+        getItem: (key: string) => workoutStorage.getItem(key),
         setItem: async (key: string, value: string) => {
           try {
-            await AsyncStorage.setItem(key, value);
+            await workoutStorage.setItem(key, value);
           } catch {
             // A persisted setState also writes to storage; guard against recursion
             // when the device stays out of storage space.
@@ -184,7 +212,7 @@ export const useAppStore = create<State>()(
             }
           }
         },
-        removeItem: (key: string) => AsyncStorage.removeItem(key),
+        removeItem: (key: string) => workoutStorage.removeItem(key),
       })),
       partialize: ({ ready, storageError, ...state }) => {
         // Retain private route data for recovery; resume starts a new segment.

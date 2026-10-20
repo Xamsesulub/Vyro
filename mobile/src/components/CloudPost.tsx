@@ -73,7 +73,10 @@ export function CloudPost({
       </View>
       <WorkoutMap points={post.route} height={220} />
       <Txt muted size={12}>
-        {post.sport} · Delt med innloggede VYRO-brukere
+        {post.sport} ·{" "}
+        {post.audience === "followers"
+          ? "Delt med følgere"
+          : "Delt med innloggede VYRO-brukere"}
       </Txt>
       <Reactions postId={post.id} userId={userId} />
       <Button
@@ -261,6 +264,7 @@ function Reactions({ postId, userId }: { postId: string; userId: string }) {
       <View style={styles.wrap}>
         <Button
           secondary
+          icon="heart"
           title={`${liked ? "Likt" : "Lik"} · ${count}`}
           disabled={busy || !ready}
           onPress={() => toggle("likes", liked)}

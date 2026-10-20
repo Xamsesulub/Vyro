@@ -67,9 +67,10 @@ export default function Settings() {
       >
         <Txt weight="600">Personvern</Txt>
         <Txt muted size={14}>
-          Økter lagres privat på denne enheten. Når du publiserer en økt, lastes
-          kartet og målingene opp og blir synlige for innloggede VYRO-brukere.
-          Du kan trekke tilbake innlegget fra Hjem.
+          Økter og utkast lagres kryptert på denne enheten. Ved deling skjules
+          500 meter rundt start og slutt. Følgere er standard; du kan velge alle
+          innloggede. Du kan trekke tilbake innlegget fra Hjem. Tidligere delte
+          kart skjermes først når du deler økten på nytt.
         </Txt>
       </View>
     </Screen>

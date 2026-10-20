@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-20",
+  "project": "diviitenhbidwrcpmkxr",
+  "migration": "202610200003_sharing_privacy.sql",
+  "status": "applied",
+  "authorization": "Explicit user approval in conversation",
+  "method": "Supabase SQL Editor",
+  "result": "Success. No rows returned",
+  "verification": {
+    "audience_default": "followers",
+    "rpc_audience_and_route_update": true,
+    "authenticated_execute": true,
+    "old_rpc_removed": true,
+    "anon_execute": false,
+    "visibility_policies": 7
+  },
+  "limitations": [
+    "Read-only production catalog verification; no test posts or accounts created",
+    "Two-account behavior tested locally in PostgreSQL, not end-to-end on physical devices",
+    "Existing posts retain previous audience and route until explicitly republished"
+  ]
+}

@@ -1,0 +1,1365 @@
+{
+  "evidence_id": "ev_529ec73e309009e03880fc85cb7f96119da1bb95d73a54c837121ad887907120",
+  "subject": null,
+  "provider": {
+    "id": "rea-playwright-browser-scenario",
+    "name": "REA Playwright browser scenario capture provider",
+    "version": "1"
+  },
+  "analysis_profile": null,
+  "predicate_type": "rea.browser-scenario-capture",
+  "operation": "capture_browser_scenario",
+  "parameters": {
+    "browser": {
+      "mode": "launch",
+      "executable_path": "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
+      "headless": true
+    },
+    "start_url": {
+      "url": "http://127.0.0.1:8101/",
+      "query": []
+    },
+    "environment": {
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "device_scale_factor": 1
+      },
+      "locale": "en-US",
+      "timezone": "UTC",
+      "color_scheme": "light",
+      "reduced_motion": "no-preference",
+      "service_workers": "block"
+    },
+    "actions": [
+      {
+        "step_id": "ready",
+        "timeout_ms": 15000,
+        "action": "wait_for",
+        "locator": {
+          "kind": "role",
+          "role": "button",
+          "name": "Kom i gang"
+        },
+        "state": "visible"
+      },
+      {
+        "step_id": "onboarding",
+        "action": "wait_for_timeout",
+        "duration_ms": 900
+      },
+      {
+        "step_id": "home",
+        "action": "click",
+        "locator": {
+          "kind": "role",
+          "role": "button",
+          "name": "Kom i gang"
+        },
+        "button": "left",
+        "click_count": 1
+      },
+      {
+        "step_id": "home_ready",
+        "action": "wait_for_timeout",
+        "duration_ms": 900
+      },
+      {
+        "step_id": "profile",
+        "action": "click",
+        "locator": {
+          "kind": "role",
+          "role": "tab",
+          "name": "Du"
+        },
+        "button": "left",
+        "click_count": 1
+      },
+      {
+        "step_id": "profile_ready",
+        "action": "wait_for_timeout",
+        "duration_ms": 600
+      },
+      {
+        "step_id": "track",
+        "action": "click",
+        "locator": {
+          "kind": "role",
+          "role": "tab",
+          "name": "Registrer"
+        },
+        "button": "left",
+        "click_count": 1
+      },
+      {
+        "step_id": "simulation",
+        "action": "click",
+        "locator": {
+          "kind": "role",
+          "role": "button",
+          "name": "Simulering"
+        },
+        "button": "left",
+        "click_count": 1
+      },
+      {
+        "step_id": "start",
+        "action": "click",
+        "locator": {
+          "kind": "role",
+          "role": "button",
+          "name": "Start simulering"
+        },
+        "button": "left",
+        "click_count": 1
+      },
+      {
+        "step_id": "running",
+        "action": "wait_for_timeout",
+        "duration_ms": 2200
+      },
+      {
+        "step_id": "pause",
+        "action": "click",
+        "locator": {
+          "kind": "role",
+          "role": "button",
+          "name": "Pause"
+        },
+        "button": "left",
+        "click_count": 1
+      },
+      {
+        "step_id": "reload_paused",
+        "action": "goto",
+        "destination": {
+          "url": "http://127.0.0.1:8101/track",
+          "query": []
+        },
+        "wait_until": "load"
+      },
+      {
+        "step_id": "paused",
+        "action": "wait_for_timeout",
+        "duration_ms": 700
+      },
+      {
+        "step_id": "finish",
+        "action": "click",
+        "locator": {
+          "kind": "role",
+          "role": "button",
+          "name": "Avslutt økten"
+        },
+        "button": "left",
+        "click_count": 1
+      },
+      {
+        "step_id": "summary",
+        "action": "wait_for_timeout",
+        "duration_ms": 800
+      },
+      {
+        "step_id": "save",
+        "action": "click",
+        "locator": {
+          "kind": "role",
+          "role": "button",
+          "name": "Lagre simulert økt"
+        },
+        "button": "left",
+        "click_count": 1
+      },
+      {
+        "step_id": "saved",
+        "action": "wait_for_timeout",
+        "duration_ms": 800
+      }
+    ],
+    "storage": {
+      "cookies": [],
+      "local_storage": [],
+      "session_storage": []
+    },
+    "secrets": [],
+    "capture": {
+      "after_each_step": [
+        "accessibility",
+        "screenshot"
+      ],
+      "at_end": [
+        "url"
+      ],
+      "events": [
+        "page-errors",
+        "console"
+      ],
+      "network": {
+        "request_body": false,
+        "response_body": false,
+        "header_values": false
+      },
+      "limits": {
+        "max_events": 10000,
+        "max_event_allocation_bytes": 4194304,
+        "max_total_event_allocation_bytes": 16777216,
+        "max_network_transactions": 1024,
+        "max_network_body_bytes": 65536,
+        "max_network_body_allocation_bytes": 1048576,
+        "max_network_header_allocation_bytes": 1048576,
+        "max_network_metadata_allocation_bytes": 1048576
+      }
+    },
+    "scenario_sha256": "7456d16a989a51eb934e714fb4ebe45aeafb0f064b36ad9f5bce7d4b45449573"
+  },
+  "raw_result": null,
+  "normalized_result": {
+    "browser": {
+      "mode": "launch",
+      "process_ownership": "provider-owned",
+      "cleanup": "terminated-owned-process",
+      "product": "Chromium",
+      "version": "155.0.4283.45"
+    },
+    "scenario": {
+      "start_origin": "http://127.0.0.1:8101",
+      "action_count": 17,
+      "secret_references": [],
+      "network_content": {
+        "request_body": false,
+        "response_body": false,
+        "header_values": false
+      },
+      "event_families": [
+        "console",
+        "page-errors"
+      ],
+      "limits": {
+        "max_events": 10000,
+        "max_event_allocation_bytes": 4194304,
+        "max_total_event_allocation_bytes": 16777216,
+        "max_network_transactions": 1024,
+        "max_network_body_bytes": 65536,
+        "max_network_body_allocation_bytes": 1048576,
+        "max_network_header_allocation_bytes": 1048576,
+        "max_network_metadata_allocation_bytes": 1048576
+      }
+    },
+    "duration_ms": 12940,
+    "steps": [
+      {
+        "step_index": 0,
+        "step_id": "scenario_start",
+        "action": "goto_start",
+        "elapsed_ms": 1996,
+        "before_url": {
+          "url": "about:blank",
+          "origin": null,
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/onboarding",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "captured",
+            "value": {
+              "sha256": "2170ee7cdead2545e15e64e71bcd14a8f2e90177077440a3395bfca648db85de",
+              "bytes": 5783,
+              "media_type": "image/png",
+              "data_base64": "[image omitted]"
+            }
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "4b88212d03e6c17da5fe34a962222ba7c439d86ea3d5124c76f66c5698fb69ab",
+              "bytes": 46,
+              "text": "- document:\n  - img\n  - text: VYRO MOVE BEYOND"
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 1,
+        "step_id": "ready",
+        "action": "wait_for",
+        "elapsed_ms": 515,
+        "before_url": {
+          "url": "http://127.0.0.1:8101/onboarding",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/onboarding",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "captured",
+            "value": {
+              "sha256": "f84fa66cf974d0ba94a3e196c3b1fbd872b72391bff7fb5fb47543c0a1d83906",
+              "bytes": 6794,
+              "media_type": "image/png",
+              "data_base64": "[image omitted]"
+            }
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "75a3c2f1223af6b40d191babf8e077a4f15e2d57d9d8c83d381c2711c971bcbd",
+              "bytes": 402,
+              "text": "- document:\n  - img\n  - text: VYRO MOVE BEYOND Ut døra. Litt videre. Finn din rytme. Ta vare på turene. Del dem med folkene dine.\n  - img\n  - text: Navn (valgfritt)\n  - textbox \"Fornavn (valgfritt)\":\n    - /placeholder: Ditt navn\n  - text: Ingen konto eller GPS aktiveres her. Du velger selv når du vil registrere deg eller starte et opptak.\n  - button \"Kom i gang\":\n    - text: Kom i gang\n    - img"
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 2,
+        "step_id": "onboarding",
+        "action": "wait_for_timeout",
+        "elapsed_ms": 974,
+        "before_url": {
+          "url": "http://127.0.0.1:8101/onboarding",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/onboarding",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "captured",
+            "value": {
+              "sha256": "7696a35cee5e4dce90df14eb0d1d8c6e809724c5e16db47ee4d3d1f1bf6ee334",
+              "bytes": 37099,
+              "media_type": "image/png",
+              "data_base64": "[image omitted]"
+            }
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "75a3c2f1223af6b40d191babf8e077a4f15e2d57d9d8c83d381c2711c971bcbd",
+              "bytes": 402,
+              "text": "- document:\n  - img\n  - text: VYRO MOVE BEYOND Ut døra. Litt videre. Finn din rytme. Ta vare på turene. Del dem med folkene dine.\n  - img\n  - text: Navn (valgfritt)\n  - textbox \"Fornavn (valgfritt)\":\n    - /placeholder: Ditt navn\n  - text: Ingen konto eller GPS aktiveres her. Du velger selv når du vil registrere deg eller starte et opptak.\n  - button \"Kom i gang\":\n    - text: Kom i gang\n    - img"
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 3,
+        "step_id": "home",
+        "action": "click",
+        "elapsed_ms": 192,
+        "before_url": {
+          "url": "http://127.0.0.1:8101/onboarding",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "captured",
+            "value": {
+              "sha256": "196248ff7fda0b25fdb6aab0632489e955e82e5d27d72b9ef8a2fa79853f99b9",
+              "bytes": 7189,
+              "media_type": "image/png",
+              "data_base64": "[image omitted]"
+            }
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "682ad07c4a5e58ecfe1e026ee117dfecec3fd93be572aac958bee3ed31788f4e",
+              "bytes": 352,
+              "text": "- document:\n  - tablist:\n    - tab \"Hjem\" [selected]:\n      - img\n      - img\n      - text: Hjem\n    - tab \"Kart\":\n      - img\n      - img\n      - text: Kart\n    - tab \"Registrer\":\n      - img\n      - img\n      - text: Registrer\n    - tab \"Løpere\":\n      - img\n      - img\n      - text: Løpere\n    - tab \"Du\":\n      - img\n      - img\n      - text: Du"
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 4,
+        "step_id": "home_ready",
+        "action": "wait_for_timeout",
+        "elapsed_ms": 999,
+        "before_url": {
+          "url": "http://127.0.0.1:8101/",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "captured",
+            "value": {
+              "sha256": "405f50e751a98eb81fb341c27726a34bf0f8b0b1bae0dcb991490bc59648efe8",
+              "bytes": 44181,
+              "media_type": "image/png",
+              "data_base64": "[image omitted]"
+            }
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "38a2a329962aca27f9cf1eec0322ed67e3b0b7f924c6d89b0d2c21fed4b64f3d",
+              "bytes": 810,
+              "text": "- document:\n  - img\n  - text: VYRO MOVE BEYOND Din tur. Ditt tempo. Noen turer er best alene. Andre er fine å dele.\n  - img\n  - img\n  - text: Dine folk. Deres turer. Følg løpere og del økten med kart og tempo.\n  - img\n  - text: Du velger hva du deler. Økten er privat til du publiserer den.\n  - button \"Logg inn eller opprett konto\":\n    - text: Logg inn eller opprett konto\n    - img\n  - button \"Utforsk kartet først\":\n    - text: Utforsk kartet først\n    - img\n  - tablist:\n    - tab \"Hjem\" [selected]:\n      - img\n      - img\n      - text: Hjem\n    - tab \"Kart\":\n      - img\n      - img\n      - text: Kart\n    - tab \"Registrer\":\n      - img\n      - img\n      - text: Registrer\n    - tab \"Løpere\":\n      - img\n      - img\n      - text: Løpere\n    - tab \"Du\":\n      - img\n      - img\n      - text: Du"
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 5,
+        "step_id": "profile",
+        "action": "click",
+        "elapsed_ms": 176,
+        "before_url": {
+          "url": "http://127.0.0.1:8101/",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/profile",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "captured",
+            "value": {
+              "sha256": "91563f23148ac9665d21e248481cbab2aba616d3c41a4c150652ff45069ac7cf",
+              "bytes": 7174,
+              "media_type": "image/png",
+              "data_base64": "[image omitted]"
+            }
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "572c1bbc103f113498d8be95c14da4242c9a34b0aff4f2d86d14697ffe9868e3",
+              "bytes": 352,
+              "text": "- document:\n  - tablist:\n    - tab \"Hjem\":\n      - img\n      - img\n      - text: Hjem\n    - tab \"Kart\":\n      - img\n      - img\n      - text: Kart\n    - tab \"Registrer\":\n      - img\n      - img\n      - text: Registrer\n    - tab \"Løpere\":\n      - img\n      - img\n      - text: Løpere\n    - tab \"Du\" [selected]:\n      - img\n      - img\n      - text: Du"
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 6,
+        "step_id": "profile_ready",
+        "action": "wait_for_timeout",
+        "elapsed_ms": 674,
+        "before_url": {
+          "url": "http://127.0.0.1:8101/profile",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/profile",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "captured",
+            "value": {
+              "sha256": "b872912b93eee44773c3736a65d3f51dbd05d70fd3864ce40180c8057b24ee08",
+              "bytes": 27061,
+              "media_type": "image/png",
+              "data_base64": "[image omitted]"
+            }
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "fbbc326214bba7f626d22b3a02c23996ffe254879ff8a3f175345bafc54915e1",
+              "bytes": 756,
+              "text": "- document:\n  - text: Du\n  - button \"Innstillinger\"\n  - text: V Din profil 0 lagrede aktiviteter på enheten\n  - button \"Logg inn\"\n  - tab \"Fremgang\"\n  - tab \"Aktiviteter\"\n  - tab \"Mer\"\n  - text: Denne uken 13,84 km 138 minutter 2 aktiviteter Inkluderer eksempeldata\n  - button \"Se treningslogg\"\n  - text: Ukentlig mål 13,84 av 20 km\n  - progressbar \"Ukentlig distansemål\"\n  - text: Endre målet i treningsloggen.\n  - tablist:\n    - tab \"Hjem\":\n      - img\n      - img\n      - text: Hjem\n    - tab \"Kart\":\n      - img\n      - img\n      - text: Kart\n    - tab \"Registrer\":\n      - img\n      - img\n      - text: Registrer\n    - tab \"Løpere\":\n      - img\n      - img\n      - text: Løpere\n    - tab \"Du\" [selected]:\n      - img\n      - img\n      - text: Du"
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 7,
+        "step_id": "track",
+        "action": "click",
+        "elapsed_ms": 145,
+        "before_url": {
+          "url": "http://127.0.0.1:8101/profile",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/track",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "captured",
+            "value": {
+              "sha256": "07bb0b62d375ea493b4f0fbf03eb42afba797a35eba332402a9affcc6af59846",
+              "bytes": 7262,
+              "media_type": "image/png",
+              "data_base64": "[image omitted]"
+            }
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "d06927fd19f59da166da40418235e204f573403eabc71d5a036fb276fc57eb27",
+              "bytes": 352,
+              "text": "- document:\n  - tablist:\n    - tab \"Hjem\":\n      - img\n      - img\n      - text: Hjem\n    - tab \"Kart\":\n      - img\n      - img\n      - text: Kart\n    - tab \"Registrer\" [selected]:\n      - img\n      - img\n      - text: Registrer\n    - tab \"Løpere\":\n      - img\n      - img\n      - text: Løpere\n    - tab \"Du\":\n      - img\n      - img\n      - text: Du"
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 8,
+        "step_id": "simulation",
+        "action": "click",
+        "elapsed_ms": 434,
+        "before_url": {
+          "url": "http://127.0.0.1:8101/track",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/track",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "captured",
+            "value": {
+              "sha256": "c496ad0ee790f95474fb18c78cba1e8613683cc365fb100dc7bb879c13e7520e",
+              "bytes": 25040,
+              "media_type": "image/png",
+              "data_base64": "[image omitted]"
+            }
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "208a63794149b051fc57dea304db452f4ed7a6b4826033ae97af289ff1875f0c",
+              "bytes": 852,
+              "text": "- document:\n  - text: Løping Simulering · ingen GPS\n  - button \"GPS\"\n  - button \"Simulering\"\n  - region \"Mapbox-kart\":\n    - region \"Map\"\n    - button \"Zoom in\"\n    - button \"Zoom out\"\n    - link \"Mapbox homepage\":\n      - /url: https://www.mapbox.com/\n  - text: Eksempelkart · ingen posisjon samles inn\n  - button \"Aktivitet Løping · Endre\"\n  - text: Prøv en økt med eksempelfart. Du kan pause og avslutte når du vil. Klar til start\n  - button \"Start simulering\":\n    - text: Start simulering\n    - img\n  - tablist:\n    - tab \"Hjem\":\n      - img\n      - img\n      - text: Hjem\n    - tab \"Kart\":\n      - img\n      - img\n      - text: Kart\n    - tab \"Registrer\" [selected]:\n      - img\n      - img\n      - text: Registrer\n    - tab \"Løpere\":\n      - img\n      - img\n      - text: Løpere\n    - tab \"Du\":\n      - img\n      - img\n      - text: Du"
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 9,
+        "step_id": "start",
+        "action": "click",
+        "elapsed_ms": 115,
+        "before_url": {
+          "url": "http://127.0.0.1:8101/track",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/track",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "captured",
+            "value": {
+              "sha256": "2445fc5600ecc099b2ec5436e57500b4d06d8e203eaa4be8e0f13fa8f6ae7be2",
+              "bytes": 19641,
+              "media_type": "image/png",
+              "data_base64": "[image omitted]"
+            }
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "fd82ede679a8179a068b1852896d2848d564fdfc6a81f0a6a2c1ab0134877f5a",
+              "bytes": 289,
+              "text": "- document:\n  - text: Løping Simulering · ingen GPS Distanse · km 0,00 Aktiv tid 00:00 Snittempo · min/km —\n  - button \"Vis eksempelkart\"\n  - text: Fast eksempelfart og illustrert rute. Pauses når appen går i bakgrunnen. Økt pågår\n  - button \"Pause\":\n    - text: Pause\n    - img"
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 10,
+        "step_id": "running",
+        "action": "wait_for_timeout",
+        "elapsed_ms": 2254,
+        "before_url": {
+          "url": "http://127.0.0.1:8101/track",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/track",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "captured",
+            "value": {
+              "sha256": "5e505bc1ef15c82340fa614365f7b0f9627b65d0c5f99ad3912e5e231fef91f0",
+              "bytes": 21996,
+              "media_type": "image/png",
+              "data_base64": "[image omitted]"
+            }
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "b6d0967216c6281e672b10fec33a9e14857c5d58fa76ffaf3d612c48b7fc8019",
+              "bytes": 291,
+              "text": "- document:\n  - text: Løping Simulering · ingen GPS Distanse · km 0,00 Aktiv tid 00:01 Snittempo · min/km 05:59\n  - button \"Vis eksempelkart\"\n  - text: Fast eksempelfart og illustrert rute. Pauses når appen går i bakgrunnen. Økt pågår\n  - button \"Pause\":\n    - text: Pause\n    - img"
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 11,
+        "step_id": "pause",
+        "action": "click",
+        "elapsed_ms": 102,
+        "before_url": {
+          "url": "http://127.0.0.1:8101/track",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/track",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "captured",
+            "value": {
+              "sha256": "e11e9374e9d6793f9cade7b763bb58a34bfabd5a2952994ee0b74d4c00cbc649",
+              "bytes": 23000,
+              "media_type": "image/png",
+              "data_base64": "[image omitted]"
+            }
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "12b22cab78b74ee3886f03fb1c6efa8566548431ced37872e4cd0aaaebb5612d",
+              "bytes": 312,
+              "text": "- document:\n  - text: Løping Simulering · ingen GPS Distanse · km 0,01 Aktiv tid 00:02 Snittempo · min/km 05:59\n  - button \"Vis eksempelkart\"\n  - text: Fast eksempelfart og illustrert rute. Pauses når appen går i bakgrunnen.\n  - button \"Avslutt økten\"\n  - button \"Fortsett\":\n    - text: Fortsett\n    - img"
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 12,
+        "step_id": "reload_paused",
+        "action": "goto",
+        "elapsed_ms": 287,
+        "before_url": {
+          "url": "http://127.0.0.1:8101/track",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/track",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "captured",
+            "value": {
+              "sha256": "fb32313e11bc8ffbd5310a1660e630b64cedb4622f8462a5eae2d5464ac8279e",
+              "bytes": 2740,
+              "media_type": "image/png",
+              "data_base64": "[image omitted]"
+            }
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "12b22cab78b74ee3886f03fb1c6efa8566548431ced37872e4cd0aaaebb5612d",
+              "bytes": 312,
+              "text": "- document:\n  - text: Løping Simulering · ingen GPS Distanse · km 0,01 Aktiv tid 00:02 Snittempo · min/km 05:59\n  - button \"Vis eksempelkart\"\n  - text: Fast eksempelfart og illustrert rute. Pauses når appen går i bakgrunnen.\n  - button \"Avslutt økten\"\n  - button \"Fortsett\":\n    - text: Fortsett\n    - img"
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 13,
+        "step_id": "paused",
+        "action": "wait_for_timeout",
+        "elapsed_ms": 765,
+        "before_url": {
+          "url": "http://127.0.0.1:8101/track",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/track",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "captured",
+            "value": {
+              "sha256": "e11e9374e9d6793f9cade7b763bb58a34bfabd5a2952994ee0b74d4c00cbc649",
+              "bytes": 23000,
+              "media_type": "image/png",
+              "data_base64": "[image omitted]"
+            }
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "12b22cab78b74ee3886f03fb1c6efa8566548431ced37872e4cd0aaaebb5612d",
+              "bytes": 312,
+              "text": "- document:\n  - text: Løping Simulering · ingen GPS Distanse · km 0,01 Aktiv tid 00:02 Snittempo · min/km 05:59\n  - button \"Vis eksempelkart\"\n  - text: Fast eksempelfart og illustrert rute. Pauses når appen går i bakgrunnen.\n  - button \"Avslutt økten\"\n  - button \"Fortsett\":\n    - text: Fortsett\n    - img"
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 14,
+        "step_id": "finish",
+        "action": "click",
+        "elapsed_ms": 134,
+        "before_url": {
+          "url": "http://127.0.0.1:8101/track",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/summary",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "captured",
+            "value": {
+              "sha256": "fb32313e11bc8ffbd5310a1660e630b64cedb4622f8462a5eae2d5464ac8279e",
+              "bytes": 2740,
+              "media_type": "image/png",
+              "data_base64": "[image omitted]"
+            }
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "56866acd9b713f351889ef2731ef171bade4c16f48aa1cda8687f17a1a21be2a",
+              "bytes": 10,
+              "text": "- document"
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 15,
+        "step_id": "summary",
+        "action": "wait_for_timeout",
+        "elapsed_ms": 863,
+        "before_url": {
+          "url": "http://127.0.0.1:8101/summary",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/summary",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "captured",
+            "value": {
+              "sha256": "e1da403ee6eb0cccafa2b2898e54d76618749471c0c294f9e6eca8390d30d44f",
+              "bytes": 26929,
+              "media_type": "image/png",
+              "data_base64": "[image omitted]"
+            }
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "642d7aea3855614541559e469560b5e073f909c7f0bfe294edf78f323fa99387",
+              "bytes": 507,
+              "text": "- document:\n  - img\n  - text: ØKTOPPSUMMERING Simulering fullført. Ta et pust. Her er økten din. SIMULERT ØKT · IKKE ET GPS-OPPTAK 0,01 kilometer 00:02 aktiv tid 05:59 snitt min/km 10.0 snitt km/t\n  - textbox \"Navn på økten\": Min løping\n  - textbox \"Notater om økten\":\n    - /placeholder: Hvordan føltes det? (valgfritt)\n  - img\n  - text: Privat · lagres på denne enheten · ingen opplasting\n  - button \"Lagre simulert økt\":\n    - text: Lagre simulert økt\n    - img\n  - button \"Forkast økten\""
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 16,
+        "step_id": "save",
+        "action": "click",
+        "elapsed_ms": 171,
+        "before_url": {
+          "url": "http://127.0.0.1:8101/summary",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/activity/sim-1792501798799",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "captured",
+            "value": {
+              "sha256": "fb32313e11bc8ffbd5310a1660e630b64cedb4622f8462a5eae2d5464ac8279e",
+              "bytes": 2740,
+              "media_type": "image/png",
+              "data_base64": "[image omitted]"
+            }
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "56866acd9b713f351889ef2731ef171bade4c16f48aa1cda8687f17a1a21be2a",
+              "bytes": 10,
+              "text": "- document"
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 17,
+        "step_id": "saved",
+        "action": "wait_for_timeout",
+        "elapsed_ms": 906,
+        "before_url": {
+          "url": "http://127.0.0.1:8101/activity/sim-1792501798799",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8101/activity/sim-1792501798799",
+          "origin": "http://127.0.0.1:8101",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "captured",
+            "value": {
+              "sha256": "a20f56c358caad8d9668b39e581d811392b4f919853cbec72305b850f794ac24",
+              "bytes": 19025,
+              "media_type": "image/png",
+              "data_base64": "[image omitted]"
+            }
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "ed4dfef0edff29421efaeac62970094f9f6ee94cf793c5a8e50f8f262d37adea",
+              "bytes": 290,
+              "text": "- document:\n  - button \"Tilbake\"\n  - text: Min løping LAGRET SIMULERING 0,01 kilometer 00:02 aktiv tid 05:59 snitt min/km 10.0 snitt km/t\n  - img\n  - text: Privat økt Ingen notater. Simuleringen er lagret lokalt. Den teller ikke som et ekte treningsopptak.\n  - button \"Slett simuleringen\""
+            }
+          },
+          "url": {
+            "state": "captured",
+            "value": {
+              "url": "http://127.0.0.1:8101/activity/sim-1792501798799",
+              "origin": "http://127.0.0.1:8101",
+              "query_parameter_names": [],
+              "redacted": false
+            }
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      }
+    ],
+    "events": {
+      "retained": 0,
+      "dropped": 0,
+      "items": [],
+      "omissions": {
+        "by_kind": [],
+        "network_transactions": [],
+        "network_transaction_range": null
+      }
+    },
+    "completeness": {
+      "status": "complete",
+      "equality_eligible": true,
+      "missing_sections": [],
+      "truncated_sections": []
+    },
+    "limitations": [
+      "Event sequence records provider receipt order; simultaneous browser causality is not inferred.",
+      "Network content is retained only when selected; Playwright response-body bytes are API results and are not guaranteed to match wire bytes.",
+      "Request bytes are limited to what Playwright exposes; not_exposed does not establish body absence or multipart file coverage.",
+      "Network content reads settle within 5 seconds each and the observer does not request bodies from unfinished responses.",
+      "Playwright scenario events do not expose request initiator stacks; receipt order does not prove causality.",
+      "Storage values are hashed only after declared-secret redaction."
+    ]
+  },
+  "confidence": "observed",
+  "authority": "controlled-replay",
+  "environment": {
+    "id": "Chromium@155.0.4283.45",
+    "platform": "unknown",
+    "architecture": "unknown",
+    "isolation": "process"
+  },
+  "limitations": [
+    "Artifact identity is unavailable for this observation.",
+    "Event sequence records provider receipt order; simultaneous browser causality is not inferred.",
+    "Network content is retained only when selected; Playwright response-body bytes are API results and are not guaranteed to match wire bytes.",
+    "Request bytes are limited to what Playwright exposes; not_exposed does not establish body absence or multipart file coverage.",
+    "Network content reads settle within 5 seconds each and the observer does not request bodies from unfinished responses.",
+    "Playwright scenario events do not expose request initiator stacks; receipt order does not prove causality.",
+    "Storage values are hashed only after declared-secret redaction.",
+    "Browser host platform and architecture were not observed."
+  ],
+  "relationship_coverage": null,
+  "locations": [],
+  "evidence_links": []
+}

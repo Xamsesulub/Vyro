@@ -1,0 +1,431 @@
+{
+  "evidence_id": "ev_8e13cfa60ec2bc94e6d935ff6e9306c011463d67457d09bb6e4e00e664316e76",
+  "subject": null,
+  "provider": {
+    "id": "rea-playwright-browser-scenario",
+    "name": "REA Playwright browser scenario capture provider",
+    "version": "1"
+  },
+  "analysis_profile": null,
+  "predicate_type": "rea.browser-scenario-capture",
+  "operation": "capture_browser_scenario",
+  "parameters": {
+    "browser": {
+      "mode": "launch",
+      "executable_path": "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
+      "headless": true
+    },
+    "start_url": {
+      "url": "http://127.0.0.1:8102/turf?workoutId=fixture-run&turfId=e6ecbdb6-fe04-413a-b7b3-4d7b98c803c0",
+      "query": []
+    },
+    "environment": {
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "device_scale_factor": 1
+      },
+      "locale": "en-US",
+      "timezone": "UTC",
+      "color_scheme": "light",
+      "reduced_motion": "reduce",
+      "service_workers": "block"
+    },
+    "actions": [
+      {
+        "step_id": "ready",
+        "timeout_ms": 15000,
+        "action": "wait_for",
+        "locator": {
+          "kind": "role",
+          "role": "button",
+          "name": "Løp denne løypa"
+        },
+        "state": "visible"
+      },
+      {
+        "step_id": "select",
+        "action": "click",
+        "locator": {
+          "kind": "role",
+          "role": "button",
+          "name": "Løp denne løypa"
+        },
+        "button": "left",
+        "click_count": 1
+      },
+      {
+        "step_id": "route",
+        "action": "wait_for_timeout",
+        "duration_ms": 2500
+      }
+    ],
+    "storage": {
+      "cookies": [],
+      "local_storage": [],
+      "session_storage": []
+    },
+    "secrets": [],
+    "capture": {
+      "after_each_step": [
+        "accessibility",
+        "screenshot"
+      ],
+      "at_end": [
+        "url"
+      ],
+      "events": [
+        "page-errors",
+        "console"
+      ],
+      "network": {
+        "request_body": false,
+        "response_body": false,
+        "header_values": false
+      },
+      "limits": {
+        "max_events": 10000,
+        "max_event_allocation_bytes": 4194304,
+        "max_total_event_allocation_bytes": 16777216,
+        "max_network_transactions": 1024,
+        "max_network_body_bytes": 65536,
+        "max_network_body_allocation_bytes": 1048576,
+        "max_network_header_allocation_bytes": 1048576,
+        "max_network_metadata_allocation_bytes": 1048576
+      }
+    },
+    "scenario_sha256": "884f9397b423d259a3144e61666d981895d12f50de0e49f1264df815bd229429"
+  },
+  "raw_result": null,
+  "normalized_result": {
+    "browser": {
+      "mode": "launch",
+      "process_ownership": "provider-owned",
+      "cleanup": "terminated-owned-process",
+      "product": "Chromium",
+      "version": "155.0.4283.45"
+    },
+    "scenario": {
+      "start_origin": "http://127.0.0.1:8102",
+      "action_count": 3,
+      "secret_references": [],
+      "network_content": {
+        "request_body": false,
+        "response_body": false,
+        "header_values": false
+      },
+      "event_families": [
+        "console",
+        "page-errors"
+      ],
+      "limits": {
+        "max_events": 10000,
+        "max_event_allocation_bytes": 4194304,
+        "max_total_event_allocation_bytes": 16777216,
+        "max_network_transactions": 1024,
+        "max_network_body_bytes": 65536,
+        "max_network_body_allocation_bytes": 1048576,
+        "max_network_header_allocation_bytes": 1048576,
+        "max_network_metadata_allocation_bytes": 1048576
+      }
+    },
+    "duration_ms": 7288,
+    "steps": [
+      {
+        "step_index": 0,
+        "step_id": "scenario_start",
+        "action": "goto_start",
+        "elapsed_ms": 1680,
+        "before_url": {
+          "url": "about:blank",
+          "origin": null,
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8102/turf?workoutId=fixture-run&turfId=e6ecbdb6-fe04-413a-b7b3-4d7b98c803c0",
+          "origin": "http://127.0.0.1:8102",
+          "query_parameter_names": [
+            "workoutId",
+            "turfId"
+          ],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "captured",
+            "value": {
+              "sha256": "68d3b5b4a4b4346016b5ed8a4e92e0d289660d90489b9053a0f56bbb30c90716",
+              "bytes": 3999,
+              "media_type": "image/png"
+            }
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "7a7c38f67af9d2b06e3debc98a5ba81254c6865f98014b030178ebea4590291a",
+              "bytes": 40,
+              "text": "- document: LOKAL TEST · INGEN EKTE GPS"
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 1,
+        "step_id": "ready",
+        "action": "wait_for",
+        "elapsed_ms": 1560,
+        "before_url": {
+          "url": "http://127.0.0.1:8102/turf?workoutId=fixture-run&turfId=e6ecbdb6-fe04-413a-b7b3-4d7b98c803c0",
+          "origin": "http://127.0.0.1:8102",
+          "query_parameter_names": [
+            "workoutId",
+            "turfId"
+          ],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8102/turf?workoutId=fixture-run&turfId=e6ecbdb6-fe04-413a-b7b3-4d7b98c803c0",
+          "origin": "http://127.0.0.1:8102",
+          "query_parameter_names": [
+            "workoutId",
+            "turfId"
+          ],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "captured",
+            "value": {
+              "sha256": "c977772e6b74e09b593d6cb67784825e4ebb4a8bce55d06c51668acb3b8aa8b9",
+              "bytes": 27549,
+              "media_type": "image/png"
+            }
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "89bd9f50bfb2a259150d24c60bce3cab791424479ecda880bde794cc04afd765",
+              "bytes": 1657,
+              "text": "- document:\n  - button \"Til kartet\"\n  - text: Løp. Overtak. Utvid. Slå tiden på hele løypa. Velg så om resten av turen skal bli del av din nye sone. Neste utfordrer må slå hele den nye løypa. Totaltid med pauser teller. GPS-kontroll er under utprøving; dette er ikke en offisiell konkurranse.\n  - button \"Oppdater soner\"\n  - button \"Velg en annen sone\"\n  - text: Testløypa\n  - region \"Mapbox-kart\":\n    - region \"Map\"\n    - button \"Zoom in\"\n    - button \"Zoom out\"\n    - button \"Toggle attribution\"\n    - link \"Mapbox homepage\":\n      - /url: https://www.mapbox.com/\n  - text: Henos (test) eier 2,22 km · 10:25 å slå.\n  - button \"Løp denne løypa\"\n  - text: Start et GPS-opptak. Etter lagring velger du «Bruk økten i en sone» og denne løypa. Ingen automatisk publisering. Velg din lagrede GPS-løpetur\n  - button \"Lokal testtur — ikke ekte GPS\"\n  - text: Utvid sonen med resten av den synlige turen\n  - switch \"Utvid sonen\"\n  - text: Løypa du konkurrerer om\n  - region \"Mapbox-kart\":\n    - region \"Map\"\n    - button \"Zoom in\"\n    - button \"Zoom out\"\n    - button \"Toggle attribution\"\n    - link \"Mapbox homepage\":\n      - /url: https://www.mapbox.com/\n  - text: \"2,22 km · 08:20 totalt Din tid på den opprinnelige sonen: 08:20. Raskere enn gjeldende tid — venter på serverkontroll. 500 meter rundt øktens start og slutt er skjermet. Bare denne synlige løypa med tidsstempler sendes for kontroll. GPS-tidsstemplene lagres ikke på serveren. Jeg vil dele denne konkurranseløypa og resultatet med innloggede løpere.\"\n  - switch \"Godkjenn deling av sonen\"\n  - button \"Send forsøk\" [disabled]\n  - text: LOKAL TEST · INGEN EKTE GPS"
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 2,
+        "step_id": "select",
+        "action": "click",
+        "elapsed_ms": 236,
+        "before_url": {
+          "url": "http://127.0.0.1:8102/turf?workoutId=fixture-run&turfId=e6ecbdb6-fe04-413a-b7b3-4d7b98c803c0",
+          "origin": "http://127.0.0.1:8102",
+          "query_parameter_names": [
+            "workoutId",
+            "turfId"
+          ],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8102/track",
+          "origin": "http://127.0.0.1:8102",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "captured",
+            "value": {
+              "sha256": "c25fdbdf13774e667215082cb0c0fcf6660cf659228282f46cdd7e54f1731d99",
+              "bytes": 8398,
+              "media_type": "image/png"
+            }
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "52ce76643060f38b8ccafe564027403c4b7588d6f67bab4d6689c9eeb821e909",
+              "bytes": 391,
+              "text": "- document:\n  - tablist:\n    - tab \"Hjem\":\n      - img\n      - img\n      - text: Hjem\n    - tab \"Kart\":\n      - img\n      - img\n      - text: Kart\n    - tab \"Registrer\" [selected]:\n      - img\n      - img\n      - text: Registrer\n    - tab \"Løpere\":\n      - img\n      - img\n      - text: Løpere\n    - tab \"Du\":\n      - img\n      - img\n      - text: Du\n  - text: LOKAL TEST · INGEN EKTE GPS"
+            }
+          },
+          "url": {
+            "state": "not_requested"
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      },
+      {
+        "step_index": 3,
+        "step_id": "route",
+        "action": "wait_for_timeout",
+        "elapsed_ms": 2795,
+        "before_url": {
+          "url": "http://127.0.0.1:8102/track",
+          "origin": "http://127.0.0.1:8102",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "after_url": {
+          "url": "http://127.0.0.1:8102/track",
+          "origin": "http://127.0.0.1:8102",
+          "query_parameter_names": [],
+          "redacted": false
+        },
+        "event_sequence_start": 1,
+        "event_sequence_end": 0,
+        "artifacts": {
+          "screenshot": {
+            "state": "captured",
+            "value": {
+              "sha256": "6697d57e53fa22f3523785560389a20a26973e7302e62ac4765afd1b2b6501c7",
+              "bytes": 75920,
+              "media_type": "image/png"
+            }
+          },
+          "dom": {
+            "state": "not_requested"
+          },
+          "accessibility": {
+            "state": "captured",
+            "value": {
+              "sha256": "afdb18909acae45db13a02b498eac8c92e53e1a82f150799706088330c2658e9",
+              "bytes": 1038,
+              "text": "- document:\n  - text: Løping GPS · live posisjon\n  - button \"GPS\"\n  - button \"Simulering\"\n  - region \"Mapbox-kart\":\n    - region \"Map\"\n    - button \"Zoom in\"\n    - button \"Zoom out\"\n    - button \"Toggle attribution\"\n    - link \"Mapbox homepage\":\n      - /url: https://www.mapbox.com/\n  - text: \"Valgt løype · trykk Start for å slå på GPS Valgt sone: Testløypa Løypa vises i lilla. Start opptaket og følg løypa. Ingen svingvarsler.\"\n  - button \"Fjern valgt sone\"\n  - button \"Aktivitet Løping · Endre\"\n  - text: Kartet følger deg mens du trener. Du kan pause og avslutte når du vil. Klar til start\n  - button \"Start\":\n    - text: Start\n    - img\n  - tablist:\n    - tab \"Hjem\":\n      - img\n      - img\n      - text: Hjem\n    - tab \"Kart\":\n      - img\n      - img\n      - text: Kart\n    - tab \"Registrer\" [selected]:\n      - img\n      - img\n      - text: Registrer\n    - tab \"Løpere\":\n      - img\n      - img\n      - text: Løpere\n    - tab \"Du\":\n      - img\n      - img\n      - text: Du\n  - text: LOKAL TEST · INGEN EKTE GPS"
+            }
+          },
+          "url": {
+            "state": "captured",
+            "value": {
+              "url": "http://127.0.0.1:8102/track",
+              "origin": "http://127.0.0.1:8102",
+              "query_parameter_names": [],
+              "redacted": false
+            }
+          },
+          "history": {
+            "state": "not_requested"
+          },
+          "storage": {
+            "state": "not_requested"
+          }
+        },
+        "completeness": {
+          "status": "complete",
+          "equality_eligible": true,
+          "missing_sections": [],
+          "truncated_sections": []
+        },
+        "status": "completed",
+        "error": null
+      }
+    ],
+    "events": {
+      "retained": 0,
+      "dropped": 0,
+      "items": [],
+      "omissions": {
+        "by_kind": [],
+        "network_transactions": [],
+        "network_transaction_range": null
+      }
+    },
+    "completeness": {
+      "status": "complete",
+      "equality_eligible": true,
+      "missing_sections": [],
+      "truncated_sections": []
+    },
+    "limitations": [
+      "Event sequence records provider receipt order; simultaneous browser causality is not inferred.",
+      "Network content is retained only when selected; Playwright response-body bytes are API results and are not guaranteed to match wire bytes.",
+      "Request bytes are limited to what Playwright exposes; not_exposed does not establish body absence or multipart file coverage.",
+      "Network content reads settle within 5 seconds each and the observer does not request bodies from unfinished responses.",
+      "Playwright scenario events do not expose request initiator stacks; receipt order does not prove causality.",
+      "Storage values are hashed only after declared-secret redaction."
+    ]
+  },
+  "confidence": "observed",
+  "authority": "controlled-replay",
+  "environment": {
+    "id": "Chromium@155.0.4283.45",
+    "platform": "unknown",
+    "architecture": "unknown",
+    "isolation": "process"
+  },
+  "limitations": [
+    "Artifact identity is unavailable for this observation.",
+    "Event sequence records provider receipt order; simultaneous browser causality is not inferred.",
+    "Network content is retained only when selected; Playwright response-body bytes are API results and are not guaranteed to match wire bytes.",
+    "Request bytes are limited to what Playwright exposes; not_exposed does not establish body absence or multipart file coverage.",
+    "Network content reads settle within 5 seconds each and the observer does not request bodies from unfinished responses.",
+    "Playwright scenario events do not expose request initiator stacks; receipt order does not prove causality.",
+    "Storage values are hashed only after declared-secret redaction.",
+    "Browser host platform and architecture were not observed."
+  ],
+  "relationship_coverage": null,
+  "locations": [],
+  "evidence_links": []
+}

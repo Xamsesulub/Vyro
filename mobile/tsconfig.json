@@ -1,5 +1,6 @@
 {
   "extends": "expo/tsconfig.base",
+  "exclude": ["node_modules", "dist", "coverage", "android", "ios"],
   "compilerOptions": {
     "strict": true,
     "types": ["jest", "react", "react-native"]

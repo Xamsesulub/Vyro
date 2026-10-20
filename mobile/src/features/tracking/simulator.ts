@@ -1,7 +1,10 @@
 import { Sport } from "../activities/model";
 import type { Coord, GpsFix } from "./gps";
+import type { Sample } from "../turf/rules";
 export type RecordingMode = "gps" | "simulation";
+export type RecordingChallenge = { id: string; name: string; route: Coord[] };
 export type Recording = {
+  challenge?: RecordingChallenge;
   status: "idle" | "recording" | "paused" | "finishing";
   sport: Sport;
   mode: RecordingMode;
@@ -12,6 +15,7 @@ export type Recording = {
   route: Coord[][];
   lastFix: GpsFix | null;
   ownerId?: string;
+  turfTrace?: Sample[];
 };
 export const initialRecording: Recording = {
   status: "idle",
@@ -58,6 +62,7 @@ export function transition(
       startedAt: now,
       route: [[]],
       lastFix: null,
+      turfTrace: [],
     };
   if (event === "pause" && state.status === "recording")
     return { ...snapshot(state, now), status: "paused", startedAt: null };

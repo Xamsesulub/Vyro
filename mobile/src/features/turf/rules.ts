@@ -1,5 +1,9 @@
 import { MapPoint } from "../maps/config";
-export type Sample = MapPoint & { timestamp: number; accuracy: number };
+export type Sample = MapPoint & {
+  timestamp: number;
+  accuracy: number;
+  breakBefore?: boolean;
+};
 export type Turf = {
   id: string;
   name: string;

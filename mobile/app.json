@@ -39,7 +39,9 @@
           "image": "./assets/splash-icon.png",
           "imageWidth": 160
         }
-      ]
+      ],
+      "@rnmapbox/maps",
+      "expo-secure-store"
     ]
   }
 }

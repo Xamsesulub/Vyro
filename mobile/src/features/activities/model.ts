@@ -12,6 +12,8 @@ export type Workout = {
   route?: { latitude: number; longitude: number; breakBefore?: boolean }[];
   visibility: "private";
   ownerId?: string;
+  turfId?: string;
+  turfTrace?: import("../turf/rules").Sample[];
 };
 export function duration(seconds: number) {
   const total = Math.max(0, Math.floor(seconds));

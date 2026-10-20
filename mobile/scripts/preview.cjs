@@ -10,7 +10,7 @@ http.createServer((req, res) => {
     let file = path.resolve(root, '.' + decodeURIComponent(url.pathname));
     if (file !== root && !file.startsWith(root + path.sep)) { res.writeHead(403).end(); return; }
     if (!fs.existsSync(file) || fs.statSync(file).isDirectory()) file = path.join(root, 'index.html');
-    res.writeHead(200, { 'Content-Type': types[path.extname(file)] || 'application/octet-stream', 'Cache-Control': 'no-store' });
+    res.writeHead(200, { 'Content-Type': types[path.extname(file)] || 'application/octet-stream', 'Cache-Control': file.includes(path.sep + '_expo' + path.sep) ? 'public, max-age=31536000, immutable' : 'no-cache', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'strict-origin-when-cross-origin' });
     fs.createReadStream(file).on('error', () => res.destroy()).pipe(res);
   } catch { res.writeHead(400).end(); }
 }).listen(8101, '127.0.0.1', () => console.log('VYRO preview: http://127.0.0.1:8101'));

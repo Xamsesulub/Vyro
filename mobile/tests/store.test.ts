@@ -3,8 +3,11 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 jest.mock("../src/lib/workoutStorage", () => ({
   workoutStorage: require("@react-native-async-storage/async-storage"),
 }));
-import { useAppStore } from "../src/stores/useAppStore";
+import { appPersistence, useAppStore } from "../src/stores/useAppStore";
 import { initialRecording } from "../src/features/tracking/simulator";
+const originalWrite = jest
+  .mocked(AsyncStorage.setItem)
+  .getMockImplementation()!;
 
 test("selected turf survives pause and recovery, cannot change mid-run, and stays linked on save", async () => {
   useAppStore.setState({ recording: initialRecording, workouts: [] });
@@ -40,12 +43,16 @@ test("selected turf survives pause and recovery, cannot change mid-run, and stay
 });
 
 beforeEach(async () => {
+  jest.mocked(AsyncStorage.setItem).mockImplementation(originalWrite);
+  await appPersistence.flush();
   await AsyncStorage.clear();
+  await useAppStore.persist.rehydrate();
   useAppStore.setState({
     workouts: [],
     recording: initialRecording,
     storageError: null,
   });
+  await appPersistence.flush();
 });
 
 test("light redesign migrates old profiles without losing workouts or preferences", async () => {
@@ -154,6 +161,7 @@ test("GPS routes survive local persistence for recovery and sharing", async () =
       route: [[{ latitude: 59.9, longitude: 10.7 }]],
     },
   });
+  await appPersistence.flush();
   const raw = await AsyncStorage.getItem("vyro-prototype-v1");
   expect(raw).toContain("59.9");
   expect(JSON.parse(raw!).state.recording.route).toEqual([
@@ -170,6 +178,7 @@ test("persists an interrupted simulation as paused with no background time", asy
       distance: 0.1,
     },
   });
+  await appPersistence.flush();
   const raw = await AsyncStorage.getItem("vyro-prototype-v1");
   expect(JSON.parse(raw!).state.recording).toMatchObject({
     status: "paused",
@@ -188,7 +197,7 @@ test("a persistent storage failure reports an error without a write loop", async
   await new Promise((resolve) => setTimeout(resolve, 0));
   expect(useAppStore.getState().storageError).toContain("Lokal lagring feilet");
   expect(write.mock.calls.length).toBeLessThanOrEqual(2);
-  write.mockResolvedValue(undefined);
+  write.mockImplementation(originalWrite);
 });
 
 test("saved GPS routes keep pause boundaries after rehydration", async () => {
@@ -221,4 +230,70 @@ test("saved GPS routes keep pause boundaries after rehydration", async () => {
     { ...route[1][0], breakBefore: true },
     route[1][1],
   ]);
+});
+
+test("recovery failure keeps the app gated and retry restores the saved workouts", async () => {
+  const read = jest.mocked(AsyncStorage.getItem);
+  const before = await AsyncStorage.getItem("vyro-prototype-v1");
+  expect(before).not.toBeNull();
+  read.mockRejectedValueOnce(new Error("locked device"));
+  await useAppStore.persist.rehydrate();
+  expect(useAppStore.getState().ready).toBe(false);
+  expect(useAppStore.getState().storageError).toContain("Kunne ikke lese");
+  useAppStore.getState().preferences({ name: "Must not overwrite saved data" });
+  await appPersistence.flush();
+  expect(await AsyncStorage.getItem("vyro-prototype-v1")).toBe(before);
+  await useAppStore.persist.rehydrate();
+  expect(useAppStore.getState().ready).toBe(true);
+  expect(useAppStore.getState().name).not.toBe("Must not overwrite saved data");
+});
+
+test("a successful storage retry clears the error without changing the workout", async () => {
+  const write = jest.mocked(AsyncStorage.setItem);
+  write.mockRejectedValueOnce(new Error("full"));
+  useAppStore.getState().preferences({ name: "Retry test" });
+  await appPersistence.flush();
+  expect(useAppStore.getState().storageError).toBeTruthy();
+  await appPersistence.retry();
+  expect(useAppStore.getState().storageError).toBeNull();
+  expect(
+    JSON.parse((await AsyncStorage.getItem("vyro-prototype-v1"))!).state.name,
+  ).toBe("Retry test");
+});
+
+test("repeat route is limited to own saved GPS routes and never carries competition proof", () => {
+  const { useAuthStore } = require("../src/stores/useAuthStore");
+  useAuthStore.setState({ session: { user: { id: "runner" } } });
+  const workout = {
+    id: "gps-route",
+    ownerId: "runner",
+    source: "gps" as const,
+    visibility: "private" as const,
+    title: "Runden",
+    notes: "",
+    sport: "Løping" as const,
+    date: new Date().toISOString(),
+    distance: 1,
+    seconds: 300,
+    turfId: "competition",
+    route: [
+      { latitude: 59, longitude: 10 },
+      { latitude: 59.01, longitude: 10 },
+    ],
+  };
+  expect(
+    useAppStore.getState().repeatRoute({ ...workout, ownerId: "other" }),
+  ).toBe(false);
+  expect(
+    useAppStore.getState().repeatRoute({ ...workout, source: "simulation" }),
+  ).toBe(false);
+  expect(useAppStore.getState().repeatRoute(workout)).toBe(true);
+  expect(useAppStore.getState().recording.guide?.route).toEqual(workout.route);
+  expect(useAppStore.getState().recording.challenge).toBeUndefined();
+  expect(useAppStore.getState().recording.ownerId).toBe("runner");
+  expect(useAppStore.getState().recording.distance).toBe(0);
+  useAppStore.getState().event("start");
+  expect(useAppStore.getState().repeatRoute(workout)).toBe(false);
+  useAppStore.getState().event("discard");
+  useAuthStore.setState({ session: null });
 });

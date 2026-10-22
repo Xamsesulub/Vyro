@@ -36,7 +36,7 @@ export default function LiveMap({
   padding,
   onPan,
 }: LiveMapProps) {
-  const base = mapKind === "standard" ? "standard" : "satellite";
+  const base = mapKind;
   const mapStyle = useMemo(
     () => createMapStyle(base, false, false, false),
     [base],
@@ -126,7 +126,7 @@ export default function LiveMap({
             id: "route-outline",
             type: "line",
             source: "workout",
-            slot: "top",
+            ...(options.current.mapKind !== "satellite" ? { slot: "top" } : {}),
             filter: ["==", ["geometry-type"], "LineString"],
             layout: { "line-cap": "round", "line-join": "round" },
             paint: {
@@ -139,7 +139,7 @@ export default function LiveMap({
             id: "route",
             type: "line",
             source: "workout",
-            slot: "top",
+            ...(options.current.mapKind !== "satellite" ? { slot: "top" } : {}),
             filter: ["==", ["geometry-type"], "LineString"],
             layout: { "line-cap": "round", "line-join": "round" },
             paint: { "line-color": ["get", "color"], "line-width": 5 },
@@ -148,7 +148,7 @@ export default function LiveMap({
             id: "position-aura",
             type: "circle",
             source: "workout",
-            slot: "top",
+            ...(options.current.mapKind !== "satellite" ? { slot: "top" } : {}),
             filter: ["==", ["get", "kind"], "position"],
             paint: {
               "circle-color": "#1689F8",
@@ -160,7 +160,7 @@ export default function LiveMap({
             id: "points",
             type: "circle",
             source: "workout",
-            slot: "top",
+            ...(options.current.mapKind !== "satellite" ? { slot: "top" } : {}),
             filter: ["==", ["geometry-type"], "Point"],
             paint: {
               "circle-color": ["get", "color"],
@@ -178,7 +178,7 @@ export default function LiveMap({
             id: "names",
             type: "symbol",
             source: "workout",
-            slot: "top",
+            ...(options.current.mapKind !== "satellite" ? { slot: "top" } : {}),
             filter: ["==", ["geometry-type"], "Point"],
             layout: {
               "text-field": ["get", "label"],
@@ -236,6 +236,8 @@ export default function LiveMap({
       );
   }, [ready, bounds, follow, cameraPosition, recenter, padding, target]);
   useEffect(() => {
+    // The engine loads asynchronously. Honour a selection made before it resolves.
+    initialStyle.current = mapStyle;
     if (map.current)
       map.current.setStyle(mapStyle, {
         diff: false,

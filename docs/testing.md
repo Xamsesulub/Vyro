@@ -1,5 +1,52 @@
 # Testing
 
+## TestFlight-klargjøring, 22. oktober 2026 (skymiljø)
+
+- Typecheck, lint uten cache og 129 Jest-tester i 27 suiter består. Eksisterende tester dekker passordinnlogging, registrering uten falsk sesjon, mobilcallback ved registrering/resend/recovery, engangskoder, sikker sesjonslagring og gjenoppretting uten innloggingsside på Hjem. Dette bruker isolerte testdobler, ikke en ekte Supabase-konto.
+- Tre nye utgivelseskontroller kjører skriptet i separate Node-prosesser. Manglende innloggings-/kartinnstillinger, lokale fixturer og offentlige servernøkler avvises med feilkode uten å skrive nøkkelverdier. Gyldige formateksempler og klientens alternative publishable-key-navn godtas. Formattesten beviser ikke tilgang til tjenestene.
+- EAS CLI 25.3.0 sitt faktiske skjema validerer `eas.json`, arv til TestFlight-profilen, butikkdistribusjon, fysisk iPhone, `production`-miljø og automatisk byggnummer. EAS sin ignore-motor kontrollerer at appkode/ikoner beholdes mens miljøfiler, signeringsfiler, eksporterte testfixturer og presentasjonsmateriale utelates fra opplasting.
+- Expo SDK 58 `config --type introspect` bekrefter `app.vyro.mobile`, registrert `vyro` URL-scheme og iOS `location` i bakgrunnsmodus. iOS Hermes-eksport til ignorert `.expo/testflight-export` består. Dette er JavaScript-pakking, ikke en signert IPA eller Xcode-kompilering.
+- Reelt forsøk med `eas build --platform ios --profile testflight --auto-submit --non-interactive` stopper med **«An Expo user account is required to proceed»**. `eas whoami` gir **«Not logged in»**. Ingen skybygg, Apple-opplasting eller testinvitasjon ble opprettet. Manglende Expo-/Apple-tilgang og Supabase-/Mapbox-verdier må kobles etter [TestFlight-oppsettet](testflight.md). Ekte innlogging, e-postlevering, native satellittkart og GPS på iPhone er fortsatt ikke verifisert her.
+
+## Drabart kartpanel og satellitt, 22. oktober 2026
+
+- Typecheck, lint uten cache og 126 Jest-tester i 26 suiter består. Testene verifiserer fotografisk rasterkilde for Satellitt/Hybrid, uavhengighet fra 3D, Hybrid-lagets plassering, ingen feilaktig Standard-konfigurasjon på rent rasterkart, samt åpning/lukking og skjuling av utilgjengelige panelhandlinger.
+- Chromium ved 390 × 844 og 320 × 640: faktiske touch-hendelser drar håndtaket ned/opp; også trykk og Enter fungerer. Lukket panel fjerner skjulte knapper fra fokus. Rutestjerne, detaljrulling, kartvalg og Start er beholdt. Kartknappene ligger over panelet. Ingen nettleserfeil.
+- Ekte Mapbox GL JS-motor kjørt med isolerte nettverksfixturer: Satellitt velges før den forsinkede kartmotoren lastes. TileJSON og rasterfliser fra den forventede Mapbox-satellittkilden etterspørres. Pikselkontroll bekrefter at rasterflisene tegnes både i Satellitt og over landflaten i Hybrid, og at Standard fjerner bildelaget. Ingen kart-/runtime-feil. **Flisene var syntetiske, ikke ekte satellittbilder**, og ingen ekte Mapbox-token eller produksjonsdata ble brukt.
+- Web-eksport og native Hermes-pakking for Android/iOS består. Ingen fysisk iOS/Safari/Android-verifikasjon eller ny offentlig publisering utføres i dette miljøet. Den eksisterende offentlige lenken viser fortsatt tidligere kode; fysisk kontroll med ekte Mapbox-kart gjenstår etter utrulling.
+
+## Treningsfunksjoner og design, 22. oktober 2026 (skymiljø)
+
+- 124 Jest-tester i 25 suiter består, med typecheck og lint uten cache. Nye tester dekker reelle/egne data i mål og milepæler, kombinerte historikkfiltre, interpolerte kilometertider og pauser, eldre opptak uten splittdata, privat rutevalg med eier før start, samt konto-/kildesperrer.
+- Mockede native tester dekker bakgrunnstillatelse, avslag, start/pause/gjenopptak, kontobytte under tillatelsesdialog, kalde oppgaver, sene GPS-punkter og feil som pauser opptaket. Dette er logikktester, ikke fysisk OS-verifikasjon.
+- Backup-tester dekker eksplisitt aktivering, riktig eier, tillatte felt, ingen simulatoropplasting, idempotent nytt forsøk, tapte svar, ny enhet/gjenoppretting, deduplisering uten overskriving, lokalt slettede kopier, utkobling og kontobytte under forespørsler.
+- `npm run test:database`: 38 + 35 + 126 + 31 = **230** kontroller består i isolert PGlite. Nye kontroller bekrefter eierbasert lesing/sletting, avvist anonym-/krysstilgang, servervalidering, ingen feedpublisering, idempotens, forbud mot endring av eksisterende backup og kaskadesletting med konto.
+- Chromium: onboarding, simulatorstart/pause/gjenopptak/fullføring og kryptert gjenåpning består. Ved 320 × 640 er Fortsett/Fullfør stablet, og kartknappene ligger over målingspanelet. Ingen runtime- eller console-feil i denne flyten.
+- Separat webpakke med syntetisk Supabase-endepunkt tester innlogget Hjem, sidevisning, ukemål, søk/aktivitetsfilter, kontonavn, GPX og gjentakelse av rute. Backup testes med uttrykkelig aktivering, én injisert HTTP 503, nytt forsøk, lokal sletting, gjenoppretting og eksplisitt skysletting. Ingen produksjonskonto, ekte GPS eller produksjonsskriving brukes.
+- Web-eksport og Hermes-pakker for Android/iOS består; native eksport er ikke signert APK/IPA. `npm ci --dry-run` godtar låsefilen. Expo-konfigurasjonskontroll viser iOS `location`-bakgrunnsmodus og Android fine/coarse/background-location samt foreground-service/location-tillatelser.
+
+**Gjenstår før lansering:** Nytt mobilbygg og fysisk test med låst skjerm, GPS-tap, pause/gjenoppta, batterisparing, prosessavslutning, lagring etter låsing, lyd/stillemodus og vibrasjon på iOS/Android. Stor systemskrift og landskap må vurderes på mobil. Migreringene for feed og privat backup er ikke kjørt i Supabase fra dette miljøet; reell tobruker-/toenhetstest og belastning under samtidige brukere gjenstår. Mapbox-nøkkel mangler her, så ekte kartfliser er ikke visuelt verifisert. Se [funksjonsbeskrivelsen](product-improvements.md).
+
+## Pålitelighet, kontoprofil og GPX, 22. oktober 2026 (skymiljø)
+
+- 106 Jest-tester i 22 suiter består. Nye tester dekker samlet lagring under 500 oppdateringer, treg disk med 1000 oppdateringer, umiddelbar pause/lagring, låsing ved dekodingsfeil, ny lesing etter feil og vellykket ny skriving. Eksisterende økt-, GPS-, krypterings- og innloggingstester består.
+- Profiltestene dekker eierbegrensning, validering, mislykket skriving, mellomlagring, avbrudd, svarrekkefølge og kontobytte. GPX-testene dekker bekreftelse i UI, XML-escaping, pausegrenser, fravær av notater/tidsstempler og avvisning av simuleringer/andre eiere/ugyldige koordinater.
+- `npm run test:database`: 38 + 35 + 126 = 199 kontroller består i isolert PGlite. Ingen produksjonsskriving. Eksisterende RLS-test avviser endring av en annen brukers profil. Den store feed-fixturen er ikke en flerbruker-belastningstest.
+- Lokal Chromium-test ved 390 × 844: onboarding, simulering, pause, omlasting, fortsett, fullfør, lagre og gjenåpne bestått. En separat pakke med syntetisk Supabase-endepunkt og avledede nettverkskall bekrefter innlogget Hjem, sidevisning, rutekart ved behov, navneendring fra Innstillinger til Du, eksplisitt GPX-nedlasting, gyldig XML med pausegrenser og utlogging. Gamle GPS-utkast migreres til kryptert lagring og klartekst fjernes. Ingen runtime-/console-feil; ingen ekte konto eller GPS-data brukt.
+- Typecheck, lint uten cache, web-eksport og Hermes-pakking for Android/iOS består. `npm ci --dry-run` godtar låsefilen, og Expo prebuild-konfigurasjonen løser pluginene. Native eksport er ikke APK/IPA eller fysisk enhetstest.
+- GitHub Actions-arbeidsflyten er lagt til; kommandoene er kjørt lokalt. Selve GitHub-jobben er ikke kjørt fra dette miljøet. Ingen produksjonsutrulling utført.
+
+Fysisk test gjenstår for GPS, lagring ved låst enhet/prosessavslutning, det nye native delingsarket og mottakerens GPX-import. Nye native moduler krever et nytt mobilbygg. Se [oppførsel og gjenværende arbeid](app-reliability.md).
+
+
+## Kontosesjon og feedytelse, 23. oktober 2026
+
+- Typecheck, Expo lint uten cache og 90 Jest-tester i 18 suiter består. Nye regresjonstester dekker treg gjenoppretting, tomt startsvar ved refresh-feil, forsinket startsvar etter innlogging/utlogging, delt retry og faktisk Hjem-visning ved sesjonsendring.
+- Feedtester dekker én samlet forespørsel, markør for neste side, avbrudd og kompatibilitet med gammel database. Tilgangs-/nettverksfeil utløser ikke fallback. Rutekart og reaksjoner testes uten ekstra lesinger ved første visning; vellykkede reaksjoner oppdaterer listens data for gjenbrukte rader.
+- 38 eksisterende databasekontroller, 35 turf-kontroller og 126 nye feed-/personvernkontroller består. Sistnevnte bruker alle migreringene, 10 120 innlegg, 1 501 følgerelasjoner og 1 000 sonehendelser i isolert PGlite. Anonymtilgang nektes; følgerinnlegg og tilhørende reaksjoner forsvinner ved unfollow. Ingen private aktivitetsruter returneres av feeden. Sidevisning ved like tidsstempler gir verken hull eller duplikater.
+- Nettlesertest av den bygde appen ved 390 × 844 med isolert, avskåret test-backend: gjenopprettet innlogging på Hjem, ett feed-RPC og ett sone-RPC, ingen innledende rute-/reaksjonslesinger, kartåpning ved behov, likerklikk, neste side, omlasting, profil/Hjem og eksplisitt utlogging består. Ingen nettleserfeil. Dette er ikke en ekte Supabase-innlogging; ingen produksjonskonto eller produksjonsskriving ble brukt.
+- Web-eksport og Hermes-pakking for Android/iOS består. Produksjonsinnlogging, kapasitet ved samtidige brukere og fysisk Android/iOS er ikke verifisert i dette miljøet. Ingen administratortilgang til Supabase var tilgjengelig; migreringen er ikke satt i drift.
+
 ## VibeOff publisert, 23. oktober 2026
 
 - Etter brukerens innlogging og eksplisitte beskjed om publisering ble «Publish my build» fullført som `@hamse`. Siden viste «Your build is live», synlighet **Public** og den offentlige adressen https://vibeoff.ai/build/vi-bygde-vyro-for-a-gjore-lopeturen-enklere-a-folge-4394bc53.

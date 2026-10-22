@@ -1,5 +1,12 @@
 # Sikkerhet og personvernstatus — 20. oktober 2026
 
+## Tillegg fra skymiljøet, 22. oktober 2026
+
+Gamle GPS-utkast krypteres nå med verifisert migrering. Lese-/dekodingsfeil blokkerer overskriving og kan prøves igjen. Profilredigering bruker eksisterende RLS, og mellomlagret profil tømmes ved kontobytte. GPX-eksport krever bekreftelse og eierkontroll; den inneholder den originale ruten, men ingen private notater. Eksporterte filer er ukrypterte og må kunne leses av valgt mottaker. Native mellomfiler ryddes etter 24 timer ved neste oppstart/eksport. Se [presis oppførsel](app-reliability.md).
+
+Passordgjenoppretting er implementert i en senere kodeendring enn sikkerhetsgjennomgangen nedenfor, men full e-postflyt/SMTP er fortsatt ikke verifisert her. GPX er ikke full kontoeksport. Ingen ny penetrasjonstest eller produksjonsgodkjenning er utført.
+
+
 Dette er en avgrenset kode-, database- og avhengighetsgjennomgang, ikke en penetrasjonstest eller godkjenning for lansering.
 
 ## Verifisert og rettet
@@ -23,3 +30,9 @@ Dette er en avgrenset kode-, database- og avhengighetsgjennomgang, ikke en penet
 Fysisk native test og en uavhengig sikkerhetsgjennomgang bør fullføres før kundelansering.
 
 E-postbekreftelse er kontrollert mot offentlig Auth-settings-endepunkt: mailer_autoconfirm=false. Anonym REST-lesing av activities, posts og write_limits gir 401. CAPTCHA og full passordpolicy er fortsatt ikke verifisert.
+
+## Privat sikkerhetskopi og bakgrunnsopptak, 22. oktober 2026
+
+Den nye `workout_backups`-tabellen inneholder hele ruter og notater, separat fra skjermede sosiale innlegg. Eksplisitt aktivering per konto/enhet, eierbasert RLS, immutable/idempotente innsettinger, servervalidering og sletting er implementert og lokalt testet. Migreringen er ikke kjørt i Supabase. Dette er ikke ende-til-ende-kryptering eller full kontoeksport.
+
+Native GPS bruker bare en aktiv, eiet økt; pause/kontobytte stopper tjenesten. Krypteringsnøkkelen endres til iOS `AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY` for skriving med låst skjerm etter første opplåsing. Den migrerer tilgjengeligheten til samme nøkkel, ikke selve treningsdataene. Fysisk OS-/tillatelses-/lagringstest gjenstår. Se [avgrensninger](product-improvements.md).

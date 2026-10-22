@@ -6,7 +6,7 @@ import { SelectionMotion } from "../../components/motion";
 const tabs: { name: string; title: string; icon: IconName }[] = [
   { name: "index", title: "Hjem", icon: "home" },
   { name: "map", title: "Kart", icon: "map" },
-  { name: "track", title: "Registrer", icon: "record" },
+  { name: "track", title: "Tren", icon: "record" },
   { name: "community", title: "Løpere", icon: "people" },
   { name: "profile", title: "Du", icon: "user" },
 ];

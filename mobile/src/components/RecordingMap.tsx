@@ -1,5 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+  useWindowDimensions,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import LiveMap from "./LiveMap";
@@ -8,6 +14,9 @@ import { Recording, demoRoute } from "../features/tracking/simulator";
 import { GpsFix } from "../features/tracking/gps";
 import { duration, km, pace } from "../features/activities/model";
 import { MapKind } from "../features/maps/config";
+
+import { useTrackingStatus } from "../stores/useTrackingStatus";
+import { brand } from "../theme/tokens";
 
 export default function RecordingMap({
   recording: r,
@@ -24,6 +33,9 @@ export default function RecordingMap({
   resume: () => void;
   finish: () => void;
 }) {
+  const { width, fontScale } = useWindowDimensions();
+  const narrow = width < 360 || fontScale > 1.2;
+  const tracking = useTrackingStatus();
   const insets = useSafeAreaInsets();
   const [height, setHeight] = useState(700);
   const [panelHeight, setPanelHeight] = useState(280);
@@ -57,11 +69,21 @@ export default function RecordingMap({
               name: r.challenge.name,
               owner: "Sone · start",
               points: r.challenge.route,
-              color: "#7353C6",
+              color: brand.competition,
             },
           ]
-        : [],
-    [r.challenge],
+        : r.guide
+          ? [
+              {
+                id: "guide",
+                name: r.guide.name,
+                owner: "Din tidligere rute",
+                points: r.guide.route,
+                color: brand.competition,
+              },
+            ]
+          : [],
+    [r.challenge, r.guide],
   );
   const padding = useMemo(
     () => ({
@@ -129,10 +151,10 @@ export default function RecordingMap({
               s.dot,
               {
                 backgroundColor: paused
-                  ? "#B7A4FF"
+                  ? brand.lavender
                   : fresh
-                    ? "#356618"
-                    : "#FF8D79",
+                    ? brand.route
+                    : brand.coral,
               },
             ]}
           />
@@ -145,10 +167,12 @@ export default function RecordingMap({
           </Txt>
         </View>
       </View>
-      {!!r.challenge && (
+      {!!(r.challenge || r.guide) && (
         <View style={[s.challenge, { top: insets.top + 70 }]}>
           <Txt size={12} weight="700" style={{ color: "#4F3593" }}>
-            SONE · {r.challenge.name}
+            {r.challenge
+              ? `SONE · ${r.challenge.name}`
+              : `RUTE · ${r.guide?.name}`}
           </Txt>
           <Txt size={11} style={{ color: "#4F3593" }}>
             Lilla: valgt løype · grønn: ditt spor
@@ -157,19 +181,32 @@ export default function RecordingMap({
       )}
       {!expanded && (
         <View
-          style={[s.controls, { top: insets.top + (r.challenge ? 132 : 76) }]}
+          style={[
+            s.controls,
+            { top: insets.top + (r.challenge || r.guide ? 132 : 76) },
+          ]}
         >
-          {control("Nord opp", () => setNorth((n) => n + 1), undefined, "N ↑")}
-          {control(
-            kind === "standard" ? "Vis satellittkart" : "Vis standardkart",
-            () => setKind(kind === "standard" ? "hybrid" : "standard"),
-            "layers",
-          )}
-          {control(
-            threeD ? "Vis i 2D" : "Vis i 3D",
-            () => setThreeD(!threeD),
-            undefined,
-            threeD ? "2D" : "3D",
+          {height - panelHeight >
+            insets.top + (r.challenge || r.guide ? 350 : 294) && (
+            <>
+              {control(
+                "Nord opp",
+                () => setNorth((n) => n + 1),
+                undefined,
+                "N ↑",
+              )}
+              {control(
+                kind === "standard" ? "Vis satellittkart" : "Vis standardkart",
+                () => setKind(kind === "standard" ? "hybrid" : "standard"),
+                "layers",
+              )}
+              {control(
+                threeD ? "Vis i 2D" : "Vis i 3D",
+                () => setThreeD(!threeD),
+                undefined,
+                threeD ? "2D" : "3D",
+              )}
+            </>
           )}
           {control(
             "Følg min posisjon",
@@ -208,9 +245,11 @@ export default function RecordingMap({
               onPress={() => setExpanded(!expanded)}
               style={s.expand}
             >
-              <Txt size={22} style={{ color: paused ? "#4F3593" : "white" }}>
-                {expanded ? "↙" : "↗"}
-              </Txt>
+              <Icon
+                name={expanded ? "collapse" : "expand"}
+                size={22}
+                color={paused ? "#4F3593" : "white"}
+              />
             </Pressable>
           </View>
           <ScrollView
@@ -247,11 +286,17 @@ export default function RecordingMap({
         <View style={[s.dock, { paddingBottom: Math.max(16, insets.bottom) }]}>
           <View style={s.handle} />
           {paused ? (
-            <View style={s.actions}>
-              <View style={{ flex: 1 }}>
-                <Button title="Fortsett" icon="play" large onPress={resume} />
+            <View style={[s.actions, narrow && { flexDirection: "column" }]}>
+              <View style={!narrow && { flex: 1 }}>
+                <Button
+                  title={tracking.starting ? "Starter …" : "Fortsett"}
+                  disabled={tracking.starting}
+                  icon="play"
+                  large
+                  onPress={resume}
+                />
               </View>
-              <View style={{ flex: 1 }}>
+              <View style={!narrow && { flex: 1 }}>
                 <Button
                   title="Fullfør"
                   icon="check"
@@ -272,7 +317,9 @@ export default function RecordingMap({
           )}
           <Txt size={10} style={{ textAlign: "center", color: "#596579" }}>
             {gps
-              ? "Hold appen åpen · opptaket pauser i bakgrunnen"
+              ? tracking.backgroundActive
+                ? "GPS-opptak fortsetter med låst skjerm"
+                : "Hold appen åpen · opptaket pauser i bakgrunnen"
               : "Eksempelfart og illustrert rute · lagres aldri som GPS"}
           </Txt>
         </View>

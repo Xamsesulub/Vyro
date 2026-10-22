@@ -3,6 +3,7 @@ import { AppState } from "react-native";
 import * as Location from "expo-location";
 import { useAppStore } from "../stores/useAppStore";
 import { useLocationStore } from "../stores/useLocationStore";
+import { useTrackingStatus } from "../stores/useTrackingStatus";
 import { useAuthStore } from "../stores/useAuthStore";
 
 // One foreground watcher for the whole app. It runs while a GPS session records
@@ -24,7 +25,9 @@ export function LocationWatcher() {
   const recording = useAppStore(
     (s) => s.recording.mode === "gps" && s.recording.status === "recording",
   );
+  const backgroundActive = useTrackingStatus((s) => s.backgroundActive);
   const active =
+    !backgroundActive &&
     foreground &&
     granted &&
     (viewing || recording) &&

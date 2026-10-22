@@ -53,6 +53,10 @@ export function Txt({
   );
 }
 const paths = {
+  chevronUp: "m6 15 6-6 6 6",
+  chevronDown: "m6 9 6 6 6-6",
+  expand: "M14 3h7v7M21 3l-7 7M3 14v7h7M3 21l7-7",
+  collapse: "M21 3l-7 7m0-7v7h7M3 21l7-7m-7 0h7v7",
   locate:
     "M12 2v3 M12 19v3 M2 12h3 M19 12h3 M19 12a7 7 0 1 1-14 0 7 7 0 0 1 14 0 M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0",
   layers: "m12 3 9 5-9 5-9-5 9-5Z M3 12l9 5 9-5 M3 16l9 5 9-5",

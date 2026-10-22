@@ -28,8 +28,10 @@
         "expo-location",
         {
           "locationWhenInUsePermission": "VYRO bruker posisjonen din for å vise kartet og måle distansen mens du trener.",
-          "isIosBackgroundLocationEnabled": false,
-          "isAndroidBackgroundLocationEnabled": false
+          "isIosBackgroundLocationEnabled": true,
+          "isAndroidBackgroundLocationEnabled": true,
+          "isAndroidForegroundServiceEnabled": true,
+          "locationAlwaysAndWhenInUsePermission": "VYRO bruker posisjonen under en økt du starter, også med låst skjerm når du velger bakgrunnsopptak."
         }
       ],
       [
@@ -41,7 +43,8 @@
         }
       ],
       "@rnmapbox/maps",
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-sharing"
     ]
   }
 }

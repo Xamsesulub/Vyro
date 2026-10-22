@@ -8,13 +8,34 @@ import { initialRecording } from "../features/tracking/simulator";
 
 // Recover drafts from the previous recorder without starting a second GPS watcher.
 export default function RecordGps() {
-  const { draft, ready } = useGpsStore();
+  const { draft, ready, error } = useGpsStore();
   const userId = useAuthStore((s) => s.session?.user.id);
   const status = useAppStore((s) => s.recording.status);
   if (!ready)
     return (
       <Screen>
         <Txt>Laster økten …</Txt>
+      </Screen>
+    );
+  if (error)
+    return (
+      <Screen>
+        <Txt size={24}>Kunne ikke åpne det tidligere GPS-utkastet</Txt>
+        <Txt>
+          Utkastet er beholdt. Prøv igjen når enheten er låst opp og har ledig
+          plass.
+        </Txt>
+        <Button
+          title="Prøv gjenoppretting igjen"
+          onPress={() => {
+            void useGpsStore.persist.rehydrate();
+          }}
+        />
+        <Button
+          title="Til treningsskjermen"
+          secondary
+          onPress={() => router.replace("/(tabs)/track")}
+        />
       </Screen>
     );
   if (!draft) return <Redirect href="/(tabs)/track" />;

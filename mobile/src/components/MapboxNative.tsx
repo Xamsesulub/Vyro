@@ -28,13 +28,13 @@ export default function MapboxNative({
   padding,
   onPan,
 }: LiveMapProps) {
-  const base = mapKind === "standard" ? "standard" : "satellite";
+  const base = mapKind;
   const mapStyle = useMemo(
     () => createMapStyle(base, false, false, false),
     [base],
   );
   const config = useMemo(
-    () => createMapStyle(mapKind, poi, false, threeD).imports![0].config!,
+    () => createMapStyle(mapKind, poi, false, threeD).imports?.[0]?.config,
     [mapKind, poi, threeD],
   );
   const skipFit = useRef(false);
@@ -105,11 +105,13 @@ export default function MapboxNative({
         }}
         onMapLoadingError={() => setFailed(true)}
       >
-        <Mapbox.StyleImport
-          id="basemap"
-          existing
-          config={config as Record<string, string | boolean>}
-        />
+        {config && (
+          <Mapbox.StyleImport
+            id="basemap"
+            existing
+            config={config as Record<string, string | boolean>}
+          />
+        )}
         {contours && (
           <Mapbox.VectorSource
             id="terrainContours"
@@ -118,7 +120,7 @@ export default function MapboxNative({
             <Mapbox.LineLayer
               id="terrain-contours"
               sourceLayerID="contour"
-              slot="middle"
+              slot={mapKind === "satellite" ? undefined : "middle"}
               minZoomLevel={12}
               style={{
                 lineColor: "#8C8466",
@@ -149,7 +151,7 @@ export default function MapboxNative({
         <Mapbox.ShapeSource id="workout" shape={shape}>
           <Mapbox.LineLayer
             id="route-outline"
-            slot="top"
+            slot={mapKind === "satellite" ? undefined : "top"}
             filter={["==", ["geometry-type"], "LineString"]}
             style={{
               lineColor: "white",
@@ -161,7 +163,7 @@ export default function MapboxNative({
           />
           <Mapbox.LineLayer
             id="route"
-            slot="top"
+            slot={mapKind === "satellite" ? undefined : "top"}
             filter={["==", ["geometry-type"], "LineString"]}
             style={{
               lineColor: ["get", "color"],
@@ -172,7 +174,7 @@ export default function MapboxNative({
           />
           <Mapbox.CircleLayer
             id="position-aura"
-            slot="top"
+            slot={mapKind === "satellite" ? undefined : "top"}
             filter={["==", ["get", "kind"], "position"]}
             style={{
               circleColor: "#1689F8",
@@ -182,7 +184,7 @@ export default function MapboxNative({
           />
           <Mapbox.CircleLayer
             id="points"
-            slot="top"
+            slot={mapKind === "satellite" ? undefined : "top"}
             filter={["==", ["geometry-type"], "Point"]}
             style={{
               circleColor: ["get", "color"],
@@ -193,7 +195,7 @@ export default function MapboxNative({
           />
           <Mapbox.SymbolLayer
             id="names"
-            slot="top"
+            slot={mapKind === "satellite" ? undefined : "top"}
             filter={["==", ["geometry-type"], "Point"]}
             style={{
               textField: ["get", "label"],

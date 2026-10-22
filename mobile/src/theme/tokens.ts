@@ -1,4 +1,6 @@
 export const brand = {
+  route: "#356618",
+  competition: "#7353C6",
   navy: "#11182C",
   lime: "#B2FF78",
   lavender: "#B7A4FF",

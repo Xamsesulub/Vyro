@@ -1,0 +1,35 @@
+# EAS uploads from the Git root. This replaces all .gitignore rules for uploads.
+node_modules/
+.git/
+.env
+.env.*
+.expo/
+dist/
+web-build/
+coverage/
+*.log
+*.tsbuildinfo
+.DS_Store
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.pem
+*.mobileprovision
+credentials.json
+expo-env.d.ts
+.metro-health-check*
+.claude/
+.codex/
+.agents/
+mobile/.hosting-site/
+mobile/.hosting-artifacts/
+mobile/.openai/
+mobile/ios/
+mobile/android/
+
+# Keep presentation material in the repository; it is not needed by EAS.
+/docs/
+/.github/

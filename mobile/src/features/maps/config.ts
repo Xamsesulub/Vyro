@@ -63,26 +63,40 @@ export function createMapStyle(
   contours = true,
   threeD = false,
 ): StyleSpecification {
+  const imagery = kind !== "standard";
   return {
-    ...mapStyle,
-    imports: [
-      {
-        id: "basemap",
-        url:
-          kind === "standard"
-            ? "mapbox://styles/mapbox/standard"
-            : "mapbox://styles/mapbox/standard-satellite",
-        config: {
-          lightPreset: "day",
-          show3dObjects: threeD,
-          showPedestrianRoads: true,
-          showPointOfInterestLabels: kind !== "satellite" && poi,
-          showRoadLabels: kind !== "satellite",
-          showPlaceLabels: kind !== "satellite" && poi,
-        },
-      },
-    ],
+    version: 8,
+    glyphs: mapStyle.glyphs,
+    // Pure satellite is a raster basemap. Hybrid puts the same photographs above
+    // Standard's land/water polygons, with roads and labels above in its bottom slot.
+    ...(kind !== "satellite"
+      ? {
+          imports: [
+            {
+              id: "basemap",
+              url: "mapbox://styles/mapbox/standard",
+              config: {
+                lightPreset: "day",
+                show3dObjects: threeD,
+                showPedestrianRoads: true,
+                showPointOfInterestLabels: poi,
+                showRoadLabels: true,
+                showPlaceLabels: poi,
+              },
+            },
+          ],
+        }
+      : {}),
     sources: {
+      ...(imagery
+        ? {
+            satelliteImagery: {
+              type: "raster" as const,
+              url: "mapbox://mapbox.satellite",
+              tileSize: 256,
+            },
+          }
+        : {}),
       ...(contours ? mapStyle.sources : {}),
       ...(threeD
         ? {
@@ -95,7 +109,25 @@ export function createMapStyle(
           }
         : {}),
     },
-    layers: contours ? mapStyle.layers : [],
+    layers: [
+      ...(imagery
+        ? [
+            {
+              id: "satellite-imagery",
+              type: "raster" as const,
+              source: "satelliteImagery",
+              ...(kind === "hybrid" ? { slot: "bottom" } : {}),
+              paint: { "raster-opacity": 1 },
+            },
+          ]
+        : []),
+      ...(contours
+        ? mapStyle.layers.map((layer) => ({
+            ...layer,
+            slot: kind === "satellite" ? undefined : layer.slot,
+          }))
+        : []),
+    ],
     ...(threeD ? { terrain: { source: "terrainDem", exaggeration: 1 } } : {}),
   };
 }

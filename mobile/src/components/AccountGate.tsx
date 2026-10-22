@@ -5,28 +5,18 @@ import { useAuthStore } from "../stores/useAuthStore";
 import { useAppStore } from "../stores/useAppStore";
 import { Button, Screen, Txt, Logo, Icon, useTheme } from "./ui";
 import { MovementLine, Reveal } from "./motion";
+import { AuthLoading } from "./AuthLoading";
 
 export function AccountGate({ children }: PropsWithChildren) {
-  const { ready, session, initializationSlow, confirmationEmail } =
-    useAuthStore();
+  const { ready, session, confirmationEmail } = useAuthStore();
   const c = useTheme();
   useEffect(() => {
-    if (!session) router.prefetch("/account");
-  }, [session]);
-  if (!ready)
-    return (
-      <Screen>
-        <Txt>Laster konto …</Txt>
-      </Screen>
-    );
+    if (ready && !session) router.prefetch("/account");
+  }, [ready, session]);
+  if (!ready && !session) return <AuthLoading />;
   if (!session)
     return (
       <Screen>
-        {initializationSlow && (
-          <Txt muted>
-            Det tar litt tid å hente kontoen. Du kan prøve å logge inn på nytt.
-          </Txt>
-        )}
         {!!confirmationEmail && (
           <Txt muted>
             Du er ikke innlogget ennå. Bekreft e-posten for å bruke kontoen i

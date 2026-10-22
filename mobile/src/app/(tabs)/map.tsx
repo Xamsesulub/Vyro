@@ -17,6 +17,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { Txt, Icon } from "../../components/ui";
+import { MapRouteSheet } from "../../components/MapRouteSheet";
 import LiveMap from "../../components/LiveMap";
 import { demoTurfs, people } from "../../features/social/demo";
 import { useSocialStore } from "../../stores/useSocialStore";
@@ -27,7 +28,7 @@ import { useSavedRoutes } from "../../stores/useSavedRoutes";
 import { searchPlaces, type Place } from "../../features/maps/search";
 import type { MapKind } from "../../features/maps/config";
 import { useVisibleWorkouts } from "../../features/activities/useVisibleWorkouts";
-import { palettes } from "../../theme/tokens";
+import { brand, palettes } from "../../theme/tokens";
 
 // Map panels stay light even when the surrounding app uses the dark theme.
 function MapText({ style, muted, ...props }: ComponentProps<typeof Txt>) {
@@ -86,6 +87,7 @@ export default function Maps() {
   const [filter, setFilter] = useState("Følger");
   const [index, setIndex] = useState(0);
   const [expanded, setExpanded] = useState(false);
+  const [panelHeight, setPanelHeight] = useState(300);
   const [height, setHeight] = useState(700);
   const [follow, setFollow] = useState(false);
   const [recenter, setRecenter] = useState(0);
@@ -114,7 +116,7 @@ export default function Maps() {
         seconds: w.seconds,
         distance: w.distance,
         points: w.route!,
-        color: "#DF4B20",
+        color: brand.route,
         example: false,
       }));
     const demo = examples
@@ -149,7 +151,7 @@ export default function Maps() {
               name: turf.name,
               owner: owner?.name ?? "",
               points: turf.points,
-              color: "#DF4B20",
+              color: brand.route,
             },
           ]
         : [],
@@ -159,14 +161,14 @@ export default function Maps() {
     () => ({
       top: 150 + insets.top,
       right: 68,
-      bottom: expanded ? 360 : 280,
+      bottom: panelHeight + 52,
       left: 35,
     }),
-    [expanded, insets.top],
+    [panelHeight, insets.top],
   );
   return (
     <View
-      style={{ flex: 1, backgroundColor: "#E5EDE4" }}
+      style={{ flex: 1, backgroundColor: "#E5EDE4", overflow: "hidden" }}
       onLayout={(e) => setHeight(e.nativeEvent.layout.height)}
     >
       <LiveMap
@@ -188,7 +190,7 @@ export default function Maps() {
       <View pointerEvents="box-none" style={[s.top, { top: insets.top + 16 }]}>
         <View style={s.heading}>
           <View style={s.brand}>
-            <Icon name="run" color="#DF4B20" size={24} />
+            <Icon name="run" color={brand.route} size={24} />
           </View>
           <Pressable
             accessibilityRole="button"
@@ -217,7 +219,7 @@ export default function Maps() {
             <MapText
               weight="600"
               size={13}
-              style={{ color: savedOnly ? "#DF4B20" : "#11182C" }}
+              style={{ color: savedOnly ? brand.route : "#11182C" }}
             >
               ☆ Lagret
             </MapText>
@@ -275,7 +277,16 @@ export default function Maps() {
           </Pressable>
         </ScrollView>
       </View>
-      <View style={[s.controls, { top: insets.top + 145 }]}>
+      <View
+        style={[
+          s.controls,
+          { top: insets.top + 145 },
+          height - panelHeight - 36 < insets.top + 435 && {
+            flexDirection: "row",
+            gap: 8,
+          },
+        ]}
+      >
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Nord opp"
@@ -350,122 +361,129 @@ export default function Maps() {
             </MapText>
           </View>
         )}
-        <View style={s.card}>
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
-            <View style={s.tag}>
-              <View style={s.dot} />
-              <MapText size={11} weight="700">
-                {turf?.example
-                  ? "EKSEMPEL-TURF"
-                  : turf
-                    ? "DIN LAGREDE GPS-RUTE"
-                    : "RUTER"}
-              </MapText>
-            </View>
-            {!!turf && (
+        <MapRouteSheet
+          maxHeight={Math.max(100, Math.min(420, height - insets.top - 230))}
+          onHeightChange={setPanelHeight}
+        >
+          <View style={s.card}>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <View style={s.tag}>
+                <View style={s.dot} />
+                <MapText size={11} weight="700">
+                  {turf?.example
+                    ? "EKSEMPEL-TURF"
+                    : turf
+                      ? "DIN LAGREDE GPS-RUTE"
+                      : "RUTER"}
+                </MapText>
+              </View>
+              {!!turf && (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={
+                    saved.ids.includes(turf.id)
+                      ? "Fjern lagret rute"
+                      : "Lagre ruten"
+                  }
+                  onPress={() => saved.toggle(turf.id)}
+                  style={{ padding: 12, marginLeft: "auto" }}
+                >
+                  <MapText size={20}>
+                    {saved.ids.includes(turf.id) ? "★" : "☆"}
+                  </MapText>
+                </Pressable>
+              )}
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel={
-                  saved.ids.includes(turf.id)
-                    ? "Fjern lagret rute"
-                    : "Lagre ruten"
+                  expanded ? "Skjul detaljer" : "Vis detaljer"
                 }
-                onPress={() => saved.toggle(turf.id)}
-                style={{ padding: 12, marginLeft: "auto" }}
+                onPress={() => setExpanded(!expanded)}
+                style={{
+                  minHeight: 44,
+                  minWidth: 44,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
               >
-                <MapText size={20}>
-                  {saved.ids.includes(turf.id) ? "★" : "☆"}
-                </MapText>
+                <MapText size={20}>{expanded ? "−" : "+"}</MapText>
               </Pressable>
+            </View>
+            <MapText size={21} weight="700">
+              {turf?.name ?? "Ingen ruter å vise"}
+            </MapText>
+            {turf ? (
+              <>
+                <View style={s.metrics}>
+                  <MapText weight="700">{km(turf.distance)} km</MapText>
+                  <MapText muted>·</MapText>
+                  <MapText weight="600">
+                    {duration(turf.seconds)}
+                    {turf.example ? " å slå" : " totalt"}
+                  </MapText>
+                </View>
+                <View
+                  style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
+                >
+                  <View style={s.avatar}>
+                    <MapText size={11} weight="700">
+                      {owner?.initials}
+                    </MapText>
+                  </View>
+                  <MapText size={13} muted>
+                    {turf.example
+                      ? `${owner?.name} eier eksempelruten`
+                      : "Din private GPS-rute"}
+                  </MapText>
+                  {turfs.length > 1 && (
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel="Neste turf"
+                      onPress={() => {
+                        setIndex((v) => v + 1);
+                        setFollow(false);
+                        setTarget(null);
+                      }}
+                      style={{ marginLeft: "auto", padding: 10 }}
+                    >
+                      <MapText size={13} weight="600">
+                        Neste →
+                      </MapText>
+                    </Pressable>
+                  )}
+                </View>
+              </>
+            ) : (
+              <MapText muted size={14}>
+                {savedOnly
+                  ? "Trykk på stjernen på en rute for å finne den her."
+                  : "Ingen ruter passer filteret. Lagre en GPS-økt, eller velg eksempler i innstillingene."}
+              </MapText>
+            )}
+            {expanded && (
+              <MapText muted size={13}>
+                Dette panelet viser private ruter og merkede eksempler. Åpne
+                Soner for konkurranseløyper. Slå hele løypa og velg om du vil
+                utvide den med resten av turen.
+              </MapText>
             )}
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={expanded ? "Skjul detaljer" : "Vis detaljer"}
-              onPress={() => setExpanded(!expanded)}
-              style={{
-                minHeight: 44,
-                minWidth: 44,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
+              accessibilityLabel="Start en økt"
+              onPress={() => router.push("/(tabs)/track")}
+              style={s.start}
             >
-              <MapText size={20}>{expanded ? "−" : "+"}</MapText>
+              <Icon name="record" size={20} color="#11182C" />
+              <MapText weight="700">Start en økt</MapText>
             </Pressable>
           </View>
-          <MapText size={21} weight="700">
-            {turf?.name ?? "Ingen ruter å vise"}
-          </MapText>
-          {turf ? (
-            <>
-              <View style={s.metrics}>
-                <MapText weight="700">{km(turf.distance)} km</MapText>
-                <MapText muted>·</MapText>
-                <MapText weight="600">
-                  {duration(turf.seconds)}
-                  {turf.example ? " å slå" : " totalt"}
-                </MapText>
-              </View>
-              <View
-                style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
-              >
-                <View style={s.avatar}>
-                  <MapText size={11} weight="700">
-                    {owner?.initials}
-                  </MapText>
-                </View>
-                <MapText size={13} muted>
-                  {turf.example
-                    ? `${owner?.name} eier eksempelruten`
-                    : "Din private GPS-rute"}
-                </MapText>
-                {turfs.length > 1 && (
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel="Neste turf"
-                    onPress={() => {
-                      setIndex((v) => v + 1);
-                      setFollow(false);
-                      setTarget(null);
-                    }}
-                    style={{ marginLeft: "auto", padding: 10 }}
-                  >
-                    <MapText size={13} weight="600">
-                      Neste →
-                    </MapText>
-                  </Pressable>
-                )}
-              </View>
-            </>
-          ) : (
-            <MapText muted size={14}>
-              {savedOnly
-                ? "Trykk på stjernen på en rute for å finne den her."
-                : "Ingen ruter passer filteret. Lagre en GPS-økt, eller velg eksempler i innstillingene."}
-            </MapText>
-          )}
-          {expanded && (
-            <MapText muted size={13}>
-              Dette panelet viser private ruter og merkede eksempler. Åpne Soner
-              for konkurranseløyper. Slå hele løypa og velg om du vil utvide den
-              med resten av turen.
-            </MapText>
-          )}
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Start en økt"
-            onPress={() => router.push("/(tabs)/track")}
-            style={s.start}
-          >
-            <Icon name="record" size={20} color="#11182C" />
-            <MapText weight="700">Start en økt</MapText>
-          </Pressable>
-        </View>
+        </MapRouteSheet>
       </View>
       <Modal
         visible={sheet !== null}
@@ -534,7 +552,7 @@ export default function Maps() {
                       style={{
                         flex: 1,
                         borderWidth: 2,
-                        borderColor: mapKind === kind ? "#DF4B20" : "#E7E9E5",
+                        borderColor: mapKind === kind ? brand.route : "#E7E9E5",
                         borderRadius: 14,
                         padding: 12,
                         alignItems: "center",
@@ -560,6 +578,14 @@ export default function Maps() {
                     </Pressable>
                   ))}
                 </View>
+                <MapText size={13} muted>
+                  {mapKind === "satellite"
+                    ? "Satellitt viser ekte fly- og satellittbilder uten veinavn."
+                    : mapKind === "hybrid"
+                      ? "Hybrid viser satellittbilder med veier og stedsnavn."
+                      : "Standard viser det vanlige veikartet."}{" "}
+                  2D/3D endrer bare synsvinkel og terreng.
+                </MapText>
                 {(
                   [
                     ["Stedsnavn og interessepunkter", poi, setPoi],
@@ -696,10 +722,9 @@ const s = StyleSheet.create({
     paddingBottom: 14,
     paddingTop: 4,
     gap: 8,
-    boxShadow: "0 4px 24px #11182C22",
   },
   tag: { flexDirection: "row", gap: 6, alignItems: "center" },
-  dot: { width: 7, height: 7, borderRadius: 4, backgroundColor: "#DF4B20" },
+  dot: { width: 7, height: 7, borderRadius: 4, backgroundColor: brand.route },
   metrics: { flexDirection: "row", gap: 10, alignItems: "center" },
   avatar: {
     width: 26,

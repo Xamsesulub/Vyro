@@ -1,6 +1,7 @@
 import type { FeatureCollection, Feature, Geometry } from "geojson";
 import { routeSegments, type Coord } from "../tracking/gps";
 import type { MapRoute } from "./config";
+import { brand } from "../../theme/tokens";
 export type LiveMapProps = {
   height?: number;
   attributionBottom?: number;
@@ -49,7 +50,7 @@ export function mapFeatures(
         },
       });
   };
-  add(route, "#356618", "Start");
+  add(route, brand.route, "Start");
   overlays.forEach((r) =>
     add(routeSegments(r.points), r.color, r.owner || r.name),
   );

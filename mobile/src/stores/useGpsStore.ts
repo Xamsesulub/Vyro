@@ -1,6 +1,7 @@
 import { create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { persist } from "zustand/middleware";
+import { workoutStorage } from "../lib/workoutStorage";
+import { bufferedStorage } from "../lib/bufferedStorage";
 import { Fix } from "../features/tracking/gps";
 type Draft = {
   id: string;
@@ -18,20 +19,15 @@ type State = {
 export const useGpsStore = create<State>()(
   persist((): State => ({ draft: null, ready: false, error: null }), {
     name: "vyro-gps-draft-v1",
-    storage: createJSONStorage(() => ({
-      getItem: (key: string) => AsyncStorage.getItem(key),
-      removeItem: (key: string) => AsyncStorage.removeItem(key),
-      setItem: async (key: string, value: string) => {
-        try {
-          await AsyncStorage.setItem(key, value);
-        } catch {
-          if (!useGpsStore.getState().error)
-            useGpsStore.setState({
-              error: "Kunne ikke lagre GPS-utkastet på enheten.",
-            });
-        }
-      },
-    })),
+    storage: bufferedStorage<{ draft: Draft | null }>(workoutStorage, {
+      delayMs: 0,
+      defer: () => false,
+      onError: () =>
+        useGpsStore.setState({
+          error: "Kunne ikke lagre GPS-utkastet på enheten.",
+        }),
+      onSuccess: () => {},
+    }),
     partialize: (s) => ({ draft: s.draft }),
     onRehydrateStorage: () => (_state, error) =>
       useGpsStore.setState({

@@ -1,4 +1,5 @@
 import WorkoutMap from "../../components/WorkoutMap";
+import { ExportWorkout } from "../../components/ExportWorkout";
 import { useState } from "react";
 import { View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
@@ -20,8 +21,9 @@ import { examples } from "../../features/activities/examples";
 import { duration, km, pace } from "../../features/activities/model";
 export default function Activity() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const s = useAppStore();
+  const remove = useAppStore((s) => s.remove);
   const workouts = useVisibleWorkouts();
+  const [repeatError, setRepeatError] = useState(false);
   const [confirm, setConfirm] = useState(false);
   const w = [...workouts, ...examples].find((item) => item.id === id);
   const back = () => {
@@ -69,6 +71,35 @@ export default function Activity() {
         </View>
       </Card>
 
+      {!!w.splits?.length && (
+        <Card>
+          <Txt weight="700">Kilometertider</Txt>
+          {w.splits.map((split) => (
+            <View key={split.kilometer} style={styles.row}>
+              <Txt>Km {split.kilometer}</Txt>
+              <Txt>{duration(split.seconds)}</Txt>
+            </View>
+          ))}
+        </Card>
+      )}
+      {w.source === "gps" && !!w.route && w.route.length > 1 && (
+        <>
+          <Button
+            title="Gjenta denne ruten"
+            icon="map"
+            onPress={() => {
+              if (useAppStore.getState().repeatRoute(w))
+                router.push("/(tabs)/track");
+              else setRepeatError(true);
+            }}
+          />
+          {repeatError && (
+            <Txt muted>
+              Fullfør den pågående økten før du velger en ny rute.
+            </Txt>
+          )}
+        </>
+      )}
       <Card>
         <View style={styles.row}>
           <Icon name="lock" />
@@ -81,12 +112,13 @@ export default function Activity() {
           {w.source === "example"
             ? "Dette er en fiktiv økt for å vise produktet."
             : w.source === "gps"
-              ? "Dette er den private kopien på enheten. Eventuell deling trekkes tilbake fra Hjem, uavhengig av lokal sletting."
+              ? "Dette er den private kopien på enheten. Eventuell sikkerhetskopi beholdes ved lokal sletting. Deling trekkes tilbake fra Hjem."
               : "Simuleringen er lagret lokalt. Den teller ikke som et ekte treningsopptak."}
         </Txt>
       </Card>
       {w.source !== "example" && (
         <>
+          <ExportWorkout key={w.id} workout={w} />
           {w.source === "gps" && w.sport === "Løping" && (
             <Button
               title="Bruk økten i en sone"
@@ -115,7 +147,7 @@ export default function Activity() {
             onPress={() => {
               if (!confirm) setConfirm(true);
               else {
-                s.remove(w.id);
+                remove(w.id);
                 router.replace("/(tabs)/profile");
               }
             }}

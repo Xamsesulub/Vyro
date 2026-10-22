@@ -2,6 +2,7 @@ import { useCallback, useState } from "react";
 import { router, useFocusEffect } from "expo-router";
 import { Button, Card, Txt } from "./ui";
 import { client } from "../features/social/api";
+import { isMissingReadFunction } from "../features/social/feed";
 import { km } from "../features/activities/model";
 type Event = {
   id: string;
@@ -17,12 +18,26 @@ export function TurfEvents({ userId }: { userId: string }) {
   useFocusEffect(
     useCallback(() => {
       let live = true;
+      const controller = new AbortController();
       async function load() {
         try {
+          const result = await client()
+            .rpc("vyro_turf_events")
+            .abortSignal(controller.signal);
+          if (!result.error) {
+            if (live) {
+              setEvents(result.data as Event[]);
+              setError(false);
+            }
+            return;
+          }
+          if (!isMissingReadFunction(result.error)) throw result.error;
           const f = await client()
             .from("follows")
             .select("following_id")
-            .eq("follower_id", userId);
+            .eq("follower_id", userId)
+            .limit(1000)
+            .abortSignal(controller.signal);
           if (f.error) throw f.error;
           const r = await client()
             .from("turf_events")
@@ -31,7 +46,8 @@ export function TurfEvents({ userId }: { userId: string }) {
             )
             .in("actor_id", [userId, ...f.data.map((p) => p.following_id)])
             .order("created_at", { ascending: false })
-            .limit(3);
+            .limit(3)
+            .abortSignal(controller.signal);
           if (r.error) throw r.error;
           if (live) {
             setEvents(r.data as unknown as Event[]);
@@ -47,6 +63,7 @@ export function TurfEvents({ userId }: { userId: string }) {
       void load();
       return () => {
         live = false;
+        controller.abort();
       };
     }, [userId]),
   );

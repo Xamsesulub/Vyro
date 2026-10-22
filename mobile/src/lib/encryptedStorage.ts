@@ -14,7 +14,7 @@ export function encryptedStorage(
   cipher: Cipher,
 ): StringStorage {
   let queue: Promise<unknown> = Promise.resolve();
-  let blocked = false;
+  const blocked = new Set<string>();
   const serial = <T>(work: () => Promise<T>): Promise<T> => {
     const next = queue.then(work);
     queue = next.catch(() => undefined);
@@ -29,25 +29,31 @@ export function encryptedStorage(
           if (encrypted !== null) {
             const value = await cipher.decrypt(encrypted);
             await storage.removeItem(key);
+            blocked.delete(key);
             return value;
           }
           const legacy = await storage.getItem(key);
-          if (legacy === null) return null;
+          if (legacy === null) {
+            blocked.delete(key);
+            return null;
+          }
           const sealed = await cipher.encrypt(legacy, true);
           await storage.setItem(target(key), sealed);
           const verified = await storage.getItem(target(key));
           if (verified === null || (await cipher.decrypt(verified)) !== legacy)
             throw new Error("Storage verification failed");
           await storage.removeItem(key);
+          blocked.delete(key);
           return legacy;
         } catch (error) {
-          blocked = true;
+          blocked.add(key);
           throw error;
         }
       }),
     setItem: (key, value) =>
       serial(async () => {
-        if (blocked) throw new Error("Storage locked after failed recovery");
+        if (blocked.has(key))
+          throw new Error("Storage locked after failed recovery");
         const existing = await storage.getItem(target(key));
         await storage.setItem(
           target(key),
@@ -56,7 +62,8 @@ export function encryptedStorage(
       }),
     removeItem: (key) =>
       serial(async () => {
-        if (blocked) throw new Error("Storage locked after failed recovery");
+        if (blocked.has(key))
+          throw new Error("Storage locked after failed recovery");
         await storage.removeItem(target(key));
         await storage.removeItem(key);
       }),

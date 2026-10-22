@@ -6,22 +6,40 @@ import Settings from "../src/app/settings";
 import { AccountGate } from "../src/components/AccountGate";
 import { observeAuth, useAuthStore } from "../src/stores/useAuthStore";
 import { supabase } from "../src/lib/supabase";
+import Home from "../src/app/(tabs)/index";
+import { acceptAuthSession } from "../src/stores/useAuthStore";
 
 jest.mock("expo-router", () => ({
   router: { prefetch: jest.fn(), push: jest.fn() },
+  useFocusEffect: (callback: () => void) =>
+    jest.requireActual("react").useEffect(callback, [callback]),
 }));
+jest.mock("react-native-safe-area-context", () => ({
+  SafeAreaView: jest.requireActual("react-native").View,
+}));
+jest.mock("../src/features/social/feed", () => ({
+  loadFeed: jest.fn(async () => ({ posts: [], next: null })),
+}));
+jest.mock("../src/components/CloudPost", () => ({ CloudPost: () => null }));
+jest.mock("../src/components/TurfEvents", () => ({ TurfEvents: () => null }));
 jest.mock("../src/lib/supabase", () => ({
   supabase: { auth: { onAuthStateChange: jest.fn() } },
 }));
-jest.mock("../src/stores/useAppStore", () => ({
-  useAppStore: () => ({
+jest.mock("../src/stores/useAppStore", () => {
+  const state = {
     name: "Lokalt navn",
     examplesVisible: false,
     goal: 20,
     theme: "light",
     preferences: jest.fn(),
-  }),
-}));
+    workouts: [],
+    storageError: null,
+  };
+  return {
+    useAppStore: (selector?: (value: typeof state) => unknown) =>
+      selector ? selector(state) : state,
+  };
+});
 jest.mock("../src/features/activities/useVisibleWorkouts", () => ({
   useVisibleWorkouts: () => [],
 }));
@@ -41,6 +59,7 @@ jest.mock("../src/components/ui", () => {
     Txt: Text,
     Icon: () => null,
     Logo: () => null,
+    Chip: () => null,
     styles: { row: {} },
     useTheme: () => ({ border: "#ddd", text: "#111", muted: "#555" }),
     Button: ({ title, disabled }: { title: string; disabled?: boolean }) =>
@@ -64,6 +83,7 @@ function Screens() {
       </AccountGate>
       <Profile />
       <Settings />
+      <Home />
     </View>
   );
 }
@@ -94,6 +114,7 @@ test("recovered login, token refresh and logout update home, profile and setting
     screen.getByRole("button", { name: "Konto og utlogging" }),
   ).toBeTruthy();
   expect(screen.queryByText(/Logg inn/)).toBeNull();
+  expect(screen.getByText("Turer å dele.")).toBeTruthy();
   await screen.unmount();
   await render(<Screens />);
   expect(screen.getByText("Kontonavn")).toBeTruthy();
@@ -126,6 +147,45 @@ test("a local name and pending confirmation never unlock private screens", async
   ).toBeTruthy();
   expect(screen.queryByText("Privat innhold")).toBeNull();
   expect(
-    screen.getByRole("button", { name: "Bekreft e-post eller logg inn" }),
+    screen.getAllByRole("button", { name: "Bekreft e-post eller logg inn" })
+      .length,
   ).toBeTruthy();
+});
+
+test("Home never flashes the sign-in page during slow recovery or a stale initial auth event", async () => {
+  jest.useFakeTimers();
+  let event!: (event: AuthChangeEvent, session: Session | null) => void;
+  (supabase!.auth.onAuthStateChange as jest.Mock).mockImplementation(
+    (listener) => {
+      event = listener;
+      return { data: { subscription: { unsubscribe: jest.fn() } } };
+    },
+  );
+  useAuthStore.setState({
+    session: null,
+    ready: false,
+    initializationSlow: false,
+    confirmationEmail: null,
+  });
+  const stop = observeAuth();
+  await render(<Home />);
+  await act(async () => {
+    await jest.advanceTimersByTimeAsync(9_000);
+  });
+  expect(screen.getByText(/gjenopprette innloggingen/)).toBeTruthy();
+  expect(
+    screen.queryByRole("button", { name: "Logg inn eller opprett konto" }),
+  ).toBeNull();
+  await act(() => acceptAuthSession({ user: { id: "signed-in" } } as Session));
+  await act(() => event("INITIAL_SESSION", null));
+  expect(screen.getByText("Turer å dele.")).toBeTruthy();
+  expect(
+    screen.queryByRole("button", { name: "Logg inn eller opprett konto" }),
+  ).toBeNull();
+  await act(() => event("SIGNED_OUT", null));
+  expect(
+    screen.getByRole("button", { name: "Logg inn eller opprett konto" }),
+  ).toBeTruthy();
+  stop?.();
+  jest.useRealTimers();
 });

@@ -5,6 +5,7 @@ jest.mock("../src/lib/supabase", () => ({
       onAuthStateChange: jest.fn(),
       exchangeCodeForSession: jest.fn(),
       setSession: jest.fn(),
+      getSession: jest.fn(),
     },
   },
 }));
@@ -12,7 +13,12 @@ jest.mock("expo-linking", () => ({
   createURL: jest.fn(() => "vyro://auth/callback"),
 }));
 import { supabase } from "../src/lib/supabase";
-import { observeAuth, useAuthStore } from "../src/stores/useAuthStore";
+import {
+  acceptAuthSession,
+  observeAuth,
+  retryAuthInitialization,
+  useAuthStore,
+} from "../src/stores/useAuthStore";
 import {
   completeAuthCode,
   completeTokenLink,
@@ -57,12 +63,12 @@ beforeEach(() => {
     confirmationEmail: null,
   });
 });
-test("slow initialization unblocks sign-in without granting a session; late recovery still works", async () => {
+test("slow initialization remains unresolved instead of claiming logout; late recovery still works", async () => {
   jest.useFakeTimers();
   const cleanup = observeAuth();
   await jest.advanceTimersByTimeAsync(8_000);
   expect(useAuthStore.getState()).toMatchObject({
-    ready: true,
+    ready: false,
     session: null,
     initializationSlow: true,
   });
@@ -129,4 +135,99 @@ test("an unsubscribed observer cannot clear a newer login", () => {
   useAuthStore.setState({ session, ready: true });
   callback("INITIAL_SESSION", null);
   expect(useAuthStore.getState().session).toBe(session);
+});
+
+test("a late initial snapshot cannot overwrite a successful sign-in", () => {
+  const cleanup = observeAuth();
+  const session = { user: { id: "new-login" } } as Session;
+  acceptAuthSession(session);
+  callback("INITIAL_SESSION", null);
+  expect(useAuthStore.getState()).toMatchObject({ session, ready: true });
+  callback("SIGNED_OUT", null);
+  expect(useAuthStore.getState().session).toBeNull();
+  cleanup?.();
+});
+
+test("a late initial snapshot cannot resurrect a signed-out account", () => {
+  const cleanup = observeAuth();
+  callback("SIGNED_OUT", null);
+  callback("INITIAL_SESSION", { user: { id: "old-login" } } as Session);
+  expect(useAuthStore.getState().session).toBeNull();
+  cleanup?.();
+});
+
+test("recovery retries are shared and cannot override a newer account", async () => {
+  let finish!: (value: unknown) => void;
+  (auth.getSession as jest.Mock).mockImplementation(
+    () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+  );
+  const first = retryAuthInitialization();
+  const second = retryAuthInitialization();
+  expect(auth.getSession).toHaveBeenCalledTimes(1);
+  const session = { user: { id: "new-account" } } as Session;
+  acceptAuthSession(session);
+  finish({ data: { session: null }, error: null });
+  await Promise.all([first, second]);
+  expect(useAuthStore.getState().session).toBe(session);
+});
+
+test("a failed recovery keeps auth unresolved; a successful retry can confirm a guest", async () => {
+  (auth.getSession as jest.Mock).mockResolvedValue({
+    data: { session: null },
+    error: new Error("offline"),
+  });
+  await retryAuthInitialization();
+  expect(useAuthStore.getState()).toMatchObject({
+    ready: false,
+    initializationSlow: true,
+  });
+  (auth.getSession as jest.Mock).mockResolvedValue({
+    data: { session: null },
+    error: null,
+  });
+  await retryAuthInitialization();
+  expect(useAuthStore.getState()).toMatchObject({
+    ready: true,
+    session: null,
+    initializationSlow: false,
+  });
+});
+
+test("an empty SDK initial event after a failed refresh does not pretend the user logged out", async () => {
+  jest.useFakeTimers();
+  (auth.getSession as jest.Mock).mockResolvedValue({
+    data: { session: null },
+    error: new Error("refresh unavailable"),
+  });
+  const cleanup = observeAuth();
+  callback("INITIAL_SESSION", null);
+  await jest.advanceTimersByTimeAsync(1);
+  expect(useAuthStore.getState()).toMatchObject({
+    ready: false,
+    initializationSlow: true,
+  });
+  cleanup?.();
+  jest.useRealTimers();
+});
+
+test("an empty initial snapshot is confirmed as a guest without holding the SDK callback lock", async () => {
+  jest.useFakeTimers();
+  (auth.getSession as jest.Mock).mockResolvedValue({
+    data: { session: null },
+    error: null,
+  });
+  const cleanup = observeAuth();
+  callback("INITIAL_SESSION", null);
+  expect(auth.getSession).not.toHaveBeenCalled();
+  await jest.advanceTimersByTimeAsync(1);
+  expect(useAuthStore.getState()).toMatchObject({
+    ready: true,
+    session: null,
+    initializationSlow: false,
+  });
+  cleanup?.();
+  jest.useRealTimers();
 });

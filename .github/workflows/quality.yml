@@ -1,0 +1,42 @@
+name: App quality
+
+on:
+  pull_request:
+    paths: ["mobile/**", "supabase/**", ".github/workflows/quality.yml"]
+  push:
+    branches: [main]
+    paths: ["mobile/**", "supabase/**", ".github/workflows/quality.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: mobile
+    env:
+      CI: "1"
+      EXPO_NO_TELEMETRY: "1"
+      EXPO_OFFLINE: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npm run typecheck
+      - run: npm run lint -- --no-cache
+      - run: npm test
+      - run: npm run test:database
+      - run: npm run export:web -- --max-workers 2
+      - run: npm run export:native -- --max-workers 2

@@ -56,3 +56,15 @@ test("queued writes preserve ordering", async () => {
   ]);
   expect(await s.adapter.getItem("data")).toBe("last");
 });
+
+test("an unavailable key can recover without losing data, and one corrupt store does not block other stores", async () => {
+  const s = setup();
+  s.values.set("draft.encrypted-v1", "sealed:private-route");
+  s.cipher.decrypt.mockRejectedValueOnce(new Error("device locked"));
+  await expect(s.adapter.getItem("draft")).rejects.toThrow();
+  await expect(s.adapter.setItem("draft", "defaults")).rejects.toThrow();
+  await s.adapter.setItem("other", "independent");
+  expect(await s.adapter.getItem("draft")).toBe("private-route");
+  await s.adapter.setItem("draft", "recovered");
+  expect(await s.adapter.getItem("draft")).toBe("recovered");
+});

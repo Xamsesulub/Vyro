@@ -10,6 +10,7 @@ import {
   validateAccount,
 } from "../features/auth/validation";
 import { authRedirectUrl } from "../features/auth/links";
+import { AuthLoading } from "../components/AuthLoading";
 
 export default function Account() {
   const c = useTheme();
@@ -106,7 +107,7 @@ export default function Account() {
           useAuthStore.setState({ confirmationEmail: email.trim() });
           setMode("login");
           setMessage(
-            "Du er ikke innlogget ennå. Åpne bekreftelseslenken i samme nettleser som du registrerte deg i. Sjekk også søppelpost. Har du allerede en bekreftet konto, kan du logge inn nedenfor.",
+            "Du er ikke innlogget ennå. Åpne bekreftelseslenken på denne enheten, og gå tilbake til appen eller nettleseren du registrerte deg i. Sjekk også søppelpost. Har du allerede en bekreftet konto, kan du logge inn nedenfor.",
           );
         } else {
           throw new Error("Missing session after sign-in");
@@ -123,12 +124,7 @@ export default function Account() {
     setVisible(false);
   }
 
-  if (!ready)
-    return (
-      <Screen>
-        <Txt>Laster konto …</Txt>
-      </Screen>
-    );
+  if (!ready && !session) return <AuthLoading />;
 
   return (
     <Screen>

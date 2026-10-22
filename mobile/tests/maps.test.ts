@@ -13,14 +13,34 @@ test("live position is a separate blue point, never a recorded route", () => {
   });
   expect(mapFeatures([], [], null).features).toEqual([]);
 });
-test("map layers distinguish satellite labels and enable terrain only in 3D", () => {
-  expect(
-    createMapStyle("satellite", true, false).imports?.[0].config
-      ?.showRoadLabels,
-  ).toBe(false);
+test("satellite and hybrid request photographic raster tiles independently of 2D/3D", () => {
+  for (const kind of ["satellite", "hybrid"] as const) {
+    for (const threeD of [false, true]) {
+      const style = createMapStyle(kind, true, false, threeD);
+      expect(style.sources.satelliteImagery).toEqual({
+        type: "raster",
+        url: "mapbox://mapbox.satellite",
+        tileSize: 256,
+      });
+      expect(
+        style.layers.find((layer) => layer.id === "satellite-imagery"),
+      ).toMatchObject({
+        type: "raster",
+        source: "satelliteImagery",
+        paint: { "raster-opacity": 1 },
+      });
+      expect(!!style.terrain).toBe(threeD);
+    }
+  }
+  expect(createMapStyle("satellite").imports).toBeUndefined();
+  expect(createMapStyle("satellite").layers[0].slot).toBeUndefined();
+  expect(createMapStyle("hybrid").layers[0].slot).toBe("bottom");
   expect(createMapStyle("hybrid").imports?.[0].config?.showRoadLabels).toBe(
     true,
   );
+  expect(
+    createMapStyle("standard", true, false).sources.satelliteImagery,
+  ).toBeUndefined();
   expect(createMapStyle("standard", true, false).layers).toEqual([]);
   expect(createMapStyle().terrain).toBeUndefined();
   expect(createMapStyle("standard", true, true, true).terrain).toEqual({

@@ -5,6 +5,12 @@ export type RecordingMode = "gps" | "simulation";
 export type RecordingChallenge = { id: string; name: string; route: Coord[] };
 export type Recording = {
   challenge?: RecordingChallenge;
+  guide?: { name: string; route: import("./gps").RoutePoint[] };
+  segmentStartedAt?: number;
+  segmentSeconds?: number;
+  lastDistanceSeconds?: number;
+  splitCheckpoint?: { kilometer: number; elapsedSeconds: number };
+  splits?: import("./splits").KilometerSplit[];
   status: "idle" | "recording" | "paused" | "finishing";
   sport: Sport;
   mode: RecordingMode;
@@ -63,6 +69,11 @@ export function transition(
       route: [[]],
       lastFix: null,
       turfTrace: [],
+      segmentStartedAt: now,
+      segmentSeconds: 0,
+      lastDistanceSeconds: 0,
+      splitCheckpoint: { kilometer: 0, elapsedSeconds: 0 },
+      splits: [],
     };
   if (event === "pause" && state.status === "recording")
     return { ...snapshot(state, now), status: "paused", startedAt: null };
@@ -73,6 +84,9 @@ export function transition(
       startedAt: now,
       route: [...state.route, []],
       lastFix: null,
+      segmentStartedAt: now,
+      segmentSeconds: state.seconds,
+      lastDistanceSeconds: state.seconds,
     };
   if (
     event === "finish" &&

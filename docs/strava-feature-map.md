@@ -19,10 +19,14 @@ Fjernet fra den synlige flyten: firetrinns introduksjon, erfaringsspørsmål, be
 
 Lys bakgrunn er standard. Eksisterende versjon-0-profiler migreres én gang til lyst tema, med økter og øvrige valg bevart. Mørkt tema er fortsatt et valg under innstillinger. VYRO beholder sitt eget navn, ikon og fargeidentitet.
 
-## Oppdatert status 20. oktober 2026 (erstatter prototypestatus over)
+## Historisk status 20. oktober 2026 (erstatter prototypestatus over)
 
 - Kart: ekte Mapbox på web og native-adapter, full kartflate, blå faktisk posisjon, Standard/Satellitt/Hybrid, 2D/3D, POI/høydekurver, nord opp, stedsøk, lokalt bokmerkede egne GPS-ruter/merkede eksempelruter og lengdefilter. Stedsøk er ikke anbefalinger av løperuter. Native og fysisk GPS må fortsatt verifiseres på enhet.
 - Konto og sosialt: Supabase Auth, PostgreSQL/RLS, følgerforhold og deling av GPS-økter er implementert. Ende-til-ende-test med to bekreftede brukere gjenstår.
 - Opptak: Henos sin Expo Location-flyt med private GPS-økter og pausegrenser er integrert. Ingen bakgrunns-GPS eller simulatorpublisering.
 - Turf: egen Soner-flyt med serverberegnet overtakelse og valgfri utvidelse, revisjonskontroll og feedhendelser er implementert og testet lokalt. Produksjonsmigrering 004 er aktiv etter eksplisitt godkjenning og vellykket etterkontroll. Dette er VYROs løypekonkurranse, ikke Strava-segmentparitet eller attestert fysisk løping. Se `social-and-turf.md`.
 - Mangler fortsatt fra kartreferansen: Strava-varmekart, vinterkart, ruteplanlegger, automatisk ruteforslag, underlags-/høyde-/vanskelighetsfiltre, offline kart og svingnavigasjon.
+
+## Oppdatert status 22. oktober 2026 (skymiljø)
+
+Treningsoversikt, søk/filtre, fleksible ukemål, milepæler, kilometertider/varsler og gjentakelse av egen rute er implementert. Tren erstatter fanenavnet Registrer. GPX-eksport og kontonavnredigering finnes. Valgfritt bakgrunnsopptak krever nytt mobilbygg/fysisk test; privat sikkerhetskopiering krever utrulling av ny RLS-migrering. Ingen automatisk simulatorpublisering. Se [produktforbedringer](product-improvements.md) og [testing](testing.md) for faktisk verifikasjon.

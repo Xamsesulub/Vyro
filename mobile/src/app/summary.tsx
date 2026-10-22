@@ -1,3 +1,4 @@
+import { useShallow } from "zustand/react/shallow";
 import { useState } from "react";
 import { TextInput, View } from "react-native";
 import { router } from "expo-router";
@@ -20,7 +21,13 @@ import { duration, km, pace } from "../features/activities/model";
 import { useAuthStore } from "../stores/useAuthStore";
 import { FinishStamp, Reveal } from "../components/motion";
 export default function Summary() {
-  const s = useAppStore();
+  const s = useAppStore(
+    useShallow((s) => ({
+      recording: s.recording,
+      save: s.save,
+      event: s.event,
+    })),
+  );
   const c = useTheme();
   const r = s.recording;
   const userId = useAuthStore((s) => s.session?.user.id);

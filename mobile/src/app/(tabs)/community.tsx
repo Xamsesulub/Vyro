@@ -22,6 +22,7 @@ function Runners({ userId }: { userId: string }) {
   useFocusEffect(
     useCallback(() => {
       let live = true;
+      const controller = new AbortController();
       async function load() {
         setLoading(true);
         setError("");
@@ -34,14 +35,23 @@ function Runners({ userId }: { userId: string }) {
             .limit(50);
           if (query)
             q = q.ilike("display_name", `%${query.replace(/[%_\\]/g, "")}%`);
-          const [p, f] = await Promise.all([
-            q,
-            client()
-              .from("follows")
-              .select("following_id")
-              .eq("follower_id", userId),
-          ]);
-          if (p.error || f.error) throw p.error || f.error;
+          const p = await q.abortSignal(controller.signal);
+          if (p.error) throw p.error;
+          if (!live) return;
+          // Fetch follow state only for the displayed people, not the entire graph.
+          const f = p.data.length
+            ? await client()
+                .from("follows")
+                .select("following_id")
+                .eq("follower_id", userId)
+                .in(
+                  "following_id",
+                  p.data.map((person) => person.id),
+                )
+                .limit(50)
+                .abortSignal(controller.signal)
+            : { data: [], error: null };
+          if (f.error) throw f.error;
           if (live) {
             setPeople(p.data ?? []);
             setFollowing((f.data ?? []).map((row) => row.following_id));
@@ -55,6 +65,7 @@ function Runners({ userId }: { userId: string }) {
       void load();
       return () => {
         live = false;
+        controller.abort();
       };
       // revision explicitly refreshes the same query after a tap.
       // eslint-disable-next-line react-hooks/exhaustive-deps

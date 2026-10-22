@@ -45,3 +45,33 @@ test("POI and 3D changes preserve basemap and sources; optional data loads only 
   applyMapOptions(map as unknown as MapboxMap, options);
   expect(terrain).toBeNull();
 });
+
+test("pure satellite never applies Standard import configuration or drops imagery when switching 3D", () => {
+  let terrain: unknown = null;
+  const map = {
+    getConfigProperty: jest.fn(),
+    setConfigProperty: jest.fn(),
+    getSource: jest.fn(() => true),
+    getLayer: jest.fn(() => false),
+    getTerrain: () => terrain,
+    setTerrain: jest.fn((value: unknown) => {
+      terrain = value;
+    }),
+    setStyle: jest.fn(),
+  };
+  for (const threeD of [true, false])
+    applyMapOptions(map as unknown as MapboxMap, {
+      mapKind: "satellite",
+      poi: true,
+      contours: false,
+      threeD,
+    });
+  expect(map.getConfigProperty).not.toHaveBeenCalled();
+  expect(map.setConfigProperty).not.toHaveBeenCalled();
+  expect(map.setStyle).not.toHaveBeenCalled();
+  expect(map.setTerrain).toHaveBeenNthCalledWith(1, {
+    source: "terrainDem",
+    exaggeration: 1,
+  });
+  expect(map.setTerrain).toHaveBeenNthCalledWith(2, null);
+});

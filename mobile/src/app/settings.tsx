@@ -1,11 +1,22 @@
+import { useShallow } from "zustand/react/shallow";
 import { Switch, TextInput, View } from "react-native";
 import { router } from "expo-router";
 import { Button, Screen, Txt, styles, useTheme } from "../components/ui";
-import { useAppStore } from "../stores/useAppStore";
+import { appPersistence, useAppStore } from "../stores/useAppStore";
 import { useAuthStore } from "../stores/useAuthStore";
+import { EditProfile } from "../components/EditProfile";
+import { BackupSettings } from "../components/BackupSettings";
 export default function Settings() {
-  const s = useAppStore();
+  const s = useAppStore(
+    useShallow((s) => ({
+      name: s.name,
+      theme: s.theme,
+      examplesVisible: s.examplesVisible,
+      preferences: s.preferences,
+    })),
+  );
   const c = useTheme();
+  const storageError = useAppStore((s) => s.storageError);
   const { session, ready, confirmationEmail } = useAuthStore();
   return (
     <Screen>
@@ -17,6 +28,15 @@ export default function Settings() {
       <Txt size={28} weight="700">
         Innstillinger
       </Txt>
+      {!!storageError && (
+        <Button
+          title="Prøv lokal lagring igjen"
+          secondary
+          onPress={() => {
+            void appPersistence.retry();
+          }}
+        />
+      )}
       <Button
         title={
           !ready
@@ -30,22 +50,29 @@ export default function Settings() {
         disabled={!ready}
         onPress={() => router.push("/account")}
       />
-      <Txt weight="600">Lokalt visningsnavn</Txt>
-      <TextInput
-        accessibilityLabel="Endre fornavn"
-        value={s.name}
-        onChangeText={(name) => s.preferences({ name })}
-        maxLength={30}
-        placeholder="Ditt navn"
-        placeholderTextColor={c.muted}
-        style={{
-          fontSize: 18,
-          color: c.text,
-          paddingVertical: 16,
-          borderBottomWidth: 1,
-          borderColor: c.border,
-        }}
-      />
+      {session && (
+        <EditProfile key={session.user.id} userId={session.user.id} />
+      )}
+      {!session && (
+        <>
+          <Txt weight="600">Lokalt visningsnavn</Txt>
+          <TextInput
+            accessibilityLabel="Endre fornavn"
+            value={s.name}
+            onChangeText={(name) => s.preferences({ name })}
+            maxLength={30}
+            placeholder="Ditt navn"
+            placeholderTextColor={c.muted}
+            style={{
+              fontSize: 18,
+              color: c.text,
+              paddingVertical: 16,
+              borderBottomWidth: 1,
+              borderColor: c.border,
+            }}
+          />
+        </>
+      )}
       <View style={styles.row}>
         <Txt>Mørkt utseende</Txt>
         <Switch
@@ -66,6 +93,9 @@ export default function Settings() {
           }
         />
       </View>
+      {session && (
+        <BackupSettings key={session.user.id} owner={session.user.id} />
+      )}
       <View
         style={{
           borderTopWidth: 1,

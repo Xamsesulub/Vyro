@@ -8,12 +8,9 @@ export type MapOptions = {
 };
 // Change individual layers, not the basemap. Preserve camera, routes and source cache.
 export function applyMapOptions(map: Map, options: MapOptions) {
-  const config = createMapStyle(
-    options.mapKind,
-    options.poi,
-    false,
-    options.threeD,
-  ).imports![0].config!;
+  const config =
+    createMapStyle(options.mapKind, options.poi, false, options.threeD)
+      .imports?.[0]?.config ?? {};
   for (const [name, value] of Object.entries(config)) {
     if (map.getConfigProperty("basemap", name) !== value)
       map.setConfigProperty("basemap", name, value);
@@ -21,7 +18,10 @@ export function applyMapOptions(map: Map, options: MapOptions) {
   if (options.contours && !map.getSource("terrainContours")) {
     const style = createMapStyle("standard", false, true, false);
     map.addSource("terrainContours", style.sources.terrainContours);
-    map.addLayer(style.layers[0]);
+    map.addLayer({
+      ...style.layers[0],
+      slot: options.mapKind === "satellite" ? undefined : style.layers[0].slot,
+    });
   }
   if (map.getLayer("terrain-contours"))
     map.setLayoutProperty(

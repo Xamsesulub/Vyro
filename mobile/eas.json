@@ -1,0 +1,26 @@
+{
+  "cli": {
+    "version": ">= 25.3.0",
+    "appVersionSource": "remote",
+    "promptToConfigurePushNotifications": false
+  },
+  "build": {
+    "production": {
+      "distribution": "store",
+      "environment": "production",
+      "node": "24.19.0",
+      "autoIncrement": true
+    },
+    "testflight": {
+      "extends": "production",
+      "ios": {
+        "simulator": false
+      }
+    }
+  },
+  "submit": {
+    "testflight": {
+      "ios": {}
+    }
+  }
+}

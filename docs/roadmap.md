@@ -1,5 +1,34 @@
 # Leveranseplan
 
+## TestFlight-klargjøring, 22. oktober 2026 (skymiljø)
+
+EAS-profiler for butikkbygg og TestFlight, automatisk byggnummer, tidlig kontroll av innloggings-/kartkonfigurasjon og avgrenset kildeopplasting er lagt til. Appen beholder eksisterende Supabase-innlogging og mobilcallback. Kontoer og offentlige miljøinnstillinger må kobles før et ekte bygg kan startes: EAS er ikke innlogget her, og ingen IPA eller TestFlight-opplasting er laget. Se [oppsett og installasjon](testflight.md).
+
+## Kartpanel og satellittbilder, 22. oktober 2026
+
+Kartets rutepanel kan nå dras ned til et lite håndtak og opp igjen. «Dra ned for å se kartet» / «Vis ruten · dra opp» forklarer bevegelsen; trykk og tastatur gir samme funksjon. Detaljer er rullbare på små skjermer, kartknappene flyttes til én rad når de ellers ville blitt dekket, og kamerautsikten tilpasses panelets synlige høyde.
+
+Satellitt bruker et eksplisitt fotografisk rasterlag fra `mapbox://mapbox.satellite`. Hybrid legger samme bildelag over land-/vannflatene og under Standard-kartets veier/etiketter. 2D/3D endrer vinkel/terreng. Et karttypevalg som skjer før kartmotoren er lastet, blir nå respektert. Endringene er lokale; den tidligere offentlige testlenken er ikke oppdatert. Se [kontrollene](testing.md).
+
+## Treningsfunksjoner og design, 22. oktober 2026 (skymiljø)
+
+Treningslogg med søk/filtre, mål for økter/minutter/kilometer, personlige milepæler, kilometertider med valgfrie varsler og «Gjenta denne ruten» er implementert. Du og Fremgang er samlet, opptaksfanen heter Tren, Hjem er forenklet, og treningsknappene tilpasser seg smal skjerm.
+
+Valgfritt bakgrunnsopptak og privat sikkerhetskopiering er implementert i appen. Backup-migreringen er testet lokalt, men **ikke aktivert i Supabase**. Bakgrunns-GPS krever nytt native bygg og fysisk test på iOS/Android. Ingen produksjonsutrulling eller belastningsgaranti. Se [leveransen og avgrensningene](product-improvements.md).
+
+## Pålitelighet og nyttige integrasjoner, 22. oktober 2026 (skymiljø)
+
+Samlet lagring hvert femte sekund under opptak, avgrenset skrivekø, umiddelbar lagring ved pause/avslutning og færre unødvendige skjermoppdateringer er implementert. Oppstart og gamle GPS-utkast har tryggere gjenoppretting uten overskriving ved lesefeil. Eldre GPS-utkast krypteres nå også. Renderfeil pauser opptaket og gir en norsk gjenopprettingsside.
+
+Innloggede kan redigere det faktiske kontonavnet i Supabase. Egne GPS-ruter kan eksporteres som GPX etter et uttrykkelig valg; simuleringer og andre kontoers ruter avvises. GitHub Actions-arbeidsflyt er lagt til for installasjon, kodekontroller, lokale databasetester og eksport på tre plattformer. Ingen produksjonsutrulling eller fysisk mobiltest er utført i denne runden. Se [detaljer og begrensninger](app-reliability.md).
+
+
+## Kontosesjon og feedytelse, 23. oktober 2026
+
+Hjem beholder ventestatus til kontosesjonen er avklart. Treg oppstart eller et tomt startsvar etter en mislykket tokenfornyelse regnes ikke som utlogging, og eldre startsvar kan ikke overskrive en nyere innlogging eller utlogging. Gjenoppretting kan prøves igjen.
+
+Feeden har sidevisning med stabil markør, virtualisert liste og rutekart som lastes ved åpning. Ny databasefunksjon samler innleggsdata og reaksjoner i ett kall uten å hente hele følgerlisten; sonehendelser har eget avgrenset kall. Løpersøk henter følgestatus bare for de viste profilene. Migreringen er testet lokalt, men er **ikke kjørt i Supabase** fra dette skymiljøet. Appen støtter eksisterende backend mens utrulling gjenstår. Se [backendytelse og utrulling](backend-performance.md).
+
 ## Tydelig kontostatus, 23. oktober 2026
 
 Den offentlige nettversjonen skiller nå mellom gjest, ventende e-postbekreftelse og innlogget konto. Alle sider bruker samme sesjon; vellykket e-postcallback oppdaterer denne før navigasjon. Kontosiden venter på gjenoppretting, og utlogging fjerner sesjonen globalt. Ventende bekreftelsesadresse beholdes mellom skjermbytter i samme appøkt, ikke etter full omlasting. 75 tester består. Site URL og eksakt offentlig callback er nå lagret og kontrollert i Supabase. Egen SMTP og full test av offentlig registrering/bekreftelsesmail gjenstår.

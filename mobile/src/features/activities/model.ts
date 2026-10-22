@@ -14,6 +14,7 @@ export type Workout = {
   ownerId?: string;
   turfId?: string;
   turfTrace?: import("../turf/rules").Sample[];
+  splits?: import("../tracking/splits").KilometerSplit[];
 };
 export function duration(seconds: number) {
   const total = Math.max(0, Math.floor(seconds));

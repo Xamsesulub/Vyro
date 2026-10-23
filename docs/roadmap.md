@@ -1,5 +1,9 @@
 # Leveranseplan
 
+## Presentasjon på VibeOff, 23. oktober 2026
+
+Fem ekte skjermbilder og norsk prosjektbeskrivelse er klargjort som et privat VibeOff-utkast. En separat lokal visning bruker fiktive brukere og eksempeløkter; den samler ikke GPS og skriver ikke til produksjonen. Brukeren publiserer selv etter gjennomgang. Se `showcase/vibeoff/README.md`. Dette er en prosjektpresentasjon, ikke en produksjonslansering; de gjenstående mobil-, e-post- og personverntestene gjelder fortsatt.
+
 ## Innlogging og skytilkobling, 23. oktober 2026
 
 Denne PC-en er koblet til eksisterende VYRO-prosjekt i Supabase. URL og offentlig nøkkel ligger i Git-ignorert `mobile/.env.local`. Backend kjører i skyen og er ikke avhengig av den gamle PC-en. Ingen ny database eller migrering er opprettet.

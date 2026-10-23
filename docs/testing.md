@@ -1,5 +1,13 @@
 # Testing
 
+## VibeOff-demovisning, 23. oktober 2026
+
+- Nettleserverktøyet fikk tilgang til localhost i denne runden. Fem ekte skjermbilder er kontrollert og lagret i `showcase/vibeoff/`. Kartfliser, rute, lesbare kartpaneler, eksempelinnlegg, fiktive løpere og profilstatistikk ble visuelt kontrollert i appens webeksport.
+- Innebygd simulering: start, store målinger og pause kontrollert i UI. Bildet viser aktiv simulering; økten ble deretter satt på pause. Ingen fysisk GPS, produksjonskonto eller produksjonsskriving inngår i denne kontrollen.
+- Isolert fixture på localhost:8103 bruker fiktive profiler og omdirigerer Supabase-fetch lokalt; mutasjoner avvises. Brukerens vanlige app og innlogging på localhost:8081 beholdes separat.
+- Typecheck og lint uten cache bestått etter fixture-endringen. Appkoden og den tidligere verifiserte eksporten er uendret i denne runden. De 68 apptestene og 73 databasekontrollene fra forrige runde er ikke kjørt på nytt for dokumentasjon og skjermbilder.
+- VibeOff svarte HTTP 201 med privat utkast. Fem bilder, bildetekster og hele beskrivelsen av videre arbeid ble bekreftet på gjennomgangssiden og i redigeringsskjemaet. Publisering på brukerens konto gjenstår.
+
 ## Innlogging og backend på ny PC, 23. oktober 2026
 
 - Lokal `.env.local` er konfigurert mot eksisterende Supabase-prosjekt med offentlig nøkkel. Git-ignore er kontrollert. Ingen service-role-nøkkel er brukt eller lagret i appen.
@@ -10,7 +18,7 @@
 - Skrivebeskyttet katalogspørring i dashboardet bekreftet 11 offentlige VYRO-tabeller med RLS. Ingen migrering ble kjørt. Tidligere utrulling gjennom SQL Editor kan forklare tom migreringshistorikk; tabellene finnes.
 - Site URL er rettet fra localhost:3000 til `http://localhost:8081/account`. Eksakte callback-adresser `http://localhost:8081/auth/callback` og `vyro://auth/callback` er lagt til og bekreftet i UI. Se `evidence/supabase-auth-redirects-2026-10-23.jpg`.
 - Egen SMTP er avslått. Supabase godtok én gjenopprettingsforespørsel til adressen brukeren oppga for e-posttest. Ingen passord ble endret, og ingen ny konto ble opprettet. Mottak og fullføring av lenken er ikke bekreftet.
-- Expo er startet på nytt på localhost:8081 med Mapbox og Supabase. Brukeren bekreftet deretter vellykket innlogging med «Jeg kommer inn». Dette er brukerbekreftet live-test; ingen måling av samlet innloggingstid. Automatisk visuell localhost-test er fortsatt blokkert av nettleserverktøyets tidligere URL-policy, og blokkeringen er ikke omgått.
+- Expo er startet på nytt på localhost:8081 med Mapbox og Supabase. Brukeren bekreftet deretter vellykket innlogging med «Jeg kommer inn». Dette er brukerbekreftet live-test; ingen måling av samlet innloggingstid. Automatisk visuell localhost-test var blokkert av nettleserverktøyets URL-policy i denne auth-runden. Senere fikk skjermbilderunden tilgang, som beskrevet over.
 - **Gjenstår:** ny bruker med bekreftelsesmail, gjenoppretting gjennom faktisk e-post, deling mellom to ekte kontoer, SMTP for andre mottakere og fysisk Android/iOS/GPS. Appen er ikke erklært ferdig for produksjonslansering.
 
 ## Kartfeil på ny PC, 23. oktober 2026

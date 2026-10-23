@@ -1,0 +1,18 @@
+{
+  "title": "Jeg bygde VYRO for å gjøre løpeturen enklere å følge",
+  "summary": "Jeg ville lage en treningsapp der distanse, tid, tempo og pause er lette å finne. Med Codex videreutviklet vi VYRO med kart, treningslogg og et enkelt fellesskap, og fikk innloggingen til å fungere på denne PC-en. Bildene er ekte skjermbilder fra appens nettleservisning, med tydelig merkede, fiktive brukere og eksempeløkter.",
+  "howBuilt": "Vi bygde videre på VYRO sammen med Henos. Appen bruker TypeScript, React Native og Expo, med Reanimated, Zustand, Mapbox og Supabase/PostgreSQL. Codex hjalp med integrasjon, feilretting og tester. Vi prioriterte lesbare målinger, enkel navigasjon og private ruter. Den siste appversjonen bestod 68 apptester, 73 lokale databasekontroller, typecheck, lint og eksport for web, Android og iOS. Eksporten er ikke en fysisk mobiltest.",
+  "whatWorked": "Et konkret designprinsipp: distanse, tid, tempo og pause må være lette å se.\nTeste innlogging, validering og nettverksfeil hver for seg.\nSkille eksempeldata og simulering tydelig fra ekte GPS-økter.",
+  "question": "Er målingene og pauseknappen tydelige nok når du løper?",
+  "keyPrompt": "Ikke gjør VYRO mer komplisert enn nødvendig. Gjør hver funksjon enklere, penere og mer behagelig å bruke. GPS-skjermen er viktigere enn fancy animerte kort. Når noen løper, skal de umiddelbart kunne se distanse, tid og tempo. De skal kunne pause treningen uten å lete etter riktig knapp.",
+  "whatWasHard": "På den nye PC-en manglet kartoppsettet, og lenkene for Supabase-innlogging pekte feil. Vi rettet konfigurasjonen og gjorde ventestatus og feilmeldinger tydeligere. Brukeren bekreftet at innloggingen fungerte etter omstart.",
+  "toProduction": "Neste steg er å sette opp egen e-postleverandør for registrering og passordgjenoppretting, og teste hele e-postflyten. GPS, kart og sesjonslagring skal testes på fysisk Android og iPhone. Deling må testes mellom to ekte kontoer. Bakgrunnsopptak, robust synkronisering uten nett, kontosletting, dataeksport og en ny sikkerhetsgjennomgang gjenstår før offentlig lansering. Skjermbildene viser appens faktiske nettleservisning, men profiler, innlegg og treningsdata kommer fra en isolert demo. Demoen samler ikke inn posisjon og skriver ikke til produksjonsdatabasen.",
+  "toolsUsed": "Codex,TypeScript,React Native,Expo,React Native Reanimated,Zustand,Mapbox,Supabase,PostgreSQL",
+  "shots": [
+    {"file": "01-map.jpg", "alt": "VYROs kart over Oslo med den fiktive eksempelruten Akerselva nordover, kartvalg og Start en økt."},
+    {"file": "05-workout.jpg", "alt": "VYROs treningsskjerm under en tydelig merket simulering, med tid, snittempo, distanse og stor pauseknapp."},
+    {"file": "02-feed.jpg", "alt": "Et eksempelinnlegg fra Noah demo med illustrert rute, distanse, tid, tempo og sosiale knapper."},
+    {"file": "03-runners.jpg", "alt": "Finn løpere med søkefelt og de tre fiktive testprofilene Noah, Mina og Leo, alle merket demo."},
+    {"file": "04-profile.jpg", "alt": "Profilen til Ada demo med ukesoversikt for distanse, minutter og aktiviteter, tydelig merket som eksempeldata."}
+  ]
+}

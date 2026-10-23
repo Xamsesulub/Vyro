@@ -1,5 +1,14 @@
 # Testing
 
+## Satellittgjenoppretting etter ny push, 23. oktober 2026
+
+- `ef3d26c` er hentet med fast-forward. Før endring bestod 144 Jest-tester og 318 lokale databasekontroller, samt typecheck og lint. Gjennomgangen omfatter kartets stil/livssyklus og endringene i klubber, stedsdeling og blandet feed; dette er ikke en ny kontroll av produksjonskontoer eller en full sikkerhetsrevisjon.
+- Etter retting består 151 Jest-tester i 34 suiter, typecheck og lint uten cache. Nye regresjoner dekker 429-ventetid uten automatiske forsøk, mange samtidige flisfeil uten utsatt ventefrist, ny kartmotor med bevart utsnitt og gjenopprettet GeoJSON-rute, ignorerte feil fra fjernet motor, nytt forsøk etter mislykket dynamisk import og native gjenoppretting. Native SDK er mock i Jest; ingen fysisk telefonkontroll er utført.
+- Feilmeldinger håndterer native HTTP-tekst uten å vise URL/token. Diagnostikktester kontrollerer at 200 for stil/TileJSON ikke skjuler 429 på selve bildet, at 401/403 stopper nye kall og at JSON feilaktig levert med 200 ikke godtas som fotografi.
+- Bygget webapp ved 390 × 844 og 320 × 640, med **ekte Mapbox GL JS-motor og syntetiske nettverkssvar**: stil/TileJSON 200 + bildefliser 429 viser synlig feil og deaktivert knapp. Hybrid/Satellitt gjenbruker stilen. Ingen automatisk gjentakelse. Etter 30 sekunder og brukertrykk lastes flisene på nytt, pikselkontroll bekrefter bildelaget, feilmeldingen forsvinner, og begge fotografiske valg samt Standard virker. Ingen JavaScript-sidefeil. Skjermbildene er kontrollert visuelt; de syntetiske, ensfargede flisene er ikke bevis for ekte satellittbilder.
+- Web-eksport til ignorert `.expo/map-recovery-validation` og Hermes-pakking for iOS/Android består. Web-fixturen har en syntetisk nøkkel og skal aldri publiseres. Ingen nye produksjonsdata, migreringer eller kontoendringer.
+- `npm run map:check` stopper her med `missing-public-token` før nettverkskall. Direkte forsøk mot både `api.mapbox.com` (uten token) og den offentlige testadressen avvises av skymiljøets CONNECT-proxy med 403. Dette er **ikke en ny Mapbox 429-måling**. Tidligere live-429 står dokumentert i seksjonen under fra brukerens siste push. Kontroll på maskinen med nøkkel og nettverkstilgang er nødvendig for å fastslå dagens årsak og bekrefte ekte fotografier; kontogrense, betaling og midlertidig begrensning er ikke skilt fra hverandre her.
+
 ## Tomt satellittkart og Hybrid, 23. oktober 2026
 
 - Reprodusert mot ekte Mapbox på localhost: Standard tegner kartet, mens satellittfliser svarer HTTP **429** både i kartmotoren og i en separat leseforespørsel. TileJSON og `standard-satellite`-stilbeskrivelsen svarer 200. Dette forklarer både den tomme satellittbakgrunnen og at tidligere Hybrid beholdt Standard-kartet når fotografiene manglet. Det er ikke dokumentert feil lagrekkefølge: Standards `bottom`-slot ligger over landpolygonene. Ingen kontogrense, fakturering eller token er endret.

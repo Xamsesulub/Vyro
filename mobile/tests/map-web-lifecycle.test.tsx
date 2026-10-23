@@ -6,8 +6,17 @@ import { loadMapEngine } from "../src/features/maps/prewarm.web";
 jest.mock("react-native", () => ({ View: "div" }));
 jest.mock("../src/components/ui", () => ({ Txt: "span" }));
 jest.mock("../src/components/MapLoadNotice", () => ({
-  MapLoadNotice: ({ message }: { message: string }) => (
-    <div role="alert">{message}</div>
+  MapLoadNotice: ({
+    message,
+    onRetry,
+  }: {
+    message: string;
+    onRetry: () => void;
+  }) => (
+    <div role="alert">
+      {message}
+      <button onClick={onRetry}>Retry</button>
+    </div>
   ),
 }));
 jest.mock("mapbox-gl-v3/dist/mapbox-gl.css", () => ({}));
@@ -76,11 +85,16 @@ function engine() {
     fitBounds: jest.fn(),
     resize: jest.fn(),
     remove: jest.fn(),
+    getCenter: () => ({ lng: 10.8, lat: 59.95 }),
+    getZoom: () => 14,
+    getPitch: () => 0,
+    getBearing: () => 35,
   };
+  const constructor = jest.fn((_options: unknown) => map);
   jest.mocked(loadMapEngine).mockResolvedValue({
-    default: { Map: jest.fn(() => map), NavigationControl: jest.fn() },
+    default: { Map: constructor, NavigationControl: jest.fn() },
   } as unknown as Awaited<ReturnType<typeof loadMapEngine>>);
-  return { callbacks, map, config, source };
+  return { callbacks, map, config, source, constructor };
 }
 
 test("Hybrid toggles labels while tiles are pending, without resetting the style or workout source", async () => {
@@ -111,6 +125,76 @@ test("Hybrid toggles labels while tiles are pending, without resetting the style
   await act(async () => root.render(<LiveMap mapKind="satellite" poi />));
   expect(config.get("showRoadsAndTransit")).toBe(false);
   expect(config.get("showPointOfInterestLabels")).toBe(false);
+});
+
+test("429 retries are bounded, recreate the engine, preserve the camera and restore the route", async () => {
+  const { callbacks, map, source, constructor } = engine();
+  let now = 100_000;
+  const clock = jest.spyOn(Date, "now").mockImplementation(() => now);
+  try {
+    const route = [
+      [
+        { latitude: 59.9, longitude: 10.7 },
+        { latitude: 59.91, longitude: 10.71 },
+      ],
+    ];
+    await act(async () =>
+      root.render(<LiveMap mapKind="satellite" route={route} />),
+    );
+    await act(async () => callbacks["style.load"]());
+    const staleError = callbacks.error;
+    await act(async () => callbacks.error({ error: { status: 429 } }));
+    await act(async () => container.querySelector("button")!.click());
+    expect(constructor).toHaveBeenCalledTimes(1);
+    // Many failed tiles do not keep extending the first failure's cooldown.
+    now += 29_000;
+    await act(async () => callbacks.error({ error: { status: 429 } }));
+    now += 1_001;
+    expect(constructor).toHaveBeenCalledTimes(1); // No automatic requests.
+    await act(async () => container.querySelector("button")!.click());
+    expect(map.remove).toHaveBeenCalledTimes(1);
+    expect(constructor).toHaveBeenCalledTimes(2);
+    expect(constructor.mock.calls[1][0]).toMatchObject({
+      center: [10.8, 59.95],
+      zoom: 14,
+      pitch: 0,
+      bearing: 35,
+    });
+    expect(constructor.mock.calls[1][0]).not.toHaveProperty("bounds");
+    map.fitBounds.mockClear();
+    source.setData.mockClear();
+    await act(async () => callbacks["style.load"]());
+    expect(map.fitBounds).not.toHaveBeenCalled();
+    expect(
+      source.setData.mock.calls[0][0].features[0].geometry.coordinates,
+    ).toEqual([
+      [10.7, 59.9],
+      [10.71, 59.91],
+    ]);
+    expect(container.querySelector('[role="alert"]')).toBeNull();
+    await act(async () => staleError({ error: { status: 429 } }));
+    expect(container.querySelector('[role="alert"]')).toBeNull();
+    await act(async () => callbacks.error({ error: { status: 429 } }));
+    expect(container.querySelector('[role="alert"]')).not.toBeNull();
+  } finally {
+    clock.mockRestore();
+  }
+});
+
+test("a failed lazy engine import can be retried without navigating away", async () => {
+  const { constructor } = engine();
+  jest.mocked(loadMapEngine).mockRejectedValueOnce(new Error("offline"));
+  const clock = jest.spyOn(Date, "now").mockReturnValue(1_000);
+  try {
+    await act(async () => root.render(<LiveMap mapKind="satellite" />));
+    expect(container.querySelector('[role="alert"]')).not.toBeNull();
+    clock.mockReturnValue(2_001);
+    await act(async () => container.querySelector("button")!.click());
+    expect(constructor).toHaveBeenCalledTimes(1);
+    expect(container.querySelector('[role="alert"]')).toBeNull();
+  } finally {
+    clock.mockRestore();
+  }
 });
 
 test("a tile error survives style.load, and switching back to Standard clears only the old style's error", async () => {

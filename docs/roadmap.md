@@ -1,5 +1,11 @@
 # Leveranseplan
 
+## Satellitt: undersøkelse og gjenoppretting, 23. oktober 2026
+
+Ny brukerpush `ef3d26c` er hentet og gjennomgått; klubber, stedsdeling, ny logo og Standard Satellite er beholdt. Dens dokumenterte live-feil er 429 på bildefliser selv om stil/TileJSON svarer 200. Kontogrunn og nåværende live-tilgang er fortsatt uavklart: Mapbox-nøkkelen finnes ikke i dette skymiljøet, og både Mapbox API og den offentlige testadressen avvises av miljøets nettverksproxy.
+
+Web og native har nå brukerinitiert gjenoppretting med 30 sekunders ventetid ved 429, uten automatiske forsøk. Kartutsnitt/rute beholdes, og native HTTP-feil klassifiseres også. `npm run map:check` tester stil, TileJSON og én ekte satellittflis på maskinen som har prosjektets nøkkel. Ingen konto-/faktureringsendring, backendendring eller offentlig publisering. Live satellitt er **ikke ferdig godkjent**; se [diagnostikk](mapbox-setup.md) og [testresultater](testing.md).
+
 ## Kartretting, 23. oktober 2026
 
 Standard er veikart; Hybrid og Satellitt bruker nå offisiell Standard Satellite med henholdsvis kartnavn/veier på og av. Satellitt/Hybrid-bytte gjenbruker kartstilen. Lagvalg virker mens fliser laster, og feil vises inne i kartet. Standard er visuelt kontrollert på localhost. Ekte satellittbilder er fortsatt blokkert av Mapbox HTTP 429; visuell godkjenning av disse og fysisk native-kontroll gjenstår. Se nyeste seksjon i `testing.md`. Ingen endring i GPS-opptak, deling eller database.

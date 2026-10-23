@@ -10,7 +10,7 @@ import {
   type LiveMapProps,
 } from "../features/maps/geometry";
 import { MapLoadNotice } from "./MapLoadNotice";
-import { mapLoadError } from "../features/maps/loadError";
+import { useMapRecovery } from "../features/maps/useMapRecovery";
 Mapbox.setAccessToken(mapboxToken);
 export default function MapboxNative({
   height = 300,
@@ -31,6 +31,7 @@ export default function MapboxNative({
   onPan,
 }: LiveMapProps) {
   const base = mapKind === "standard" ? "standard" : "satellite";
+  const { attempt, failure, reportFailure, retry } = useMapRecovery(base);
   const mapStyle = useMemo(
     () => createMapStyle(base, false, false, false),
     [base],
@@ -42,7 +43,15 @@ export default function MapboxNative({
   const skipFit = useRef(false);
   const camera = useRef<Mapbox.Camera>(null);
   const [ready, setReady] = useState(0);
-  const [failedStyle, setFailedStyle] = useState<typeof mapStyle | null>(null);
+  const [initialCamera, setInitialCamera] = useState({
+    centerCoordinate: [10.7522, 59.9139],
+    zoomLevel: 12,
+    pitch: 0,
+    heading: 0,
+  });
+  const lastCamera = useRef(initialCamera);
+  const retryPending = useRef(false);
+  const preserveCamera = useRef(false);
   const shape = useMemo(
     () => mapFeatures(route, overlays, position),
     [route, overlays, position],
@@ -51,6 +60,10 @@ export default function MapboxNative({
   const bounds = useMemo(() => mapBounds(route, overlays), [route, overlays]);
   useEffect(() => {
     if (!ready) return;
+    if (preserveCamera.current) {
+      preserveCamera.current = false;
+      return;
+    }
     if (skipFit.current && !follow) {
       skipFit.current = false;
       return;
@@ -90,21 +103,30 @@ export default function MapboxNative({
   return (
     <View>
       <Mapbox.MapView
+        key={attempt}
         style={{ height, width: "100%" }}
         styleJSON={JSON.stringify(mapStyle)}
         scaleBarEnabled={false}
         logoPosition={{ left: 8, bottom: attributionBottom + 8 }}
         attributionPosition={{ right: 8, bottom: attributionBottom + 8 }}
         onCameraChanged={(event) => {
+          lastCamera.current = {
+            centerCoordinate: event.properties.center,
+            zoomLevel: event.properties.zoom,
+            pitch: event.properties.pitch,
+            heading: event.properties.heading,
+          };
           if (event.gestures.isGestureActive) {
             if (follow) skipFit.current = true;
             onPan?.();
           }
         }}
         onDidFinishLoadingStyle={() => {
+          preserveCamera.current = retryPending.current;
+          retryPending.current = false;
           setReady((v) => v + 1);
         }}
-        onMapLoadingError={() => setFailedStyle(mapStyle)}
+        onMapLoadingError={reportFailure}
       >
         {config && (
           <Mapbox.StyleImport
@@ -141,14 +163,7 @@ export default function MapboxNative({
             <Mapbox.Terrain sourceID="terrainDem" style={{ exaggeration: 1 }} />
           </Mapbox.RasterDemSource>
         )}
-        <Mapbox.Camera
-          ref={camera}
-          defaultSettings={{
-            centerCoordinate: [10.7522, 59.9139],
-            zoomLevel: 12,
-            pitch: 0,
-          }}
-        />
+        <Mapbox.Camera ref={camera} defaultSettings={initialCamera} />
         <Mapbox.ShapeSource id="workout" shape={shape}>
           <Mapbox.LineLayer
             id="route-outline"
@@ -209,9 +224,16 @@ export default function MapboxNative({
           />
         </Mapbox.ShapeSource>
       </Mapbox.MapView>
-      {failedStyle === mapStyle && (
+      {failure && (
         <MapLoadNotice
-          message={mapLoadError(null)}
+          message={failure.message}
+          imagery={base === "satellite"}
+          retryAt={failure.retryAt}
+          onRetry={() => {
+            if (!retry()) return;
+            setInitialCamera(lastCamera.current);
+            retryPending.current = true;
+          }}
           top={explorer ? (padding?.top ?? 150) + 12 : 12}
           explorer={explorer}
         />

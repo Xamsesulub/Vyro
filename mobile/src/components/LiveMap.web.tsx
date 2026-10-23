@@ -18,7 +18,7 @@ import { loadMapEngine } from "../features/maps/prewarm.web";
 import { applyMapOptions } from "../features/maps/options.web";
 import MapUnavailable from "./MapUnavailable";
 import { MapLoadNotice } from "./MapLoadNotice";
-import { mapLoadError } from "../features/maps/loadError";
+import { useMapRecovery } from "../features/maps/useMapRecovery";
 export default function LiveMap({
   height = 300,
   attributionBottom = 0,
@@ -39,6 +39,11 @@ export default function LiveMap({
 }: LiveMapProps) {
   // Satellite and Hybrid share imagery; toggling labels must not reload tiles.
   const base = mapKind === "standard" ? "standard" : "satellite";
+  const { attempt, failure, reportFailure, retry } = useMapRecovery(base);
+  const errorReporter = useRef(reportFailure);
+  useEffect(() => {
+    errorReporter.current = reportFailure;
+  }, [reportFailure]);
   const mapStyle = useMemo(
     () => createMapStyle(base, false, false, false),
     [base],
@@ -48,6 +53,12 @@ export default function LiveMap({
   const options = useRef({ mapKind, poi, contours, threeD });
   const initialBounds = useRef(mapBounds(route, overlays));
   const initialPadding = useRef(padding);
+  const initialCamera = useRef<{
+    center: [number, number];
+    zoom: number;
+    pitch: number;
+    bearing: number;
+  } | null>(null);
   useEffect(() => {
     options.current = { mapKind, poi, contours, threeD };
   }, [mapKind, poi, contours, threeD]);
@@ -61,10 +72,8 @@ export default function LiveMap({
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<Map | null>(null);
   const [ready, setReady] = useState(0);
-  const [failure, setFailure] = useState<{
-    style: typeof mapStyle;
-    message: string;
-  } | null>(null);
+  const retryPending = useRef(false);
+  const preserveCamera = useRef(false);
   useEffect(() => {
     el.current
       ?.querySelectorAll<HTMLElement>(
@@ -95,7 +104,7 @@ export default function LiveMap({
           center: [10.7522, 59.9139],
           zoom: 12,
           pitch: 0,
-          ...(initialBounds.current
+          ...(initialBounds.current && !initialCamera.current
             ? {
                 bounds: [
                   initialBounds.current.sw,
@@ -107,6 +116,7 @@ export default function LiveMap({
                 },
               }
             : {}),
+          ...initialCamera.current,
         });
         map.current = instance;
         instance.on("dragstart", () => {
@@ -119,11 +129,7 @@ export default function LiveMap({
             "top-left",
           );
         instance.on("error", (event) => {
-          if (!cancelled)
-            setFailure({
-              style: initialStyle.current,
-              message: mapLoadError(event.error),
-            });
+          if (!cancelled) errorReporter.current(event.error);
         });
         instance.on("style.load", () => {
           if (cancelled || !instance) return;
@@ -202,31 +208,34 @@ export default function LiveMap({
               "text-halo-width": 2,
             },
           });
+          preserveCamera.current = retryPending.current;
+          retryPending.current = false;
           setReady((v) => v + 1);
         });
         observer = new ResizeObserver(() => instance?.resize());
         observer.observe(el.current);
       })
       .catch(() => {
-        if (!cancelled)
-          setFailure({
-            style: initialStyle.current,
-            message: mapLoadError(null),
-          });
+        if (!cancelled) errorReporter.current(null);
       });
     return () => {
       cancelled = true;
       observer?.disconnect();
       instance?.remove();
       map.current = null;
+      loadedStyle.current = null;
     };
-  }, [explorer]);
+  }, [explorer, attempt]);
   useEffect(() => {
     if (!ready || !map.current) return;
     (map.current.getSource("workout") as GeoJSONSource)?.setData(shape);
   }, [ready, shape]);
   useEffect(() => {
     if (!ready || !map.current) return;
+    if (preserveCamera.current) {
+      preserveCamera.current = false;
+      return;
+    }
     if (skipFit.current && !follow) {
       skipFit.current = false;
       return;
@@ -282,9 +291,25 @@ export default function LiveMap({
         aria-label="Mapbox-kart"
         style={{ height, width: "100%", background: "#F4F5F2" }}
       />
-      {failure?.style === mapStyle && (
+      {failure && (
         <MapLoadNotice
           message={failure.message}
+          imagery={base === "satellite"}
+          retryAt={failure.retryAt}
+          onRetry={() => {
+            if (!retry()) return;
+            // Recreate even after an engine-load failure; preserve the user's view.
+            if (map.current) {
+              const center = map.current.getCenter();
+              initialCamera.current = {
+                center: [center.lng, center.lat],
+                zoom: map.current.getZoom(),
+                pitch: map.current.getPitch(),
+                bearing: map.current.getBearing(),
+              };
+            }
+            retryPending.current = true;
+          }}
           top={explorer ? (padding?.top ?? 150) + 12 : 12}
           explorer={explorer}
         />

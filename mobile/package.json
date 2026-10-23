@@ -52,6 +52,7 @@
   },
   "scripts": {
     "brand:generate": "node scripts/generate-brand.cjs",
+    "map:check": "node scripts/check-mapbox.cjs",
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",

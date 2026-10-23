@@ -10,6 +10,10 @@
   "toolsUsed": "Codex,TypeScript,React Native,Expo,React Native Reanimated,Zustand,Mapbox,Supabase,PostgreSQL",
   "shots": [
     {
+      "file": "00-walkthrough.mp4",
+      "alt": "Ekte skjermopptak av VYRO: kart med eksempelrute, start av treningssimulering, løpende tid og distanse, pause og oppsummering. Demo med fiktive data, uten GPS-opptak."
+    },
+    {
       "file": "01-map.jpg",
       "alt": "VYROs kart over Oslo med den fiktive eksempelruten Akerselva nordover, kartvalg og Start en økt."
     },

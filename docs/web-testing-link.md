@@ -12,7 +12,7 @@ Dette er nettleserutgaven av den eksisterende React Native / Expo-appen. Den er 
 
 Nettversjonen inneholder ikke skjermbildefixturen eller noen forhåndsinnlogget demokonto. Fiktive profiler i VibeOff-bildene viser en separat eksempelvisning. Sosiale funksjoner og ekte GPS-opptak krever VYRO-innlogging.
 
-E-postregistrering og passordlenker for denne adressen er ikke ferdig satt opp. Supabase-dashboardet krevde ny innlogging, og brukeren ba om publisering først. Behold e-postbekreftelse på; ikke slå den av for å omgå SMTP-oppsettet. Legg senere til den eksakte redirect-adressen `https://vyro-xamse.surelark18.chatgpt.site/auth/callback`, og oppdater Site URL til `https://vyro-xamse.surelark18.chatgpt.site/account`. Behold eksisterende localhost- og native-adresser. Fysisk Android/iOS/GPS er fortsatt utestet.
+Site URL er nå `https://vyro-xamse.surelark18.chatgpt.site/account`, og den eksakte redirect-adressen `https://vyro-xamse.surelark18.chatgpt.site/auth/callback` er lagt til. Omlasting av Supabase-dashboardet bekreftet lagringen; eksisterende localhost- og native-adresser er beholdt. Egen SMTP er fortsatt avslått. E-postregistrering og passordlenker er derfor ikke ferdig testet for allmenn bruk. Behold e-postbekreftelse på; ikke slå den av for å omgå SMTP-oppsettet. Fysisk Android/iOS/GPS er fortsatt utestet.
 
 ## Publisering og vedlikehold
 

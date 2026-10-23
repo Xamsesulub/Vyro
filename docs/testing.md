@@ -1,5 +1,13 @@
 # Testing
 
+## Video og offentlige returadresser, 23. oktober 2026
+
+- `showcase/vibeoff/00-walkthrough.mp4` er et ekte, redigert skjermopptak av webeksporten i den isolerte demoen: kart, start av simulering, levende målinger, pause og oppsummering. 20,13 sekunder, 1280 × 800, H.264/yuv420p, 30 fps, uten lyd. Hele filen ble dekodet uten feil; representative bilder fra alle fem segmenter ble visuelt kontrollert.
+- Videoen er lastet opp til eksisterende VibeOff-utkast og lagret som første av seks medieelementer. VibeOff-spilleren rapporterte 20,13 sekunders varighet og `readyState: 4`; avspillingstiden gikk fremover. Bevis: `evidence/vibeoff-video-cover-2026-10-23.jpg`. Innlegget er fortsatt «Not published» og krever brukerens innlogging/publisering.
+- Supabase-dashboardet ble tilgjengelig. Site URL er nå `https://vyro-xamse.surelark18.chatgpt.site/account`; den eksakte offentlige `/auth/callback` er lagt til. Omlasting bekreftet tre tillatte callback-adresser, inkludert eksisterende localhost og native. Bevis: `evidence/supabase-public-redirects-2026-10-23.jpg`.
+- SMTP er fortsatt avslått. E-postleverandør, mottak/fullføring av bekreftelsesmail og ekte innlogging på den offentlige adressen gjenstår. Ingen nye kontoer, e-poster, GPS-opptak eller produksjonsdata ble opprettet i denne runden. Fysisk Android/iOS er utestet.
+- Ingen appkode eller appavhengigheter ble endret for videoen. Tidligere typecheck, lint og 75 apptester er derfor ikke kjørt om igjen for media og dokumentasjon. Den separate demoserveren er stoppet etter opptaket.
+
 ## Felles kontostatus, 23. oktober 2026
 
 - Typecheck, prosjektets `expo lint --no-cache`, 75 Jest-tester i 16 suiter og Expo-webeksport bestått. Den nye tverrskjermtesten og publiseringsskriptet består også eksplisitt ESLint. En bredere `eslint .` viste eksisterende manglende Node/Jest-globals og importvarsler i hjelpefiler/tester; disse er ikke del av Expo-lintens standardomfang.
@@ -7,8 +15,8 @@
 - Nettleser: isolert demo på localhost:8103 viser «Innlogget» i profil og «Du er innlogget i hele VYRO» på kontosiden. Dette er en fiktiv sesjon, ikke en vellykket innlogging mot Supabase. Demoen er stoppet etter testen.
 - Sites-versjon 2 er publisert. Omlasting av den offentlige appen og navigering til profil bekreftet «Gjest · ikke innlogget». Bevis: `evidence/auth-public-guest-2026-10-23.jpg` og `evidence/auth-shared-session-demo-2026-10-23.jpg`.
 - Live kontroll: Auth HTTP 200, registrering på og e-postbekreftelse påkrevd. Alle 11 tabeller avviser anonym tilgang med HTTP 401. Ett tilfeldig ugyldig innloggingsforsøk ble avvist på 195 ms. Ingen kontoer, e-poster eller treningsdata ble opprettet.
-- Supabase-dashboardet står fortsatt på innlogging. SMTP, offentlige redirect-adresser, mottak av bekreftelse og ekte innlogging på offentlig adresse er ikke ferdig verifisert. Fysisk Android/iOS er utestet.
-- VibeOff viser fortsatt «Not published» og krever brukerens konto/«Publish my build». Fem skjermbilder og Live link er klare; ingen video er laget eller lastet opp.
+- I denne kontrollrunden stod Supabase-dashboardet på innlogging. Offentlige redirect-adresser ble senere lagret og kontrollert, se nyere kontroll over. SMTP, mottak av bekreftelse og ekte innlogging på offentlig adresse gjenstår. Fysisk Android/iOS er utestet.
+- VibeOff viste «Not published» med fem skjermbilder og Live link. Video ble lagt til senere samme dag, se kontroll over; publisering på brukerens konto gjenstår.
 
 ## Offentlig nettversjon, 23. oktober 2026
 

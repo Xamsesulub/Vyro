@@ -2,15 +2,15 @@
 
 ## Tydelig kontostatus, 23. oktober 2026
 
-Den offentlige nettversjonen skiller nå mellom gjest, ventende e-postbekreftelse og innlogget konto. Alle sider bruker samme sesjon; vellykket e-postcallback oppdaterer denne før navigasjon. Kontosiden venter på gjenoppretting, og utlogging fjerner sesjonen globalt. Ventende bekreftelsesadresse beholdes mellom skjermbytter i samme appøkt, ikke etter full omlasting. 75 tester består. Dette løser ikke manglende SMTP: offentlig registrering, bekreftelsesmail og offentlige redirect-adresser må fortsatt ferdigstilles når Supabase-dashboardet er tilgjengelig.
+Den offentlige nettversjonen skiller nå mellom gjest, ventende e-postbekreftelse og innlogget konto. Alle sider bruker samme sesjon; vellykket e-postcallback oppdaterer denne før navigasjon. Kontosiden venter på gjenoppretting, og utlogging fjerner sesjonen globalt. Ventende bekreftelsesadresse beholdes mellom skjermbytter i samme appøkt, ikke etter full omlasting. 75 tester består. Site URL og eksakt offentlig callback er nå lagret og kontrollert i Supabase. Egen SMTP og full test av offentlig registrering/bekreftelsesmail gjenstår.
 
 ## Offentlig testlenke, 23. oktober 2026
 
-Expo-nettversjonen er publisert på https://vyro-xamse.surelark18.chatgpt.site og lagret som «Live link» i VibeOff-utkastet. Kart og simulering kan prøves uten konto, med en egen knapp på kontoskjermen. Ingen demosesjon eller produksjonsdata er lagt i den publiserte pakken. Supabase-redirect for den nye adressen og SMTP gjenstår til dashboard-innloggingen er tilgjengelig igjen. Se `web-testing-link.md`.
+Expo-nettversjonen er publisert på https://vyro-xamse.surelark18.chatgpt.site og lagret som «Live link» i VibeOff-utkastet. Kart og simulering kan prøves uten konto, med en egen knapp på kontoskjermen. Ingen demosesjon eller produksjonsdata er lagt i den publiserte pakken. Supabase-redirect for den nye adressen er konfigurert; SMTP gjenstår. Se `web-testing-link.md`.
 
 ## Presentasjon på VibeOff, 23. oktober 2026
 
-Fem ekte skjermbilder og norsk prosjektbeskrivelse er klargjort som et privat VibeOff-utkast. En separat lokal visning bruker fiktive brukere og eksempeløkter; den samler ikke GPS og skriver ikke til produksjonen. Brukeren publiserer selv etter gjennomgang. Se `showcase/vibeoff/README.md`. Dette er en prosjektpresentasjon, ikke en produksjonslansering; de gjenstående mobil-, e-post- og personverntestene gjelder fortsatt.
+En 20 sekunders ekte skjermvideo, fem ekte skjermbilder og norsk prosjektbeskrivelse er klargjort som et privat VibeOff-utkast. Videoen ligger først og viser kart, start, målinger, pause og oppsummering. En separat lokal visning bruker fiktive brukere og eksempeløkter; den samler ikke GPS og skriver ikke til produksjonen. Brukeren publiserer selv etter gjennomgang. Se `showcase/vibeoff/README.md`. Dette er en prosjektpresentasjon, ikke en produksjonslansering; de gjenstående mobil-, e-post- og personverntestene gjelder fortsatt.
 
 ## Innlogging og skytilkobling, 23. oktober 2026
 

@@ -16,8 +16,9 @@ import Animated, {
   withTiming,
   withSpring,
 } from "react-native-reanimated";
-import Svg, { Circle, Path, Rect } from "react-native-svg";
+import Svg, { Circle, Path } from "react-native-svg";
 import { useAppStore } from "../stores/useAppStore";
+import runnerMark from "../theme/runnerMark.json";
 import { brand, palettes } from "../theme/tokens";
 
 export function useTheme() {
@@ -75,7 +76,8 @@ const paths = {
   play: "m8 4 12 8-12 8Z",
   pause: "M8 5v14m8-14v14",
   stop: "M6 6h12v12H6Z",
-  run: "m15 5 1-2m-7 8 4-4 4 3 3 1m-7-4-1 6-5 7m5-7 5 3-2 5M4 11l5-1",
+  // Tabler Icons "run" (MIT); source and license in THIRD_PARTY_NOTICES.md.
+  run: runnerMark.path,
   mountain: "m2 20 7-13 4 6 3-10 6 17H2Zm5-9 2 3 2-2",
   bike: "M5 13a4 4 0 1 0 0 8 4 4 0 0 0 0-8m14 0a4 4 0 1 0 0 8 4 4 0 0 0 0-8M5 17l5-9 4 9H5m9 0 4-12h-4M8 8h4",
   heart:
@@ -100,7 +102,7 @@ export function Icon({
       <Path
         d={paths[name]}
         stroke={color}
-        strokeWidth={1.7}
+        strokeWidth={name === "run" ? runnerMark.strokeWidth : 1.7}
         strokeLinecap="round"
         strokeLinejoin="round"
       />
@@ -116,26 +118,7 @@ export function Logo({
 }) {
   return (
     <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-      <Svg width={small ? 27 : 36} height={small ? 27 : 36} viewBox="0 0 40 40">
-        <Rect
-          x={3}
-          y={3}
-          width={34}
-          height={34}
-          rx={10}
-          stroke={color}
-          strokeWidth={2.8}
-          fill="none"
-        />
-        <Path
-          d="m9 24 7 5 9-18 6 5"
-          stroke={color}
-          strokeWidth={3.2}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          fill="none"
-        />
-      </Svg>
+      <Icon name="run" size={small ? 27 : 36} color={color} />
       <Txt
         size={small ? 24 : 32}
         weight="800"

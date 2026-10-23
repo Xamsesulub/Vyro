@@ -1,0 +1,74 @@
+{
+  "date": "2026-10-23",
+  "commit": "3be33cddb99a2971ae889ac7aa9a335702d5a168",
+  "scope": "Compiled Expo web UI in Chromium at 390x844, two isolated browser sessions, actual SQL functions and row-level permissions in PGlite. Synthetic auth, GPS and a local adapter for the used Supabase REST endpoints. Not a live Supabase or physical GPS test.",
+  "productionWrites": false,
+  "unitTests": 129,
+  "databaseAssertions": 230,
+  "typecheck": "passed",
+  "lint": "passed",
+  "webExport": "passed (isolated .expo/social-validation)",
+  "runs": [
+    {
+      "schema": "all repository migrations",
+      "checks": [
+        "Publish a selected workout through UI, store via real publish_workout RPC, and show it on the author Home with private endpoints omitted.",
+        "Second user cannot see follower-only post before following; Follow persists and makes the post visible on Home and after reload.",
+        "Both users can follow each other; both directions remain saved after reload.",
+        "Create a zone through UI requires explicit sharing consent, saves correct owner and publishes its event on Home.",
+        "A slower challenger receives a saved losing result without changing the owner.",
+        "Faster full-route attempt changes owner/revision and its takeover event appears on the following user Home.",
+        "An equal time keeps the current zone owner.",
+        "Overtake and extend saves longer route with original prefix intact and shows the event to followers.",
+        "Unfollow persists, removes follower-only post from Home and preserves the other user follow direction."
+      ],
+      "pageErrors": [],
+      "unexpectedApiFailures": [],
+      "requests": {
+        "POST /rest/v1/rpc/vyro_turf_events": 10,
+        "POST /rest/v1/rpc/vyro_feed": 10,
+        "POST /rest/v1/rpc/publish_workout": 1,
+        "GET /rest/v1/profiles": 4,
+        "GET /rest/v1/follows": 9,
+        "POST /rest/v1/follows": 2,
+        "GET /rest/v1/turfs": 5,
+        "POST /rest/v1/rpc/submit_turf_run": 5,
+        "DELETE /rest/v1/follows": 1
+      },
+      "expectedFallback": false
+    },
+    {
+      "schema": "202610200001 through 202610200004 (before new feed RPCs)",
+      "checks": [
+        "Publish a selected workout through UI, store via real publish_workout RPC, and show it on the author Home with private endpoints omitted.",
+        "Second user cannot see follower-only post before following; Follow persists and makes the post visible on Home and after reload.",
+        "Both users can follow each other; both directions remain saved after reload.",
+        "Create a zone through UI requires explicit sharing consent, saves correct owner and publishes its event on Home.",
+        "A slower challenger receives a saved losing result without changing the owner.",
+        "Faster full-route attempt changes owner/revision and its takeover event appears on the following user Home.",
+        "An equal time keeps the current zone owner.",
+        "Overtake and extend saves longer route with original prefix intact and shows the event to followers.",
+        "Unfollow persists, removes follower-only post from Home and preserves the other user follow direction."
+      ],
+      "pageErrors": [],
+      "unexpectedApiFailures": [],
+      "requests": {
+        "POST /rest/v1/rpc/vyro_turf_events": 10,
+        "POST /rest/v1/rpc/vyro_feed": 10,
+        "GET /rest/v1/follows": 29,
+        "GET /rest/v1/turf_events": 10,
+        "GET /rest/v1/posts": 10,
+        "POST /rest/v1/rpc/publish_workout": 1,
+        "HEAD /rest/v1/likes": 6,
+        "GET /rest/v1/likes": 6,
+        "GET /rest/v1/reposts": 6,
+        "GET /rest/v1/profiles": 4,
+        "POST /rest/v1/follows": 2,
+        "GET /rest/v1/turfs": 5,
+        "POST /rest/v1/rpc/submit_turf_run": 5,
+        "DELETE /rest/v1/follows": 1
+      },
+      "expectedFallback": true
+    }
+  ]
+}

@@ -1,5 +1,25 @@
 # Testing
 
+## Felles løperikon, 23. oktober 2026
+
+- Det gamle `run`-piktogrammet og VYRO-symbolet er erstattet med felles geometri i `runnerMark.json`. Kart, aktivitetskort, posisjonskort, logo og oppstartsanimasjon bruker denne definisjonen. Tabler-ikonets opprinnelige SVG-baner, 24 × 24 viewBox og 2 px strek er beholdt; ingen ny runtime-avhengighet. Sharp er kun utviklingsverktøy for PNG-eksport.
+- `npm run brand:generate` gjenskaper samtlige sju ikonfiler. Piksel-/metadatakontroll bekrefter 1024 × 1024 app-/splash-ikoner, 64 × 64 nettleserikon, ingen alfa på iOS-ikonet og transparent Android-/splash-forgrunn. Alle synlige forgrunnspiksler ligger innenfor Androids sikre sirkel (maksimal radius 296,6 px, tillatt 312,9 px). Expo SDK 58 `config --type introspect` godtar ikonene og Androids monokromkonfigurasjon.
+- Chromium med den bygde appen ved 390 × 844 og 320 × 640: samme nye løper i onboarding, oppstartsanimasjonen, gjestens Hjem og kartet. Oppstartsoverlegget forsvinner, logoen passer innenfor skjermen, «Kom i gang» og stedsøk fungerer, og det genererte nettleserikonet leveres. Onboarding/Hjem er visuelt kontrollert. Ingen JavaScript-sidefeil. Kartikonets grønnfarge og strekbredde ble også kontrollert i første del av endringen.
+- Typecheck, lint uten cache, 129 Jest-tester, web-eksport og `npm ci --dry-run` består. Ingen nye tester er skrevet for selve piktogrammet. Fysisk native visning av appikon/splash er ikke kontrollert og krever nytt release-bygg; offentlig testlenke er ikke oppdatert.
+
+## Innlegg, Hjem, følgerforhold og soner, 23. oktober 2026 (skymiljø)
+
+Alle ni brukerflyter består både med samtlige repo-migreringer og med bare migreringene `202610200001`–`202610200004`, slik at den eldre feed-lesingen også blir prøvd. Totalt 18 nettleserkontroller ved 390 × 844 bruker den bygde appen, to separate nettleserøkter og faktiske PostgreSQL-funksjoner/RLS i lokal PGlite. Supabase-innloggingene, GPS-punktene og adapteren mellom REST-kall og SQL er testdata/testverktøy. Ingen produksjonskontoer brukes, og ingen e-poster eller data sendes til skytjenesten.
+
+- **Publiser innlegg:** velg egen testøkt gjennom «Del økt», publiser med `publish_workout`, og kontroller at innlegget lagres og vises på forfatterens Hjem. Simuleringen tilbys ikke i delingslisten. Skjermet start/slutt utelates fra delt rute, og private notater finnes ikke i forespørselen.
+- **Følgere og Hjem:** bruker B ser ikke As følgerbegrensede innlegg først. «Følg» lagrer relasjonen, og innlegget vises på Bs Hjem etter fanebytte og omlasting. A kan følge B tilbake; de to retningene består uavhengig. «Slutt å følge» lagres, fjerner innlegget fra Bs strøm også etter omlasting og beholder As følgerrelasjon.
+- **Opprett sone:** knappen er deaktivert før delingssamtykke. Innsending gjennom `submit_turf_run` oppretter riktig eier/revisjon, og opprettelseshendelsen kommer på Hjem. Serverens lagrede sonegeometri inneholder ikke rå GPS-tidsstempler/nøyaktighet.
+- **Overtakelse:** langsommere forsøk og lik tid beholder eieren. Raskere full løype bytter eier og revisjon, og hendelsen vises på Hjem hos den andre brukeren som følger utfordreren. «Overta og utvid» lagrer lengre løype med den opprinnelige delen bevart og viser utvidelsen i strømmen.
+- Ingen uventede API-feil eller JavaScript-sidefeil i noen av nettleserflytene. Den eldre databasen returnerer forventet `42883` for de to nye lesefunksjonene; appens eksisterende reserveflyt henter innlegg og sonehendelser korrekt.
+- 129 Jest-tester, 230 lokale databasekontroller, typecheck, lint uten cache og isolert web-eksport består. Databasetestene dekker også ugyldige/simulerte forsøk, feil løpsretning, feil revisjon, gjentatt innsending og tilgangsavvisning.
+
+Maskinlesbare resultater: [social-flows-2026-10-23.json](evidence/social-flows-2026-10-23.json). Ingen appkode måtte rettes i denne kontrollen. **Fortsatt ikke verifisert:** ekte innlogging/REST i den publiserte Supabase-tjenesten, e-postlevering og opptak/konkurranse på fysiske telefoner. Tilkoblingsinnstillinger og ekte testkontoer mangler i dette miljøet. Den offentlige testlenken er ikke oppdatert eller testet gjennom denne lokale kontrollen.
+
 ## TestFlight-klargjøring, 22. oktober 2026 (skymiljø)
 
 - Typecheck, lint uten cache og 129 Jest-tester i 27 suiter består. Eksisterende tester dekker passordinnlogging, registrering uten falsk sesjon, mobilcallback ved registrering/resend/recovery, engangskoder, sikker sesjonslagring og gjenoppretting uten innloggingsside på Hjem. Dette bruker isolerte testdobler, ikke en ekte Supabase-konto.

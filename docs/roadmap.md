@@ -1,5 +1,13 @@
 # Leveranseplan
 
+## Felles løperikon, 23. oktober 2026
+
+Den gamle løperstreken og det gamle VYRO-symbolet er erstattet med «Run» fra Tabler Icons. Kartets søkefelt, aktivitetskort, posisjonskort, VYRO-logoen, oppstartsanimasjonen og alle app-/splash-/nettleserikoner bruker samme geometri. VYRO-navnet og fargene er beholdt. Android har også monokromikon for systemtema. PNG-filene kan gjenskapes på alle utviklingsplattformer med `npm run brand:generate`; kilde og MIT-lisens ligger i `mobile/THIRD_PARTY_NOTICES.md`. Ingen trenings-, kart- eller kontofunksjon er endret. Nytt native bygg kreves for å få nye appikoner på telefonen; offentlig testlenke er ikke oppdatert her.
+
+## Kontroll av sosial flyt og soner, 23. oktober 2026 (skymiljø)
+
+Publisering av GPS-økt til Hjem, gjensidig følge/slutte å følge, oppretting av sone, overtakelse og utvidelse består med to isolerte testbrukere. Både gjeldende repo-skjema og eldre database uten de nye feedfunksjonene er kontrollert gjennom nettleseren mot ekte lokale SQL-funksjoner og tilgangsregler. Ingen appfeil ble funnet i disse flytene. Ekte Supabase-kontoer, publisert tjeneste og fysisk GPS gjenstår; se [resultater og avgrensning](testing.md).
+
 ## TestFlight-klargjøring, 22. oktober 2026 (skymiljø)
 
 EAS-profiler for butikkbygg og TestFlight, automatisk byggnummer, tidlig kontroll av innloggings-/kartkonfigurasjon og avgrenset kildeopplasting er lagt til. Appen beholder eksisterende Supabase-innlogging og mobilcallback. Kontoer og offentlige miljøinnstillinger må kobles før et ekte bygg kan startes: EAS er ikke innlogget her, og ingen IPA eller TestFlight-opplasting er laget. Se [oppsett og installasjon](testflight.md).

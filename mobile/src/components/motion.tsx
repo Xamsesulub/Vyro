@@ -12,6 +12,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import Svg, { Circle, Path } from "react-native-svg";
+import runnerMark from "../theme/runnerMark.json";
 import { brand } from "../theme/tokens";
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
@@ -127,7 +128,7 @@ export function LaunchSignature({
   }, [ready, idle, reduced, draw, opacity]);
   const style = useAnimatedStyle(() => ({ opacity: opacity.value }));
   const stroke = useAnimatedProps(() => ({
-    strokeDashoffset: 110 * (1 - draw.value),
+    strokeDashoffset: 30 * (1 - draw.value),
   }));
   if (!ready || !idle || reduced || finished) return null;
   return (
@@ -148,12 +149,12 @@ export function LaunchSignature({
         style,
       ]}
     >
-      <Svg width={90} height={72} viewBox="0 0 90 72">
+      <Svg width={90} height={90} viewBox={runnerMark.viewBox}>
         <AnimatedPath
-          d="M10 35L30 54L57 13L80 35"
+          d={runnerMark.path}
           stroke={brand.lime}
-          strokeWidth={7}
-          strokeDasharray="110 110"
+          strokeWidth={runnerMark.strokeWidth}
+          strokeDasharray="30 30"
           strokeLinecap="round"
           strokeLinejoin="round"
           fill="none"

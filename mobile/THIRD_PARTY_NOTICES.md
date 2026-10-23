@@ -1,13 +1,19 @@
 # Third-party artwork
 
-## Tabler Icons — Run
+## Current VYRO artwork
 
-The running pictogram comes from [Tabler Icons](https://tabler.io/icons/icon/run).
-Its shared geometry is in `src/theme/runnerMark.json`, used by the `run` icon,
-VYRO logo, launch animation and generated app/splash/browser icons. The original
-paths, 24 × 24 viewBox and 2 px rounded stroke are preserved. Color and size
-follow the surrounding UI; generated assets center the mark and add platform
-safe padding. Regenerate them with `npm run brand:generate`.
+The current runner and wordmark in `src/theme/runnerMark.json` are custom vector
+paths redrawn from the VYRO logo supplied by the project owner on 23 October 2026.
+`src/components/Brand.tsx` renders them in React Native; `scripts/generate-brand.cjs`
+produces the SVG, app, splash and browser assets. This artwork replaces the former
+Tabler Run pictogram. Native launcher backgrounds are opaque white, with the
+platform applying its own mask; the wordmark and in-app symbol have no baked shadow.
+
+## Historical artwork — Tabler Icons Run
+
+Earlier builds used [Tabler Icons Run](https://tabler.io/icons/icon/run).
+Its attribution is retained here for those historical versions; current brand
+assets no longer contain that geometry.
 
 Source: https://github.com/tabler/tabler-icons/blob/a4ce1404bc6d24d3c365afe7b258d6bf6f48d62d/icons/outline/run.svg
 

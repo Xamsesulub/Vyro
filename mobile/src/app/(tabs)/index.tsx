@@ -1,22 +1,19 @@
 import { useCallback, useRef, useState } from "react";
-import { FlatList, Pressable, View } from "react-native";
+import { FlatList, Pressable, View, useWindowDimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useFocusEffect } from "expo-router";
 import { AccountGate } from "../../components/AccountGate";
 import { CloudPost } from "../../components/CloudPost";
+import { PlacePost } from "../../components/PlacePost";
+import { IconButton } from "../../components/SocialUi";
 import { ActivityCard } from "../../components/ActivityCard";
 import { Button, Chip, Txt, styles, Logo, useTheme } from "../../components/ui";
-import { Reveal } from "../../components/motion";
 import { TurfEvents } from "../../components/TurfEvents";
 import { useAuthStore } from "../../stores/useAuthStore";
 import { useAppStore } from "../../stores/useAppStore";
 import { socialError } from "../../features/social/api";
-import {
-  FeedCursor,
-  FeedPost,
-  ReactionSummary,
-  loadFeed,
-} from "../../features/social/feed";
+import { FeedCursor, ReactionSummary } from "../../features/social/feed";
+import { HomePost, loadHomeFeed } from "../../features/social/homeFeed";
 import { Workout } from "../../features/activities/model";
 export default function Home() {
   const id = useAuthStore((s) => s.session?.user.id);
@@ -24,8 +21,10 @@ export default function Home() {
 }
 function Feed({ userId }: { userId: string }) {
   const c = useTheme();
+  const { width } = useWindowDimensions();
   const [tab, setTab] = useState("Følger");
-  const [posts, setPosts] = useState<FeedPost[]>([]);
+  const [posts, setPosts] = useState<HomePost[]>([]);
+  const [compose, setCompose] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [revision, setRevision] = useState(0);
@@ -47,7 +46,12 @@ function Feed({ userId }: { userId: string }) {
       }
       try {
         if (tab === "Mine økter") return;
-        const page = await loadFeed(userId, kind, cursor, controller.signal);
+        const page = await loadHomeFeed(
+          userId,
+          kind,
+          cursor,
+          controller.signal,
+        );
         if (controller.signal.aborted) return;
         setPosts((previous) =>
           cursor
@@ -96,7 +100,7 @@ function Feed({ userId }: { userId: string }) {
   );
   const own = workouts.filter((w) => w.ownerId === userId);
   type Row =
-    { kind: "post"; value: FeedPost } | { kind: "workout"; value: Workout };
+    { kind: "post"; value: HomePost } | { kind: "workout"; value: Workout };
   const rows: Row[] =
     tab === "Mine økter"
       ? own.map((value) => ({ kind: "workout", value }))
@@ -106,6 +110,40 @@ function Feed({ userId }: { userId: string }) {
       edges={["top", "left", "right"]}
       style={{ flex: 1, backgroundColor: c.bg }}
     >
+      <View
+        style={{
+          borderBottomWidth: 1,
+          borderColor: c.border,
+          backgroundColor: c.surface,
+        }}
+      >
+        <View
+          style={[
+            styles.row,
+            {
+              width: "100%",
+              maxWidth: 680,
+              alignSelf: "center",
+              paddingHorizontal: 20,
+              paddingVertical: 10,
+            },
+          ]}
+        >
+          <Logo width={Math.min(width - 150, 220)} color={c.text} />
+          <View style={{ flexDirection: "row", gap: 10 }}>
+            <IconButton
+              name="plus"
+              label={compose ? "Lukk deling" : "Lag innlegg"}
+              onPress={() => setCompose(!compose)}
+            />
+            <IconButton
+              name="search"
+              label="Søk etter personer"
+              onPress={() => router.push("/people")}
+            />
+          </View>
+        </View>
+      </View>
       <FlatList<Row>
         data={rows}
         refreshing={loading && rows.length > 0}
@@ -126,6 +164,8 @@ function Feed({ userId }: { userId: string }) {
         renderItem={({ item }) =>
           item.kind === "workout" ? (
             <ActivityCard workout={item.value} />
+          ) : item.value.kind === "place" ? (
+            <PlacePost post={item.value} userId={userId} onRemoved={refresh} />
           ) : (
             <CloudPost
               post={item.value}
@@ -138,24 +178,33 @@ function Feed({ userId }: { userId: string }) {
         ListHeaderComponent={
           <View style={{ gap: 24 }}>
             {!!storageError && <Txt>{storageError}</Txt>}
-            <View style={styles.row}>
-              <Logo small color={c.text} />
-              <Button
-                title="Del økt"
-                icon="arrow"
-                onPress={() => router.push("/share-workout")}
-              />
-            </View>
-            <Reveal>
-              <View style={{ gap: 5 }}>
-                <Txt size={22} weight="700">
-                  Turer å dele.
-                </Txt>
-                <Txt muted size={14}>
-                  Små øyeblikk. Flere kilometer sammen.
-                </Txt>
+            {compose && (
+              <View
+                style={{
+                  gap: 12,
+                  backgroundColor: c.raised,
+                  padding: 16,
+                  borderRadius: 20,
+                }}
+              >
+                <Txt weight="700">Hva vil du dele?</Txt>
+                <Button
+                  title="Del treningsøkt"
+                  icon="run"
+                  secondary
+                  onPress={() => router.push("/share-workout")}
+                />
+                <Button
+                  title="Del bilde av et sted"
+                  icon="photo"
+                  secondary
+                  onPress={() => router.push("/share-place")}
+                />
               </View>
-            </Reveal>
+            )}
+            <Txt size={24} weight="800">
+              Hjem
+            </Txt>
             <View style={styles.wrap}>
               {["Følger", "Delt på nytt", "Mine økter"].map((t) => (
                 <Chip
@@ -193,21 +242,26 @@ function Feed({ userId }: { userId: string }) {
             )}
             {!loading && !error && !posts.length && tab !== "Mine økter" && (
               <>
-                <Txt muted>Ingen delte økter her ennå.</Txt>
+                <Txt size={21} weight="700">
+                  Turer å dele.
+                </Txt>
+                <Txt muted>
+                  Følg venner for å se treningsøktene og stedene de deler.
+                </Txt>
                 <Button
                   title="Start første økt"
                   onPress={() => router.push("/track")}
                 />
                 <Button
-                  title="Finn løpere"
+                  title="Finn venner"
                   secondary
-                  onPress={() => router.push("/community")}
+                  onPress={() => router.push("/people")}
                 />
               </>
             )}
             {next && tab !== "Mine økter" && (
               <Button
-                title={loading ? "Laster …" : "Vis flere økter"}
+                title={loading ? "Laster …" : "Vis flere innlegg"}
                 secondary
                 disabled={loading}
                 onPress={() => {

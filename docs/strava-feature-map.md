@@ -1,5 +1,13 @@
 # VYRO – funksjonskart mot Strava
 
+## Gjeldende tillegg, 23. oktober 2026
+
+Hjem har feed med treningsinnlegg og separate stedsbilder, oppretting og personsøk til høyre. Du har også Finn venner. Klubber erstatter Løpere: private klubber, eierinvitasjoner, aksept/avslag, medlemsliste og utmelding/fjerning er implementert. Tilhørende database og privat bildelagring er aktive i Supabase. Varsler og opptak har egen innstillingsside; treningskartet før start er større. VYROs farger og norsk språk beholdes. Dette er egen implementasjon inspirert av brukerens referanser, ikke kopierte Strava-assets.
+
+Åpne klubber har egen sideinndelt oppdagelsesliste og direkte innmelding. Private klubber beholder invitasjonskravet. Eier kan endre synlighet. VYROs egen nye løper/ordmerke erstatter tidligere merkevareikoner, og overflødig hjelpetekst på Tren er fjernet.
+
+Klubbchat, klubbfeed, organisert arrangementsplanlegging, moderering/blokkering og reaksjoner på stedsbilder er ikke implementert. Fysisk mobiltest gjenstår; se [testing](testing.md). Historiske tabeller nedenfor beskriver tidligere faser, ikke dagens fulle status.
+
 Oppdatert 20. oktober 2026. Brukeren ønsker Stravas funksjonsomfang og enklere, lys utforming. Dette er målbildet, ikke en erklæring om full funksjonslikhet.
 
 Kilder: [Strava Help Center](https://support.strava.com/en-us/), [abonnementsfunksjoner](https://support.strava.com/en-us/articles/15402044-what-features-are-included-in-a-strava-subscription), [Runkeepers treningsskjerm](https://help.runkeeper.com/en/hc/understanding-your-android-tracking-screen), samt brukerens seks Strava-skjermbilder. Funksjoner varierer med plattform og abonnement; listen grupperer funksjoner og er ikke en fullstendig spesifikasjon av alle Strava-detaljer.

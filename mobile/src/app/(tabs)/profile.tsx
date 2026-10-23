@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useShallow } from "zustand/react/shallow";
 import { ActivityCard } from "../../components/ActivityCard";
+import { IconButton } from "../../components/SocialUi";
 import { Button, Chip, Txt, styles, useTheme } from "../../components/ui";
 import { GoalEditor } from "../../components/GoalEditor";
 import { ProgressLine } from "../../components/motion";
@@ -103,13 +104,22 @@ export default function Profile() {
               <Txt size={28} weight="700">
                 Du
               </Txt>
-              <Pressable
-                accessibilityRole="button"
-                onPress={() => router.push("/settings")}
-                style={{ minHeight: 44, justifyContent: "center" }}
+              <View
+                style={{ flexDirection: "row", gap: 12, alignItems: "center" }}
               >
-                <Txt size={14}>Innstillinger</Txt>
-              </Pressable>
+                <IconButton
+                  name="search"
+                  label="Finn venner"
+                  onPress={() => router.push("/people")}
+                />
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => router.push("/settings")}
+                  style={{ minHeight: 44, justifyContent: "center" }}
+                >
+                  <Txt size={14}>Innstillinger</Txt>
+                </Pressable>
+              </View>
             </View>
             <View style={{ gap: 4 }}>
               <Txt size={22} weight="700">

@@ -19,6 +19,7 @@ import Animated, {
 import Svg, { Circle, Path } from "react-native-svg";
 import { useAppStore } from "../stores/useAppStore";
 import runnerMark from "../theme/runnerMark.json";
+import { BrandMark, BrandWordmark } from "./Brand";
 import { brand, palettes } from "../theme/tokens";
 
 export function useTheme() {
@@ -30,15 +31,18 @@ export function Txt({
   muted = false,
   weight = "400",
   style,
+  numberOfLines,
 }: PropsWithChildren<{
   size?: number;
   muted?: boolean;
   weight?: TextStyle["fontWeight"];
   style?: TextStyle;
+  numberOfLines?: number;
 }>) {
   const c = useTheme();
   return (
     <Text
+      numberOfLines={numberOfLines}
       style={[
         {
           color: muted ? c.muted : c.text,
@@ -54,6 +58,12 @@ export function Txt({
   );
 }
 const paths = {
+  search: "M10.5 3a7.5 7.5 0 1 0 0 15 7.5 7.5 0 0 0 0-15M16 16l5 5",
+  plus: "M12 4v16M4 12h16",
+  photo: "M3 4h18v16H3ZM3 16l5-5 5 5 3-3 5 5M16 8h.01",
+  settings: "M4 7h16M4 17h16M8 4v6M16 14v6",
+  message: "M4 4h16v12H9l-5 4V4Z",
+  club: "M12 3 4 7v6c0 4 8 8 8 8s8-4 8-8V7l-8-4ZM8 12l3 3 5-6",
   chevronUp: "m6 15 6-6 6 6",
   chevronDown: "m6 9 6 6 6-6",
   expand: "M14 3h7v7M21 3l-7 7M3 14v7h7M3 21l7-7",
@@ -76,7 +86,7 @@ const paths = {
   play: "m8 4 12 8-12 8Z",
   pause: "M8 5v14m8-14v14",
   stop: "M6 6h12v12H6Z",
-  // Tabler Icons "run" (MIT); source and license in THIRD_PARTY_NOTICES.md.
+  // VYRO's own runner, also used by the wordmark and launcher assets.
   run: runnerMark.path,
   mountain: "m2 20 7-13 4 6 3-10 6 17H2Zm5-9 2 3 2-2",
   bike: "M5 13a4 4 0 1 0 0 8 4 4 0 0 0 0-8m14 0a4 4 0 1 0 0 8 4 4 0 0 0 0-8M5 17l5-9 4 9H5m9 0 4-12h-4M8 8h4",
@@ -97,12 +107,13 @@ export function Icon({
   size?: number;
   color?: string;
 }) {
+  if (name === "run") return <BrandMark size={size} color={color} />;
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
         d={paths[name]}
         stroke={color}
-        strokeWidth={name === "run" ? runnerMark.strokeWidth : 1.7}
+        strokeWidth={1.7}
         strokeLinecap="round"
         strokeLinejoin="round"
       />
@@ -111,23 +122,14 @@ export function Icon({
 }
 export function Logo({
   small = false,
-  color = brand.lime,
+  color = runnerMark.navy,
+  width,
 }: {
   small?: boolean;
   color?: string;
+  width?: number;
 }) {
-  return (
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-      <Icon name="run" size={small ? 27 : 36} color={color} />
-      <Txt
-        size={small ? 24 : 32}
-        weight="800"
-        style={{ color, letterSpacing: -1 }}
-      >
-        VYRO
-      </Txt>
-    </View>
-  );
+  return <BrandWordmark width={width ?? (small ? 160 : 280)} color={color} />;
 }
 export function Button({
   title,

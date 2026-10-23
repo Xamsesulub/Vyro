@@ -9,7 +9,8 @@ import {
   mapBounds,
   type LiveMapProps,
 } from "../features/maps/geometry";
-import { Txt } from "./ui";
+import { MapLoadNotice } from "./MapLoadNotice";
+import { mapLoadError } from "../features/maps/loadError";
 Mapbox.setAccessToken(mapboxToken);
 export default function MapboxNative({
   height = 300,
@@ -24,11 +25,12 @@ export default function MapboxNative({
   overlays = emptyOverlays,
   position = null,
   follow = false,
+  explorer = false,
   recenter = 0,
   padding,
   onPan,
 }: LiveMapProps) {
-  const base = mapKind;
+  const base = mapKind === "standard" ? "standard" : "satellite";
   const mapStyle = useMemo(
     () => createMapStyle(base, false, false, false),
     [base],
@@ -40,7 +42,7 @@ export default function MapboxNative({
   const skipFit = useRef(false);
   const camera = useRef<Mapbox.Camera>(null);
   const [ready, setReady] = useState(0);
-  const [failed, setFailed] = useState(false);
+  const [failedStyle, setFailedStyle] = useState<typeof mapStyle | null>(null);
   const shape = useMemo(
     () => mapFeatures(route, overlays, position),
     [route, overlays, position],
@@ -101,9 +103,8 @@ export default function MapboxNative({
         }}
         onDidFinishLoadingStyle={() => {
           setReady((v) => v + 1);
-          setFailed(false);
         }}
-        onMapLoadingError={() => setFailed(true)}
+        onMapLoadingError={() => setFailedStyle(mapStyle)}
       >
         {config && (
           <Mapbox.StyleImport
@@ -120,7 +121,7 @@ export default function MapboxNative({
             <Mapbox.LineLayer
               id="terrain-contours"
               sourceLayerID="contour"
-              slot={mapKind === "satellite" ? undefined : "middle"}
+              slot="middle"
               minZoomLevel={12}
               style={{
                 lineColor: "#8C8466",
@@ -151,7 +152,7 @@ export default function MapboxNative({
         <Mapbox.ShapeSource id="workout" shape={shape}>
           <Mapbox.LineLayer
             id="route-outline"
-            slot={mapKind === "satellite" ? undefined : "top"}
+            slot="top"
             filter={["==", ["geometry-type"], "LineString"]}
             style={{
               lineColor: "white",
@@ -163,7 +164,7 @@ export default function MapboxNative({
           />
           <Mapbox.LineLayer
             id="route"
-            slot={mapKind === "satellite" ? undefined : "top"}
+            slot="top"
             filter={["==", ["geometry-type"], "LineString"]}
             style={{
               lineColor: ["get", "color"],
@@ -174,7 +175,7 @@ export default function MapboxNative({
           />
           <Mapbox.CircleLayer
             id="position-aura"
-            slot={mapKind === "satellite" ? undefined : "top"}
+            slot="top"
             filter={["==", ["get", "kind"], "position"]}
             style={{
               circleColor: "#1689F8",
@@ -184,7 +185,7 @@ export default function MapboxNative({
           />
           <Mapbox.CircleLayer
             id="points"
-            slot={mapKind === "satellite" ? undefined : "top"}
+            slot="top"
             filter={["==", ["geometry-type"], "Point"]}
             style={{
               circleColor: ["get", "color"],
@@ -195,7 +196,7 @@ export default function MapboxNative({
           />
           <Mapbox.SymbolLayer
             id="names"
-            slot={mapKind === "satellite" ? undefined : "top"}
+            slot="top"
             filter={["==", ["geometry-type"], "Point"]}
             style={{
               textField: ["get", "label"],
@@ -208,11 +209,12 @@ export default function MapboxNative({
           />
         </Mapbox.ShapeSource>
       </Mapbox.MapView>
-      {failed && (
-        <Txt muted>
-          Kartet kunne ikke lastes. Kontroller nettforbindelsen eller
-          karttilgangen.
-        </Txt>
+      {failedStyle === mapStyle && (
+        <MapLoadNotice
+          message={mapLoadError(null)}
+          top={explorer ? (padding?.top ?? 150) + 12 : 12}
+          explorer={explorer}
+        />
       )}
     </View>
   );

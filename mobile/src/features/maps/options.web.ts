@@ -18,10 +18,7 @@ export function applyMapOptions(map: Map, options: MapOptions) {
   if (options.contours && !map.getSource("terrainContours")) {
     const style = createMapStyle("standard", false, true, false);
     map.addSource("terrainContours", style.sources.terrainContours);
-    map.addLayer({
-      ...style.layers[0],
-      slot: options.mapKind === "satellite" ? undefined : style.layers[0].slot,
-    });
+    map.addLayer(style.layers[0]);
   }
   if (map.getLayer("terrain-contours"))
     map.setLayoutProperty(

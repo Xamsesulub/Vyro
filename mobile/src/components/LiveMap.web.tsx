@@ -17,7 +17,8 @@ import {
 import { loadMapEngine } from "../features/maps/prewarm.web";
 import { applyMapOptions } from "../features/maps/options.web";
 import MapUnavailable from "./MapUnavailable";
-import { Txt } from "./ui";
+import { MapLoadNotice } from "./MapLoadNotice";
+import { mapLoadError } from "../features/maps/loadError";
 export default function LiveMap({
   height = 300,
   attributionBottom = 0,
@@ -36,12 +37,14 @@ export default function LiveMap({
   padding,
   onPan,
 }: LiveMapProps) {
-  const base = mapKind;
+  // Satellite and Hybrid share imagery; toggling labels must not reload tiles.
+  const base = mapKind === "standard" ? "standard" : "satellite";
   const mapStyle = useMemo(
     () => createMapStyle(base, false, false, false),
     [base],
   );
   const initialStyle = useRef(mapStyle);
+  const loadedStyle = useRef<typeof mapStyle | null>(null);
   const options = useRef({ mapKind, poi, contours, threeD });
   const initialBounds = useRef(mapBounds(route, overlays));
   const initialPadding = useRef(padding);
@@ -58,7 +61,10 @@ export default function LiveMap({
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<Map | null>(null);
   const [ready, setReady] = useState(0);
-  const [failed, setFailed] = useState(false);
+  const [failure, setFailure] = useState<{
+    style: typeof mapStyle;
+    message: string;
+  } | null>(null);
   useEffect(() => {
     el.current
       ?.querySelectorAll<HTMLElement>(
@@ -112,11 +118,16 @@ export default function LiveMap({
             new gl.NavigationControl({ showCompass: false }),
             "top-left",
           );
-        instance.on("error", () => {
-          if (!cancelled) setFailed(true);
+        instance.on("error", (event) => {
+          if (!cancelled)
+            setFailure({
+              style: initialStyle.current,
+              message: mapLoadError(event.error),
+            });
         });
         instance.on("style.load", () => {
           if (cancelled || !instance) return;
+          loadedStyle.current = initialStyle.current;
           applyMapOptions(instance, options.current);
           instance.addSource("workout", {
             type: "geojson",
@@ -126,7 +137,7 @@ export default function LiveMap({
             id: "route-outline",
             type: "line",
             source: "workout",
-            ...(options.current.mapKind !== "satellite" ? { slot: "top" } : {}),
+            slot: "top",
             filter: ["==", ["geometry-type"], "LineString"],
             layout: { "line-cap": "round", "line-join": "round" },
             paint: {
@@ -139,7 +150,7 @@ export default function LiveMap({
             id: "route",
             type: "line",
             source: "workout",
-            ...(options.current.mapKind !== "satellite" ? { slot: "top" } : {}),
+            slot: "top",
             filter: ["==", ["geometry-type"], "LineString"],
             layout: { "line-cap": "round", "line-join": "round" },
             paint: { "line-color": ["get", "color"], "line-width": 5 },
@@ -148,7 +159,7 @@ export default function LiveMap({
             id: "position-aura",
             type: "circle",
             source: "workout",
-            ...(options.current.mapKind !== "satellite" ? { slot: "top" } : {}),
+            slot: "top",
             filter: ["==", ["get", "kind"], "position"],
             paint: {
               "circle-color": "#1689F8",
@@ -160,7 +171,7 @@ export default function LiveMap({
             id: "points",
             type: "circle",
             source: "workout",
-            ...(options.current.mapKind !== "satellite" ? { slot: "top" } : {}),
+            slot: "top",
             filter: ["==", ["geometry-type"], "Point"],
             paint: {
               "circle-color": ["get", "color"],
@@ -178,7 +189,7 @@ export default function LiveMap({
             id: "names",
             type: "symbol",
             source: "workout",
-            ...(options.current.mapKind !== "satellite" ? { slot: "top" } : {}),
+            slot: "top",
             filter: ["==", ["geometry-type"], "Point"],
             layout: {
               "text-field": ["get", "label"],
@@ -191,14 +202,17 @@ export default function LiveMap({
               "text-halo-width": 2,
             },
           });
-          setFailed(false);
           setReady((v) => v + 1);
         });
         observer = new ResizeObserver(() => instance?.resize());
         observer.observe(el.current);
       })
       .catch(() => {
-        if (!cancelled) setFailed(true);
+        if (!cancelled)
+          setFailure({
+            style: initialStyle.current,
+            message: mapLoadError(null),
+          });
       });
     return () => {
       cancelled = true;
@@ -238,17 +252,21 @@ export default function LiveMap({
   useEffect(() => {
     // The engine loads asynchronously. Honour a selection made before it resolves.
     initialStyle.current = mapStyle;
-    if (map.current)
+    if (map.current) {
+      loadedStyle.current = null;
       map.current.setStyle(mapStyle, {
         diff: false,
         localFontFamily: undefined,
         localIdeographFontFamily: undefined,
       });
+    }
   }, [mapStyle]);
   useEffect(() => {
-    if (ready && map.current?.isStyleLoaded())
+    // isStyleLoaded also waits for tiles. Options must still apply while tiles
+    // are loading (or rate-limited), once the style's imports are available.
+    if (map.current && loadedStyle.current === mapStyle)
       applyMapOptions(map.current, { mapKind, poi, contours, threeD });
-  }, [ready, mapKind, poi, contours, threeD]);
+  }, [ready, mapStyle, mapKind, poi, contours, threeD]);
   useEffect(() => {
     if (ready) map.current?.easeTo({ pitch: threeD ? 55 : 0, duration: 400 });
   }, [threeD, ready]);
@@ -264,11 +282,12 @@ export default function LiveMap({
         aria-label="Mapbox-kart"
         style={{ height, width: "100%", background: "#F4F5F2" }}
       />
-      {failed && (
-        <Txt muted>
-          Kartet kunne ikke lastes. Kontroller nettforbindelsen eller
-          karttilgangen.
-        </Txt>
+      {failure?.style === mapStyle && (
+        <MapLoadNotice
+          message={failure.message}
+          top={explorer ? (padding?.top ?? 150) + 12 : 12}
+          explorer={explorer}
+        />
       )}
     </View>
   );

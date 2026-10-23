@@ -1,5 +1,9 @@
 # Sosial aktivitetsfeed og voksende soner
 
+## Tillegg 23. oktober 2026: klubber og stedsbilder
+
+Etter brukerens nye bestilling kan Hjem også vise egne stedsbilder uten tilknyttet økt. De ligger i `place_posts` og privat Storage, aldri i `activities` eller turf-tabellene. GPS- og konkurransekravene nedenfor er uendret. Private klubber har invitasjoner og eksplisitt medlemskap; ingen automatisk deling av medlemmers turer eller bilder til klubben. Implementasjon, aktive migreringer og begrensninger beskrives i [klubber og stedsbilder](clubs-and-places.md).
+
 Oppdatert 20. oktober 2026. Supabase Auth, følgerforhold og eksplisitt deling av GPS-økter er implementert. Migreringer 001–003 er aktive. Migrering 004 er aktiv i produksjon etter eksplisitt godkjenning og vellykket etterkontroll 20. oktober 2026. Ingen testsoner publiseres til Supabase.
 
 ## Konkurranseregelen

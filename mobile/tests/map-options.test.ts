@@ -46,7 +46,7 @@ test("POI and 3D changes preserve basemap and sources; optional data loads only 
   expect(terrain).toBeNull();
 });
 
-test("pure satellite never applies Standard import configuration or drops imagery when switching 3D", () => {
+test("photographic modes toggle roads and labels without reloading imagery or dropping terrain", () => {
   let terrain: unknown = null;
   const map = {
     getConfigProperty: jest.fn(),
@@ -66,12 +66,53 @@ test("pure satellite never applies Standard import configuration or drops imager
       contours: false,
       threeD,
     });
-  expect(map.getConfigProperty).not.toHaveBeenCalled();
-  expect(map.setConfigProperty).not.toHaveBeenCalled();
+  expect(map.setConfigProperty).toHaveBeenCalledWith(
+    "basemap",
+    "showRoadsAndTransit",
+    false,
+  );
+  expect(map.setConfigProperty).toHaveBeenCalledWith(
+    "basemap",
+    "showRoadLabels",
+    false,
+  );
+  expect(map.setConfigProperty).toHaveBeenCalledWith(
+    "basemap",
+    "showPointOfInterestLabels",
+    false,
+  );
+  expect(map.setConfigProperty).not.toHaveBeenCalledWith(
+    "basemap",
+    "show3dObjects",
+    expect.anything(),
+  );
   expect(map.setStyle).not.toHaveBeenCalled();
   expect(map.setTerrain).toHaveBeenNthCalledWith(1, {
     source: "terrainDem",
     exaggeration: 1,
   });
   expect(map.setTerrain).toHaveBeenNthCalledWith(2, null);
+  map.setConfigProperty.mockClear();
+  applyMapOptions(map as unknown as MapboxMap, {
+    mapKind: "hybrid",
+    poi: true,
+    contours: false,
+    threeD: false,
+  });
+  expect(map.setConfigProperty).toHaveBeenCalledWith(
+    "basemap",
+    "showRoadsAndTransit",
+    true,
+  );
+  expect(map.setConfigProperty).toHaveBeenCalledWith(
+    "basemap",
+    "showPlaceLabels",
+    true,
+  );
+  expect(map.setConfigProperty).toHaveBeenCalledWith(
+    "basemap",
+    "showPointOfInterestLabels",
+    true,
+  );
+  expect(map.setStyle).not.toHaveBeenCalled();
 });

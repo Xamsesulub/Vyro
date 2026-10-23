@@ -13,7 +13,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#11182C",
+        "backgroundColor": "#FFFFFF",
         "foregroundImage": "./assets/adaptive-icon.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
@@ -38,14 +38,22 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#11182C",
+          "backgroundColor": "#FFFFFF",
           "image": "./assets/splash-icon.png",
           "imageWidth": 160
         }
       ],
       "@rnmapbox/maps",
       "expo-secure-store",
-      "expo-sharing"
+      "expo-sharing",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Velg et bilde du vil dele med andre i VYRO.",
+          "cameraPermission": false,
+          "microphonePermission": false
+        }
+      ]
     ]
   }
 }

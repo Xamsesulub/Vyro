@@ -1,5 +1,5 @@
 import { PropsWithChildren, useEffect } from "react";
-import { View } from "react-native";
+import { View, useWindowDimensions } from "react-native";
 import { router } from "expo-router";
 import { useAuthStore } from "../stores/useAuthStore";
 import { useAppStore } from "../stores/useAppStore";
@@ -10,6 +10,7 @@ import { AuthLoading } from "./AuthLoading";
 export function AccountGate({ children }: PropsWithChildren) {
   const { ready, session, confirmationEmail } = useAuthStore();
   const c = useTheme();
+  const { width } = useWindowDimensions();
   useEffect(() => {
     if (ready && !session) router.prefetch("/account");
   }, [ready, session]);
@@ -25,15 +26,11 @@ export function AccountGate({ children }: PropsWithChildren) {
         )}
         <View
           style={{
-            flexDirection: "row",
             alignItems: "center",
-            justifyContent: "space-between",
+            paddingVertical: 12,
           }}
         >
-          <Logo small color={c.text} />
-          <Txt size={10} muted weight="600" style={{ letterSpacing: 2 }}>
-            MOVE BEYOND
-          </Txt>
+          <Logo width={Math.min(width - 48, 380)} color={c.text} />
         </View>
         <Reveal>
           <View style={{ gap: 14, paddingTop: 12 }}>

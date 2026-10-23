@@ -190,7 +190,7 @@ export default function Maps() {
       <View pointerEvents="box-none" style={[s.top, { top: insets.top + 16 }]}>
         <View style={s.heading}>
           <View style={s.brand}>
-            <Icon name="run" color={brand.route} size={24} />
+            <Icon name="run" color={palettes.light.text} size={32} />
           </View>
           <Pressable
             accessibilityRole="button"
@@ -580,11 +580,10 @@ export default function Maps() {
                 </View>
                 <MapText size={13} muted>
                   {mapKind === "satellite"
-                    ? "Satellitt viser ekte fly- og satellittbilder uten veinavn."
+                    ? "Fly- og satellittbilder uten kartnavn."
                     : mapKind === "hybrid"
-                      ? "Hybrid viser satellittbilder med veier og stedsnavn."
-                      : "Standard viser det vanlige veikartet."}{" "}
-                  2D/3D endrer bare synsvinkel og terreng.
+                      ? "Satellittbilder med veier og kartnavn."
+                      : "Veikart med stier og kartnavn."}
                 </MapText>
                 {(
                   [
@@ -605,7 +604,16 @@ export default function Maps() {
                     <MapText size={15}>{label}</MapText>
                     <Switch
                       accessibilityLabel={label}
-                      value={value}
+                      disabled={
+                        label === "Stedsnavn og interessepunkter" &&
+                        mapKind === "satellite"
+                      }
+                      value={
+                        label === "Stedsnavn og interessepunkter" &&
+                        mapKind === "satellite"
+                          ? false
+                          : value
+                      }
                       onValueChange={set}
                     />
                   </View>

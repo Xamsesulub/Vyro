@@ -7,7 +7,7 @@ const tabs: { name: string; title: string; icon: IconName }[] = [
   { name: "index", title: "Hjem", icon: "home" },
   { name: "map", title: "Kart", icon: "map" },
   { name: "track", title: "Tren", icon: "record" },
-  { name: "community", title: "Løpere", icon: "people" },
+  { name: "community", title: "Klubber", icon: "club" },
   { name: "profile", title: "Du", icon: "user" },
 ];
 export default function TabLayout() {

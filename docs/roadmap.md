@@ -1,5 +1,27 @@
 # Leveranseplan
 
+## Kartretting, 23. oktober 2026
+
+Standard er veikart; Hybrid og Satellitt bruker nå offisiell Standard Satellite med henholdsvis kartnavn/veier på og av. Satellitt/Hybrid-bytte gjenbruker kartstilen. Lagvalg virker mens fliser laster, og feil vises inne i kartet. Standard er visuelt kontrollert på localhost. Ekte satellittbilder er fortsatt blokkert av Mapbox HTTP 429; visuell godkjenning av disse og fysisk native-kontroll gjenstår. Se nyeste seksjon i `testing.md`. Ingen endring i GPS-opptak, deling eller database.
+
+## Egen VYRO-logo og åpne klubber, 23. oktober 2026
+
+Åpne klubber er aktivert i Supabase med migrering `202610240003`; åtte lesende etterkontroller bestod. Den oppdaterte appen kjører lokalt. Den eldre offentlige testlenken er ikke endret i denne leveransen.
+
+Den nye navy/lime-løperen og VYRO-ordmerket er tegnet som skalerbar vektorgrafikk fra brukerens vedlagte logo. Stor logo på velkomst-/innloggingsforside og Hjem, løpersymbol på kart og som app-, splash- og nettleserikon. `mobile/src/theme/runnerMark.json` er felles kilde; `npm run brand:generate` gjenskaper plattformikonene. Dette erstatter Tabler-merket fra den tidligere fasen. Nye native ikoner krever nytt mobilbygg.
+
+Overflødig forklaring under aktivitet/kart er fjernet; nødvendig merking av eksempelkart/simulering og GPS-feil beholdes. Klubber har valg mellom privat og åpen ved oppretting, egen sideinndelt liste for åpne klubber og direkte innmelding. Eier kan bytte synlighet etter bekreftelse. Eksisterende klubber forblir private, og medlemskap deler ikke automatisk aktiviteter eller bilder. Se [klubbdetaljer](clubs-and-places.md) og [verifikasjon](testing.md).
+
+## Klubber, stedsbilder og enklere trening, 23. oktober 2026
+
+Hjem har VYRO-header med ny-innlegg og personsøk til høyre, en enklere aktivitetsfeed og egne stedsbilder. «Løpere» heter nå «Klubber». Private klubber kan opprettes; eier inviterer personer, mottaker godtar/avslår, medlemmer kan forlate og eier kan fjerne medlemmer eller slette klubben. Personsøk/følgefunksjon nås fra både Hjem og Du. Ingen fiktive klubber eller medlemskap vises i vanlig app.
+
+Kilometervarsler og bakgrunnsopptak er flyttet til Innstillinger → Varsler og opptak. Treningskartet før start følger skjermhøyden (300–520 px); Start står fast nederst. Aktiv økt beholder synlige målinger og Pause.
+
+Stedsbilder velges fra bildebibliotek, skaleres til maksimalt 1600 px og komprimeres til JPEG. EXIF/XMP/IPTC og kommentarer fjernes før opplasting. Følgere er standard publikum. Bildene lagres privat med autentisert lesing; de blir aldri treningsøkter, GPS-bevis eller soneforsøk. Dette utvider den tidligere retningen «kun treningsinnlegg» etter brukerens uttrykkelige ønske.
+
+Feed-migreringen `202610230001` og klubb-/bildemigreringene `202610240001` og `202610240002` er aktivert i Supabase etter uttrykkelig godkjenning; seks etterkontroller bestod. Backup-migrering `202610230002` er fortsatt ikke aktivert. Appendringene er lokale, ikke publisert til den eldre offentlige testlenken. Fysisk kontroll av bildevelger, varsler og kart på iOS/Android gjenstår. Se [klubber og bilder](clubs-and-places.md) og [testresultatene](testing.md).
+
 ## Felles løperikon, 23. oktober 2026
 
 Den gamle løperstreken og det gamle VYRO-symbolet er erstattet med «Run» fra Tabler Icons. Kartets søkefelt, aktivitetskort, posisjonskort, VYRO-logoen, oppstartsanimasjonen og alle app-/splash-/nettleserikoner bruker samme geometri. VYRO-navnet og fargene er beholdt. Android har også monokromikon for systemtema. PNG-filene kan gjenskapes på alle utviklingsplattformer med `npm run brand:generate`; kilde og MIT-lisens ligger i `mobile/THIRD_PARTY_NOTICES.md`. Ingen trenings-, kart- eller kontofunksjon er endret. Nytt native bygg kreves for å få nye appikoner på telefonen; offentlig testlenke er ikke oppdatert her.

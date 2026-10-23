@@ -5,6 +5,7 @@ import { FeedPost, ReactionSummary } from "../features/social/feed";
 import { km, duration, pace } from "../features/activities/model";
 import { Button, Txt, styles, useTheme } from "./ui";
 import WorkoutMap from "./WorkoutMap";
+import { Avatar } from "./SocialUi";
 
 export function CloudPost({
   post,
@@ -57,22 +58,39 @@ export function CloudPost({
         paddingBottom: 24,
       }}
     >
-      <View>
-        <Txt weight="700">{post.profiles.display_name}</Txt>
-        <Txt muted size={12}>
-          @{post.profiles.username} ·{" "}
-          {new Date(post.recorded_at).toLocaleDateString("nb-NO")}
-        </Txt>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+        <Avatar name={post.profiles.display_name} />
+        <View style={{ flex: 1, gap: 3 }}>
+          <Txt weight="700">{post.profiles.display_name}</Txt>
+          <Txt muted size={12}>
+            @{post.profiles.username} ·{" "}
+            {new Date(post.recorded_at).toLocaleDateString("nb-NO")}
+          </Txt>
+        </View>
       </View>
-      <Txt size={21} weight="700">
+      <Txt size={24} weight="700">
         {post.title}
       </Txt>
       <View style={styles.row}>
-        <Txt weight="700">{km(Number(post.distance_km))} km</Txt>
-        <Txt weight="700">{duration(post.seconds)}</Txt>
-        <Txt weight="700">
-          {pace(Number(post.distance_km), post.seconds)} min/km
-        </Txt>
+        {[
+          ["Distanse", `${km(Number(post.distance_km))} km`],
+          ["Tid", duration(post.seconds)],
+          ["Tempo", `${pace(Number(post.distance_km), post.seconds)}`],
+        ].map(([label, value]) => (
+          <View key={label} style={{ gap: 5, flexShrink: 1 }}>
+            <Txt muted size={12}>
+              {label}
+            </Txt>
+            <Txt weight="700" size={21}>
+              {value}
+            </Txt>
+            {label === "Tempo" && (
+              <Txt size={11} muted>
+                min/km
+              </Txt>
+            )}
+          </View>
+        ))}
       </View>
       <PostMap postId={post.id} />
       <Txt muted size={12}>

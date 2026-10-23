@@ -17,8 +17,8 @@ jest.mock("expo-router", () => ({
 jest.mock("react-native-safe-area-context", () => ({
   SafeAreaView: jest.requireActual("react-native").View,
 }));
-jest.mock("../src/features/social/feed", () => ({
-  loadFeed: jest.fn(async () => ({ posts: [], next: null })),
+jest.mock("../src/features/social/homeFeed", () => ({
+  loadHomeFeed: jest.fn(async () => ({ posts: [], next: null })),
 }));
 jest.mock("../src/components/CloudPost", () => ({ CloudPost: () => null }));
 jest.mock("../src/components/TurfEvents", () => ({ TurfEvents: () => null }));

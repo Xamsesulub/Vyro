@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { TextInput, View } from "react-native";
+import { TextInput, View, useWindowDimensions } from "react-native";
 import { router } from "expo-router";
 import { Button, Screen, Txt, useTheme, Logo } from "../components/ui";
 import { MovementLine, Reveal } from "../components/motion";
 import { useAppStore } from "../stores/useAppStore";
 export default function Onboarding() {
   const c = useTheme();
+  const { width } = useWindowDimensions();
   const [name, setName] = useState(useAppStore.getState().name);
   return (
     <Screen
@@ -24,15 +25,11 @@ export default function Onboarding() {
     >
       <View
         style={{
-          flexDirection: "row",
           alignItems: "center",
-          justifyContent: "space-between",
+          paddingVertical: 14,
         }}
       >
-        <Logo small color={c.text} />
-        <Txt size={10} muted weight="600" style={{ letterSpacing: 2 }}>
-          MOVE BEYOND
-        </Txt>
+        <Logo width={Math.min(width - 48, 380)} color={c.text} />
       </View>
       <Reveal>
         <View style={{ paddingTop: 16, gap: 16 }}>

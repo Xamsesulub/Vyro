@@ -28,6 +28,12 @@ export default function Settings() {
       <Txt size={28} weight="700">
         Innstillinger
       </Txt>
+      <Button
+        title="Varsler og opptak"
+        icon="settings"
+        secondary
+        onPress={() => router.push("/training-settings")}
+      />
       {!!storageError && (
         <Button
           title="Prøv lokal lagring igjen"

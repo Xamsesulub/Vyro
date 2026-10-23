@@ -1,5 +1,5 @@
 import { PropsWithChildren, useEffect, useState } from "react";
-import { Platform, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import Animated, {
   cancelAnimation,
   Easing,
@@ -12,7 +12,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import Svg, { Circle, Path } from "react-native-svg";
-import runnerMark from "../theme/runnerMark.json";
+import { BrandWordmark } from "./Brand";
 import { brand } from "../theme/tokens";
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
@@ -127,8 +127,8 @@ export function LaunchSignature({
     };
   }, [ready, idle, reduced, draw, opacity]);
   const style = useAnimatedStyle(() => ({ opacity: opacity.value }));
-  const stroke = useAnimatedProps(() => ({
-    strokeDashoffset: 30 * (1 - draw.value),
+  const markStyle = useAnimatedStyle(() => ({
+    opacity: draw.value,
   }));
   if (!ready || !idle || reduced || finished) return null;
   return (
@@ -141,7 +141,7 @@ export function LaunchSignature({
         StyleSheet.absoluteFill,
         {
           zIndex: 100,
-          backgroundColor: brand.navy,
+          backgroundColor: "#FFFFFF",
           justifyContent: "center",
           alignItems: "center",
           gap: 16,
@@ -149,39 +149,9 @@ export function LaunchSignature({
         style,
       ]}
     >
-      <Svg width={90} height={90} viewBox={runnerMark.viewBox}>
-        <AnimatedPath
-          d={runnerMark.path}
-          stroke={brand.lime}
-          strokeWidth={runnerMark.strokeWidth}
-          strokeDasharray="30 30"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          fill="none"
-          animatedProps={stroke}
-        />
-      </Svg>
-      <Text
-        style={{
-          color: "#FFFFFF",
-          fontFamily: Platform.OS === "ios" ? "System" : "sans-serif",
-          fontSize: 36,
-          fontWeight: "800",
-          letterSpacing: -1.5,
-        }}
-      >
-        VYRO
-      </Text>
-      <Text
-        style={{
-          color: "#BDC6D8",
-          fontFamily: Platform.OS === "ios" ? "System" : "sans-serif",
-          fontSize: 10,
-          letterSpacing: 3,
-        }}
-      >
-        MOVE BEYOND
-      </Text>
+      <Animated.View style={markStyle}>
+        <BrandWordmark width={280} />
+      </Animated.View>
     </Animated.View>
   );
 }

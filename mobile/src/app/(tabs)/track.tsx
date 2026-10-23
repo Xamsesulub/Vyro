@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pressable, Switch, View } from "react-native";
+import { Pressable, View, useWindowDimensions } from "react-native";
 import { router } from "expo-router";
 import {
   Button,
@@ -35,8 +35,8 @@ export default function Track() {
   const setMode = useAppStore((s) => s.mode);
   const tracking = useTrackingStatus();
   const background = useAppStore((s) => s.backgroundRecording);
-  const alerts = useAppStore((s) => s.kilometerAlerts);
-  const preferences = useAppStore((s) => s.preferences);
+  const { height } = useWindowDimensions();
+  const mapHeight = Math.max(300, Math.min(520, height * 0.49));
   const [showDemo, setShowDemo] = useState(r.mode === "simulation");
   const gps = r.mode === "gps";
   const loc = useLiveLocation(gps);
@@ -177,7 +177,7 @@ export default function Track() {
           <View style={{ borderRadius: 16, overflow: "hidden" }}>
             {gps && (loc.permission === "granted" || r.challenge || r.guide) ? (
               <LiveMap
-                height={280}
+                height={mapHeight}
                 position={loc.position}
                 follow={!r.challenge && !r.guide}
                 overlays={
@@ -205,7 +205,7 @@ export default function Track() {
                 }
               />
             ) : (
-              <WorkoutMap height={280} />
+              <WorkoutMap height={mapHeight} />
             )}
           </View>
           <Txt
@@ -214,19 +214,19 @@ export default function Track() {
             style={denied ? { color: brand.coral } : undefined}
           >
             {!gps
-              ? "Eksempelkart · ingen posisjon samles inn"
+              ? "Simulering"
               : denied
                 ? "VYRO fikk ikke tilgang til posisjon. Slå den på i innstillingene, eller velg simulering."
                 : loc.permission !== "granted"
                   ? r.challenge
-                    ? "Valgt løype · trykk Start for å slå på GPS"
-                    : "Eksempelkart · trykk Start for å slå på GPS"
+                    ? "Valgt løype"
+                    : "Eksempelkart"
                   : (tracking.error ??
                     loc.error ??
                     (loc.position
                       ? background && backgroundSupported
-                        ? "Din posisjon · bakgrunnsopptak er valgt"
-                        : "Din posisjon · brukes bare mens appen er åpen"
+                        ? "GPS · bakgrunnsopptak"
+                        : "GPS"
                       : "Leter etter GPS-signal …"))}
           </Txt>
           {!!tracking.error && (
@@ -248,50 +248,6 @@ export default function Track() {
                   })
                 }
               />
-            </View>
-          )}
-          {gps && backgroundSupported && (
-            <View style={{ gap: 8 }}>
-              <View style={styles.row}>
-                <Txt style={{ flex: 1 }}>Fortsett med låst skjerm</Txt>
-                <Switch
-                  accessibilityLabel="Fortsett med låst skjerm"
-                  value={background}
-                  onValueChange={(backgroundRecording) =>
-                    preferences({ backgroundRecording })
-                  }
-                />
-              </View>
-              <Txt muted size={12}>
-                Krever posisjonstilgang også i bakgrunnen. Telefonen kan åpne
-                innstillinger når du starter. GPS brukes under økten frem til du
-                pauser eller avslutter.
-              </Txt>
-            </View>
-          )}
-          {gps && (
-            <View style={{ gap: 8 }}>
-              <Txt weight="600">Varsel hver kilometer</Txt>
-              <View style={styles.wrap}>
-                {(
-                  [
-                    ["off", "Av"],
-                    ["voice", "Tale"],
-                    ["vibration", "Vibrasjon"],
-                  ] as const
-                ).map(([value, title]) => (
-                  <Chip
-                    key={value}
-                    title={title}
-                    selected={alerts === value}
-                    onPress={() => preferences({ kilometerAlerts: value })}
-                  />
-                ))}
-              </View>
-              <Txt size={12} muted>
-                Tale og vibrasjon avhenger av telefonens lydinnstillinger og
-                støtte.
-              </Txt>
             </View>
           )}
           {!!r.challenge && (
@@ -324,11 +280,6 @@ export default function Track() {
             <Txt>Aktivitet</Txt>
             <Txt weight="600">{r.sport} · Endre</Txt>
           </Pressable>
-          <Txt size={14} muted>
-            {gps
-              ? "Kartet følger deg mens du trener. Du kan pause og avslutte når du vil."
-              : "Prøv en økt med eksempelfart. Du kan pause og avslutte når du vil."}
-          </Txt>
         </View>
       )}
       {r.status === "idle" && chooseSport && (

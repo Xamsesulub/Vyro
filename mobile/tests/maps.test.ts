@@ -13,34 +13,42 @@ test("live position is a separate blue point, never a recorded route", () => {
   });
   expect(mapFeatures([], [], null).features).toEqual([]);
 });
-test("satellite and hybrid request photographic raster tiles independently of 2D/3D", () => {
+test("photographic modes use a satellite basemap instead of falling back to Standard land when imagery fails", () => {
   for (const kind of ["satellite", "hybrid"] as const) {
     for (const threeD of [false, true]) {
       const style = createMapStyle(kind, true, false, threeD);
-      expect(style.sources.satelliteImagery).toEqual({
-        type: "raster",
-        url: "mapbox://mapbox.satellite",
-        tileSize: 256,
+      expect(style.imports).toEqual([
+        expect.objectContaining({
+          id: "basemap",
+          url: "mapbox://styles/mapbox/standard-satellite",
+        }),
+      ]);
+      expect(style.imports?.[0].config).toMatchObject({
+        showRoadsAndTransit: kind === "hybrid",
+        showPedestrianRoads: kind === "hybrid",
+        showPlaceLabels: kind === "hybrid",
+        showRoadLabels: kind === "hybrid",
+        showPointOfInterestLabels: kind === "hybrid",
+        showTransitLabels: kind === "hybrid",
+        showAdminBoundaries: kind === "hybrid",
       });
-      expect(
-        style.layers.find((layer) => layer.id === "satellite-imagery"),
-      ).toMatchObject({
-        type: "raster",
-        source: "satelliteImagery",
-        paint: { "raster-opacity": 1 },
-      });
+      // Standard-only configuration is not supported by Standard Satellite.
+      expect(style.imports?.[0].config).not.toHaveProperty("show3dObjects");
       expect(!!style.terrain).toBe(threeD);
     }
   }
-  expect(createMapStyle("satellite").imports).toBeUndefined();
-  expect(createMapStyle("satellite").layers[0].slot).toBeUndefined();
-  expect(createMapStyle("hybrid").layers[0].slot).toBe("bottom");
-  expect(createMapStyle("hybrid").imports?.[0].config?.showRoadLabels).toBe(
-    true,
+  expect(createMapStyle("standard").imports?.[0].url).toBe(
+    "mapbox://styles/mapbox/standard",
   );
-  expect(
-    createMapStyle("standard", true, false).sources.satelliteImagery,
-  ).toBeUndefined();
+  expect(createMapStyle("hybrid", false).imports?.[0].config).toMatchObject({
+    showRoadsAndTransit: true,
+    showRoadLabels: true,
+    showPlaceLabels: false,
+    showPointOfInterestLabels: false,
+    showTransitLabels: false,
+  });
+  for (const kind of ["standard", "satellite", "hybrid"] as const)
+    expect(createMapStyle(kind, true, true).layers[0].slot).toBe("middle");
   expect(createMapStyle("standard", true, false).layers).toEqual([]);
   expect(createMapStyle().terrain).toBeUndefined();
   expect(createMapStyle("standard", true, true, true).terrain).toEqual({

@@ -29,4 +29,4 @@ Første publisering brukte vanlig Git som reserve etter at Sites-hjelperen avvis
 - Version: `appgprj_6ad9f14932088191ba12610805b9dfc1~appgver_c5c801a9514c8191a9c41e4db05f7cec`
 - Deployment: `appgdep_6ad9f3e2f3dc81918a33195d028ebb6e`, `succeeded`
 
-VibeOff-feltet «Live link» er lagret med den offentlige adressen, og deretter åpnet på nytt for å kontrollere verdien. Brukerens endring fra «Jeg» til «Vi» er beholdt. Selve VibeOff-innlegget er fortsatt et utkast.
+VibeOff-feltet «Live link» er lagret med den offentlige adressen, og deretter åpnet på nytt for å kontrollere verdien. Brukerens endring fra «Jeg» til «Vi» er beholdt. Innlegget er nå publisert offentlig som `@hamse`, med en 20-sekunders forsidevideo og fem skjermbilder: https://vibeoff.ai/build/vi-bygde-vyro-for-a-gjore-lopeturen-enklere-a-folge-4394bc53. «Your build is live», synlighet Public og app-lenken er kontrollert.

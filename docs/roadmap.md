@@ -10,7 +10,7 @@ Expo-nettversjonen er publisert på https://vyro-xamse.surelark18.chatgpt.site o
 
 ## Presentasjon på VibeOff, 23. oktober 2026
 
-En 20 sekunders ekte skjermvideo, fem ekte skjermbilder og norsk prosjektbeskrivelse er klargjort som et privat VibeOff-utkast. Videoen ligger først og viser kart, start, målinger, pause og oppsummering. En separat lokal visning bruker fiktive brukere og eksempeløkter; den samler ikke GPS og skriver ikke til produksjonen. Brukeren publiserer selv etter gjennomgang. Se `showcase/vibeoff/README.md`. Dette er en prosjektpresentasjon, ikke en produksjonslansering; de gjenstående mobil-, e-post- og personverntestene gjelder fortsatt.
+En 20 sekunders ekte skjermvideo, fem ekte skjermbilder og norsk prosjektbeskrivelse er publisert offentlig på VibeOff som `@hamse`, etter brukerens innlogging og eksplisitte publiseringsbeskjed. Videoen ligger først og viser kart, start, målinger, pause og oppsummering. En separat lokal visning bruker fiktive brukere og eksempeløkter; den samler ikke GPS og skriver ikke til produksjonen. Offentlig innlegg: https://vibeoff.ai/build/vi-bygde-vyro-for-a-gjore-lopeturen-enklere-a-folge-4394bc53. Se `showcase/vibeoff/README.md`. Dette er en prosjektpresentasjon, ikke en produksjonslansering; de gjenstående mobil-, e-post- og personverntestene gjelder fortsatt.
 
 ## Innlogging og skytilkobling, 23. oktober 2026
 

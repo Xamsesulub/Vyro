@@ -1,5 +1,11 @@
 # Testing
 
+## VibeOff publisert, 23. oktober 2026
+
+- Etter brukerens innlogging og eksplisitte beskjed om publisering ble «Publish my build» fullført som `@hamse`. Siden viste «Your build is live», synlighet **Public** og den offentlige adressen https://vibeoff.ai/build/vi-bygde-vyro-for-a-gjore-lopeturen-enklere-a-folge-4394bc53.
+- Forsidevideoen rapporterte 20,13 sekunder og `readyState: 4`. «Open» og «Open the demo» peker til https://vyro-xamse.surelark18.chatgpt.site/. De fem skjermbildene er beholdt. Skjermbevis: `evidence/vibeoff-published-2026-10-23.jpg`.
+- Ingen appkode er endret. Tidligere merknader om upublisert utkast er historiske; gjenstående SMTP- og fysiske enhetstester gjelder fortsatt.
+
 ## Video og offentlige returadresser, 23. oktober 2026
 
 - `showcase/vibeoff/00-walkthrough.mp4` er et ekte, redigert skjermopptak av webeksporten i den isolerte demoen: kart, start av simulering, levende målinger, pause og oppsummering. 20,13 sekunder, 1280 × 800, H.264/yuv420p, 30 fps, uten lyd. Hele filen ble dekodet uten feil; representative bilder fra alle fem segmenter ble visuelt kontrollert.

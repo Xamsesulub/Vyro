@@ -1,5 +1,9 @@
 # VYRO på VibeOff, 23. oktober 2026
 
+## Publisert
+
+Brukeren logget inn og ba eksplisitt om publisering. «Publish my build» ble fullført på kontoen `@hamse`. VibeOff bekreftet «Your build is live» og synlighet **Public**. Offentlig lenke: https://vibeoff.ai/build/vi-bygde-vyro-for-a-gjore-lopeturen-enklere-a-folge-4394bc53. Forsidevideoen på 20,13 sekunder og Live link til den offentlige VYRO-appen er kontrollert. Bevis: `../../evidence/vibeoff-published-2026-10-23.jpg`. Notatene nedenfor beskriver forberedelsen av utkastet før publisering.
+
 Fem originale JPEG-skjermbilder tatt med nettleserverktøyet fra den faktiske Expo-webeksporten ved commit `aeac163`. Ingen AI-genererte bilder, etterredigering eller nye produktkomponenter. Skjermbildene er fra nettleser, ikke en fysisk telefon.
 
 Senere samme dag ble `00-walkthrough.mp4` tatt opp fra webeksporten etter `48ad14e` og lagt først i det samme utkastet. Dette er 20,13 sekunder ekte skjermopptak av kart, start av simulering, levende målinger, pause og oppsummering. Fem opptakssegmenter er satt sammen uten ventetiden mellom verktøykallene; det er ikke et sammenhengende GPS-opptak. Fiktive data og simulering er merket i selve appen.

@@ -1,5 +1,6 @@
 import { createURL } from "expo-linking";
 import { supabase } from "../../lib/supabase";
+import { acceptAuthSession } from "../../stores/useAuthStore";
 
 export function authRedirectUrl() {
   return createURL("auth/callback", { scheme: "vyro" });
@@ -17,6 +18,7 @@ async function exchangeCode(code: string) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     if (error) throw error;
     if (!data.session) throw new Error("Missing session after code exchange");
+    acceptAuthSession(data.session);
     return { recovery };
   } finally {
     listener.subscription.unsubscribe();
@@ -56,6 +58,7 @@ export function completeTokenLink(accessToken: string, refreshToken: string) {
     });
     if (error) throw error;
     if (!data.session) throw new Error("Missing session");
+    acceptAuthSession(data.session);
   })().finally(() => tokenExchanges.delete(accessToken));
   tokenExchanges.set(accessToken, exchange);
   return exchange;

@@ -54,6 +54,7 @@ beforeEach(() => {
     ready: false,
     session: null,
     initializationSlow: false,
+    confirmationEmail: null,
   });
 });
 test("slow initialization unblocks sign-in without granting a session; late recovery still works", async () => {
@@ -104,4 +105,28 @@ test("a failed link cannot be mistaken for a session", async () => {
     code: "flow_state_expired",
   });
   expect(unsubscribe).toHaveBeenCalledTimes(1);
+});
+
+test("a confirmed email session reaches every screen before navigation, even without an SDK event", async () => {
+  const session = { user: { id: "confirmed-runner" } } as Session;
+  useAuthStore.setState({ confirmationEmail: "runner@example.com" });
+  (auth.exchangeCodeForSession as jest.Mock).mockResolvedValue({
+    data: { session },
+    error: null,
+  });
+  await completeAuthCode("confirmed-code");
+  expect(useAuthStore.getState()).toMatchObject({
+    session,
+    ready: true,
+    confirmationEmail: null,
+  });
+});
+
+test("an unsubscribed observer cannot clear a newer login", () => {
+  const cleanup = observeAuth();
+  cleanup?.();
+  const session = { user: { id: "new-login" } } as Session;
+  useAuthStore.setState({ session, ready: true });
+  callback("INITIAL_SESSION", null);
+  expect(useAuthStore.getState().session).toBe(session);
 });

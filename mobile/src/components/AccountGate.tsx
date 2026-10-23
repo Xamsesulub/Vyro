@@ -7,7 +7,8 @@ import { Button, Screen, Txt, Logo, Icon, useTheme } from "./ui";
 import { MovementLine, Reveal } from "./motion";
 
 export function AccountGate({ children }: PropsWithChildren) {
-  const { ready, session, initializationSlow } = useAuthStore();
+  const { ready, session, initializationSlow, confirmationEmail } =
+    useAuthStore();
   const c = useTheme();
   useEffect(() => {
     if (!session) router.prefetch("/account");
@@ -24,6 +25,12 @@ export function AccountGate({ children }: PropsWithChildren) {
         {initializationSlow && (
           <Txt muted>
             Det tar litt tid å hente kontoen. Du kan prøve å logge inn på nytt.
+          </Txt>
+        )}
+        {!!confirmationEmail && (
+          <Txt muted>
+            Du er ikke innlogget ennå. Bekreft e-posten for å bruke kontoen i
+            hele VYRO.
           </Txt>
         )}
         <View
@@ -80,7 +87,11 @@ export function AccountGate({ children }: PropsWithChildren) {
           </View>
         </Reveal>
         <Button
-          title="Logg inn eller opprett konto"
+          title={
+            confirmationEmail
+              ? "Bekreft e-post eller logg inn"
+              : "Logg inn eller opprett konto"
+          }
           icon="arrow"
           onPress={() => router.push("/account")}
         />

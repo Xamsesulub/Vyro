@@ -1,5 +1,15 @@
 # Testing
 
+## Felles kontostatus, 23. oktober 2026
+
+- Typecheck, prosjektets `expo lint --no-cache`, 75 Jest-tester i 16 suiter og Expo-webeksport bestått. Den nye tverrskjermtesten og publiseringsskriptet består også eksplisitt ESLint. En bredere `eslint .` viste eksisterende manglende Node/Jest-globals og importvarsler i hjelpefiler/tester; disse er ikke del av Expo-lintens standardomfang.
+- Nye tester dekker gjenopprettet sesjon, tokenfornyelse og utlogging på Hjem/profil/innstillinger samtidig, navigasjonsremontering, lokal gjesteprofil, ubekreftet registrering, innlastingsvisning, manglende sesjon i innloggingssvar, avmeldt auth-observer og global sesjon før e-postcallback navigerer.
+- Nettleser: isolert demo på localhost:8103 viser «Innlogget» i profil og «Du er innlogget i hele VYRO» på kontosiden. Dette er en fiktiv sesjon, ikke en vellykket innlogging mot Supabase. Demoen er stoppet etter testen.
+- Sites-versjon 2 er publisert. Omlasting av den offentlige appen og navigering til profil bekreftet «Gjest · ikke innlogget». Bevis: `evidence/auth-public-guest-2026-10-23.jpg` og `evidence/auth-shared-session-demo-2026-10-23.jpg`.
+- Live kontroll: Auth HTTP 200, registrering på og e-postbekreftelse påkrevd. Alle 11 tabeller avviser anonym tilgang med HTTP 401. Ett tilfeldig ugyldig innloggingsforsøk ble avvist på 195 ms. Ingen kontoer, e-poster eller treningsdata ble opprettet.
+- Supabase-dashboardet står fortsatt på innlogging. SMTP, offentlige redirect-adresser, mottak av bekreftelse og ekte innlogging på offentlig adresse er ikke ferdig verifisert. Fysisk Android/iOS er utestet.
+- VibeOff viser fortsatt «Not published» og krever brukerens konto/«Publish my build». Fem skjermbilder og Live link er klare; ingen video er laget eller lastet opp.
+
 ## Offentlig nettversjon, 23. oktober 2026
 
 - Typecheck, lint uten cache, 68 Jest-tester i 15 suiter og Expo-webeksport: bestått. En enkel snarvei til eksisterende simulering er lagt til i AccountGate; backendtilgang og GPS-vilkår er uendret.

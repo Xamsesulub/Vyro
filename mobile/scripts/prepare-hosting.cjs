@@ -32,7 +32,16 @@ function inspect(directory) {
 inspect(exported);
 fs.mkdirSync(path.dirname(identityFile), { recursive: true });
 fs.writeFileSync(identityFile, JSON.stringify(manifest, null, 2) + "\n");
-fs.cpSync(exported, path.join(checkout, "dist"), { recursive: true });
+const publishedAssets = path.resolve(checkout, "dist");
+// Replace only this checkout's generated export; never keep obsolete bundles.
+if (path.dirname(publishedAssets) !== fs.realpathSync(checkout)) {
+  throw new Error("Unexpected export target outside the hosting checkout.");
+}
+if (fs.existsSync(publishedAssets)) {
+  if (fs.lstatSync(publishedAssets).isSymbolicLink()) throw new Error("Unexpected export symlink.");
+  fs.rmSync(publishedAssets, { recursive: true });
+}
+fs.cpSync(exported, publishedAssets, { recursive: true });
 fs.writeFileSync(path.join(checkout, ".gitignore"), ".sites-runtime/\nnode_modules/\n*.log\n");
 fs.writeFileSync(path.join(checkout, "README.md"), "# VYRO web export\n\nGenerated from the existing React Native / Expo app. Only the public web export is hosted here. Authentication and private data remain protected by Supabase Auth and RLS. No screenshot fixture, local environment files, credentials or user records are included.\n");
 fs.writeFileSync(path.join(checkout, "export-manifest.json"), JSON.stringify({ project_id: manifest.project_id, files }, null, 2) + "\n");

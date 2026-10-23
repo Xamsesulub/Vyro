@@ -6,7 +6,7 @@ import { useAuthStore } from "../stores/useAuthStore";
 export default function Settings() {
   const s = useAppStore();
   const c = useTheme();
-  const session = useAuthStore((s) => s.session);
+  const { session, ready, confirmationEmail } = useAuthStore();
   return (
     <Screen>
       <Button
@@ -18,7 +18,16 @@ export default function Settings() {
         Innstillinger
       </Txt>
       <Button
-        title={session ? "Konto og utlogging" : "Logg inn eller opprett konto"}
+        title={
+          !ready
+            ? "Laster konto …"
+            : session
+              ? "Konto og utlogging"
+              : confirmationEmail
+                ? "Bekreft e-post"
+                : "Logg inn eller opprett konto"
+        }
+        disabled={!ready}
         onPress={() => router.push("/account")}
       />
       <Txt weight="600">Lokalt visningsnavn</Txt>

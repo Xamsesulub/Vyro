@@ -106,6 +106,7 @@ beforeEach(() => {
     session: null,
     ready: true,
     initializationSlow: false,
+    confirmationEmail: null,
   });
 });
 async function fillLogin() {
@@ -184,6 +185,13 @@ test("registration validates matching passwords, waits for confirmation, and sup
   );
   expect(router.replace).not.toHaveBeenCalled();
   expect(useAuthStore.getState().session).toBeNull();
+  expect(useAuthStore.getState().confirmationEmail).toBe("runner@example.com");
+  expect(screen.getByText("Bekreft e-posten")).toBeTruthy();
+  await screen.unmount();
+  await render(<Account />);
+  expect(screen.getByLabelText("E-post").props.value).toBe(
+    "runner@example.com",
+  );
   await tap("Send bekreftelsen på nytt");
   expect(auth.resend).toHaveBeenCalledWith({
     type: "signup",
@@ -218,4 +226,45 @@ test("network exceptions during logout release the button and show a recoverable
   await tap("Logg ut");
   expect(screen.getByText(/Får ikke kontakt med serveren/)).toBeTruthy();
   expect(screen.getByRole("button", { name: "Logg ut" })).toBeEnabled();
+});
+
+test("account recovery does not flash a login form before the shared session is ready", async () => {
+  useAuthStore.setState({ ready: false });
+  await render(<Account />);
+  expect(screen.getByText("Laster konto …")).toBeTruthy();
+  expect(screen.queryByLabelText("Passord")).toBeNull();
+  await act(() =>
+    useAuthStore.setState({
+      ready: true,
+      session: {
+        user: { id: "runner", email: "runner@example.com" },
+      } as Session,
+    }),
+  );
+  expect(screen.getByText("Du er innlogget i hele VYRO.")).toBeTruthy();
+  expect(screen.queryByLabelText("Passord")).toBeNull();
+});
+
+test("successful logout clears the shared session even before an SDK event arrives", async () => {
+  useAuthStore.setState({ session: { user: { id: "runner" } } as Session });
+  (auth.signOut as jest.Mock).mockResolvedValue({ error: null });
+  await render(<Account />);
+  await tap("Logg ut");
+  expect(useAuthStore.getState().session).toBeNull();
+  expect(screen.getByLabelText("Passord")).toBeTruthy();
+});
+
+test("a login response without a session never pretends to be a pending signup", async () => {
+  (auth.signInWithPassword as jest.Mock).mockResolvedValue({
+    data: { session: null },
+    error: null,
+  });
+  await render(<Account />);
+  await fillLogin();
+  await tap("Logg inn");
+  expect(useAuthStore.getState().confirmationEmail).toBeNull();
+  expect(router.replace).not.toHaveBeenCalled();
+  expect(
+    screen.getByText("Kunne ikke fullføre. Prøv igjen om litt."),
+  ).toBeTruthy();
 });

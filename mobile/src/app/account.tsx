@@ -3,7 +3,7 @@ import { TextInput, View } from "react-native";
 import { router } from "expo-router";
 import { Button, Screen, Txt, useTheme } from "../components/ui";
 import { supabase } from "../lib/supabase";
-import { useAuthStore } from "../stores/useAuthStore";
+import { acceptAuthSession, useAuthStore } from "../stores/useAuthStore";
 import {
   AccountMode,
   authErrorMessage,
@@ -13,17 +13,17 @@ import { authRedirectUrl } from "../features/auth/links";
 
 export default function Account() {
   const c = useTheme();
-  const session = useAuthStore((s) => s.session);
+  const { session, ready, confirmationEmail } = useAuthStore();
   const [mode, setMode] = useState<AccountMode>("login");
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(confirmationEmail ?? "");
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
   const [visible, setVisible] = useState(false);
   const [busy, setBusy] = useState("");
   const pending = useRef(false);
   const [message, setMessage] = useState("");
-  const [unconfirmed, setUnconfirmed] = useState(false);
+  const unconfirmed = !!confirmationEmail && confirmationEmail === email.trim();
   const register = mode === "register";
   const input = {
     borderWidth: 1,
@@ -43,7 +43,7 @@ export default function Account() {
       await action();
     } catch (error) {
       if ((error as { code?: string }).code === "email_not_confirmed")
-        setUnconfirmed(true);
+        useAuthStore.setState({ confirmationEmail: email.trim() });
       setMessage(authErrorMessage(error));
     } finally {
       pending.current = false;
@@ -100,18 +100,16 @@ export default function Account() {
         setPassword("");
         setConfirmation("");
         if (data.session) {
-          useAuthStore.setState({
-            session: data.session,
-            ready: true,
-            initializationSlow: false,
-          });
+          acceptAuthSession(data.session);
           router.replace("/(tabs)");
-        } else {
-          setUnconfirmed(true);
+        } else if (register) {
+          useAuthStore.setState({ confirmationEmail: email.trim() });
           setMode("login");
           setMessage(
-            "Sjekk e-posten din for å bekrefte kontoen. Åpne lenken på denne enheten. Har du allerede en konto, kan du logge inn.",
+            "Du er ikke innlogget ennå. Åpne bekreftelseslenken i samme nettleser som du registrerte deg i. Sjekk også søppelpost. Har du allerede en bekreftet konto, kan du logge inn nedenfor.",
           );
+        } else {
+          throw new Error("Missing session after sign-in");
         }
       },
     );
@@ -124,6 +122,13 @@ export default function Account() {
     setConfirmation("");
     setVisible(false);
   }
+
+  if (!ready)
+    return (
+      <Screen>
+        <Txt>Laster konto …</Txt>
+      </Screen>
+    );
 
   return (
     <Screen>
@@ -142,13 +147,16 @@ export default function Account() {
             ? "Glemt passord"
             : register
               ? "Opprett konto"
-              : "Logg inn"}
+              : unconfirmed
+                ? "Bekreft e-posten"
+                : "Logg inn"}
       </Txt>
       {!supabase && (
         <Txt>Innlogging er ikke satt opp på denne enheten ennå.</Txt>
       )}
       {session ? (
         <>
+          <Txt>Du er innlogget i hele VYRO.</Txt>
           <Txt>{session.user.email}</Txt>
           <Button
             title={busy || "Logg ut"}
@@ -157,6 +165,8 @@ export default function Account() {
               void run("Logger ut …", async () => {
                 const result = await supabase!.auth.signOut({ scope: "local" });
                 if (result.error) throw result.error;
+                acceptAuthSession(null);
+                useAuthStore.setState({ confirmationEmail: null });
                 router.replace("/(tabs)");
               })
             }
@@ -164,6 +174,12 @@ export default function Account() {
         </>
       ) : (
         <>
+          {unconfirmed && mode === "login" && (
+            <Txt muted>
+              Venter på bekreftelse av {confirmationEmail}. Registrering alene
+              logger deg ikke inn.
+            </Txt>
+          )}
           {register && (
             <TextInput
               accessibilityLabel="Visningsnavn"
@@ -184,7 +200,6 @@ export default function Account() {
             value={email}
             onChangeText={(value) => {
               setEmail(value);
-              setUnconfirmed(false);
             }}
             editable={!busy}
             autoCapitalize="none"

@@ -13,7 +13,9 @@ import { ProgressLine, Reveal } from "../../components/motion";
 export default function Profile() {
   const s = useAppStore();
   const workouts = useVisibleWorkouts();
-  const session = useAuthStore((s) => s.session);
+  const { session, ready, confirmationEmail } = useAuthStore();
+  const displayName =
+    session?.user.user_metadata?.display_name || s.name || "Din profil";
   const c = useTheme();
   const [tab, setTab] = useState("Fremgang");
   const list = s.examplesVisible ? [...workouts, ...examples] : workouts;
@@ -45,14 +47,21 @@ export default function Profile() {
             }}
           >
             <Txt size={26} weight="600">
-              {s.name.charAt(0).toUpperCase() || "V"}
+              {displayName.charAt(0).toUpperCase()}
             </Txt>
           </View>
           <View style={{ gap: 4 }}>
             <Txt size={23} weight="700">
-              {session?.user.user_metadata.display_name ||
-                s.name ||
-                "Din profil"}
+              {displayName}
+            </Txt>
+            <Txt muted size={13}>
+              {!ready
+                ? "Laster konto …"
+                : session
+                  ? "Innlogget"
+                  : confirmationEmail
+                    ? "Venter på e-postbekreftelse · ikke innlogget"
+                    : "Gjest · ikke innlogget"}
             </Txt>
             <Txt muted size={13}>
               {workouts.length} lagrede aktiviteter på enheten
@@ -61,7 +70,16 @@ export default function Profile() {
         </View>
       </Reveal>
       <Button
-        title={session ? "Konto" : "Logg inn"}
+        title={
+          !ready
+            ? "Laster konto …"
+            : session
+              ? "Konto"
+              : confirmationEmail
+                ? "Bekreft e-post"
+                : "Logg inn"
+        }
+        disabled={!ready}
         secondary
         onPress={() => router.push("/account")}
       />
@@ -163,8 +181,9 @@ export default function Profile() {
             onPress={() => router.push("/settings")}
           />
           <Txt muted size={14}>
-            Aktivitetene er private og lagres på denne enheten. Konto og
-            synkronisering er ikke koblet til ennå.
+            Øktene lagres på denne enheten og er private til du velger å dele
+            dem. Innlogging gjelder hele appen. Automatisk synkronisering av
+            treningsloggen mellom enheter er ikke tilgjengelig ennå.
           </Txt>
         </>
       )}

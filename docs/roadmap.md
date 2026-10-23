@@ -1,5 +1,27 @@
 # Leveranseplan
 
+## Innlogging og skytilkobling, 23. oktober 2026
+
+Denne PC-en er koblet til eksisterende VYRO-prosjekt i Supabase. URL og offentlig nøkkel ligger i Git-ignorert `mobile/.env.local`. Backend kjører i skyen og er ikke avhengig av den gamle PC-en. Ingen ny database eller migrering er opprettet.
+
+Innlogging/registrering har umiddelbar ventestatus, sperre mot doble trykk, lokal validering, norske feilmeldinger og feilhåndtering ved utlogging. Registrering skiller mellom en faktisk sesjon og venting på e-postbekreftelse. Bekreftelse kan sendes på nytt. Glemt passord og valg av nytt passord er implementert, med PKCE for nye flyter og støtte for eldre tokenlenker. Callback-lenker er konfigurert for localhost:8081 og mobilappen.
+
+Konto-skjermen forhåndslastes. Ubetinget lasting av Mapbox ved oppstart er fjernet. Nettverksforsøk får 12 sekunders tidsgrense uten ekstra gjentakelse av brukerskrivinger. Sen sesjonsgjenoppretting blokkerer ikke inngangen til innlogging i mer enn 8 sekunder. Dette er tiltak mot treghet, ikke et målt løfte om responstid på alle enheter.
+
+68 apptester, 73 lokale databasekontroller, typecheck, lint og eksport for web/Android/iOS består. Live Auth svarer, og anonym lesing av alle 11 tabeller avvises. Brukeren bekreftet vellykket innlogging på denne PC-en etter omstart: «Jeg kommer inn». Supabase godtok en forespørsel om testmail for gjenoppretting; full e-postflyt og fysisk enhetstest gjenstår. Egen SMTP er ikke konfigurert: registrering for allmenn bruk krever e-postleverandør før lansering. Kontosletting/eksport, tobrukertest og fysisk GPS ligger fortsatt i planen.
+
+## Kartvisning på ny PC, 23. oktober 2026
+
+Tomt kart på denne maskinen skyldtes manglende `EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN`. Brukerens offentlige Mapbox-nøkkel er nå lagt i Git-ignorert `mobile/.env.local`. Mapbox Standard-stilen svarer HTTP 200 med localhost som Origin/Referer. Ingen alternativ kartleverandør eller testnøkkel er satt inn. Visuell kontroll av kartfliser i nettleseren og native kart gjenstår.
+
+To løse tekstnoder på kartskjermen er fjernet. Tekst, kartpaneler, søk og tomtilstand bruker nå lesbare tekstfarger på sine faste lyse flater også når appens lagrede tema er mørkt. Typecheck, lint, 52 tester og web-eksport består; visuell kontroll og ekte kartlasting på denne maskinen gjenstår.
+
+## Lokal oppdatering fra fork, 23. oktober 2026
+
+Denne PC-en er oppdatert fra `9b1a569` til `ae17eed` («Todays work») i `Xamsesulub/Vyro`, tre commits frem. Lokal `main` følger nå `fork/main`; den opprinnelige `origin` er beholdt. Lokale designkrav er flettet inn, og tidligere lokale endringer ligger også i en navngitt Git-stash. Appkoden er identisk med forkens commit.
+
+Avhengigheter er installert. Ved fork-oppdateringen bestod typecheck, lint, 52 tester i 12 suiter og web-eksport på Windows. Lokal konfigurasjon fulgte ikke med Git; Mapbox og Supabase er senere konfigurert på denne maskinen. Ingen backend-migrering eller fysisk GPS-test er utført i denne oppdateringen. Se `testing.md` for kontrollens avgrensning.
+
 ## Kartbasert opptak, 20. oktober 2026
 
 Aktiv økt viser Mapbox fra start, flytende tid/tempo/distanse og stor Pause-knapp. Pauset økt har Fortsett og Fullfør. Navy, lime og lavender skiller VYRO fra referansen. Målinger kan forstørres, og økten kan minimeres til kartfanen. Kartkontroller skjules ved forstørrede målinger for å unngå overlapp på små skjermer.
@@ -59,3 +81,5 @@ Native sesjoner flyttes fra AsyncStorage til SecureStore. Testet sikkerhetsmigre
 ## Personvern og kryptering, 20. oktober 2026
 
 GPS-ruter/utkast og lokale sosiale kopier lagres med AES-GCM, med kontrollert migrering fra klartekst. Native bruker SecureStore-nøkkel; web bruker ikke-eksporterbar IndexedDB-nøkkel. Nye delinger viser en rute skjermet 500 m rundt start og slutt og har følgerpublikum som standard. Publisering på nytt oppdaterer kart og publikum atomisk. SQL-migrering 202610200003 er testet lokalt og aktivert i produksjon etter eksplisitt godkjenning 20. oktober. Eksisterende publiserte kart endres ikke automatisk. UUID-varselet er rettet; tre avhengighetsadvisories uten tilgjengelig patch gjenstår. Fysisk native test og enhetens gjenopprettingsatferd gjenstår.
+
+23. oktober 2026: Den eldre committen `9b1a569` fikk låsefilretting og bestod installasjon, typecheck, lint, 19 tester og web-eksport før fork-oppdateringen. Se historisk lokal oppstart i `testing.md`.

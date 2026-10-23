@@ -2,6 +2,7 @@ import "react-native-url-polyfill/auto";
 import { createClient } from "@supabase/supabase-js";
 import { authStorage } from "./authStorage";
 import { AppState, Platform } from "react-native";
+import { timeoutFetch } from "./request";
 
 const url = process.env.EXPO_PUBLIC_SUPABASE_URL ?? "";
 const key =
@@ -16,11 +17,13 @@ const isServer = Platform.OS === "web" && typeof window === "undefined";
 // A publishable client only. Access to user data must be enforced by database RLS.
 export const supabase = supabaseConfigured
   ? createClient(url, key, {
+      global: { fetch: timeoutFetch() },
       auth: {
         ...(Platform.OS !== "web" ? { storage: authStorage } : {}),
         persistSession: !isServer,
         autoRefreshToken: !isServer,
         detectSessionInUrl: false,
+        flowType: "pkce",
       },
     })
   : null;

@@ -5,13 +5,24 @@ import { supabase } from "../lib/supabase";
 export const useAuthStore = create<{
   session: Session | null;
   ready: boolean;
-}>()(() => ({ session: null, ready: !supabase }));
+  initializationSlow: boolean;
+}>()(() => ({ session: null, ready: !supabase, initializationSlow: false }));
 
 export function observeAuth() {
   if (!supabase) return;
+  // Allow the user to reach sign-in even if persisted-session recovery stalls.
+  // This never grants access: private screens still require a real session.
+  const timer = setTimeout(() => {
+    if (!useAuthStore.getState().ready)
+      useAuthStore.setState({ ready: true, initializationSlow: true });
+  }, 8_000);
   const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-    // Never call another auth method inside this callback (the auth lock is held).
-    useAuthStore.setState({ session, ready: true });
+    clearTimeout(timer);
+    // Keep the subscriber synchronous; do not trigger a nested token refresh.
+    useAuthStore.setState({ session, ready: true, initializationSlow: false });
   });
-  return () => data.subscription.unsubscribe();
+  return () => {
+    clearTimeout(timer);
+    data.subscription.unsubscribe();
+  };
 }

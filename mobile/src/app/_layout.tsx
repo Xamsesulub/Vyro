@@ -11,7 +11,6 @@ import { manageSupabaseSession } from "../lib/supabase";
 import { observeAuth, useAuthStore } from "../stores/useAuthStore";
 
 import { LocationWatcher } from "../components/LocationWatcher";
-import { prewarmMap } from "../features/maps/prewarm";
 import { LaunchSignature } from "../components/motion";
 
 export default function RootLayout() {
@@ -28,10 +27,6 @@ export default function RootLayout() {
   }, [userId]);
   useEffect(manageSupabaseSession, []);
   useEffect(observeAuth, []);
-  useEffect(() => {
-    const timer = setTimeout(prewarmMap, 500);
-    return () => clearTimeout(timer);
-  }, []);
   useEffect(() => {
     const timer = setInterval(() => {
       if (useAppStore.getState().recording.status === "recording")

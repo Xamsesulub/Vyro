@@ -1,19 +1,30 @@
-import { useState } from "react";
-import { TextInput } from "react-native";
+import { useRef, useState } from "react";
+import { TextInput, View } from "react-native";
 import { router } from "expo-router";
 import { Button, Screen, Txt, useTheme } from "../components/ui";
 import { supabase } from "../lib/supabase";
 import { useAuthStore } from "../stores/useAuthStore";
+import {
+  AccountMode,
+  authErrorMessage,
+  validateAccount,
+} from "../features/auth/validation";
+import { authRedirectUrl } from "../features/auth/links";
 
 export default function Account() {
   const c = useTheme();
   const session = useAuthStore((s) => s.session);
-  const [register, setRegister] = useState(false);
+  const [mode, setMode] = useState<AccountMode>("login");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [busy, setBusy] = useState(false);
+  const [confirmation, setConfirmation] = useState("");
+  const [visible, setVisible] = useState(false);
+  const [busy, setBusy] = useState("");
+  const pending = useRef(false);
   const [message, setMessage] = useState("");
+  const [unconfirmed, setUnconfirmed] = useState(false);
+  const register = mode === "register";
   const input = {
     borderWidth: 1,
     borderColor: c.border,
@@ -22,69 +33,133 @@ export default function Account() {
     fontSize: 16,
     color: c.text,
   };
-  async function submit() {
-    if (!supabase || busy) return;
-    setBusy(true);
+
+  async function run(title: string, action: () => Promise<void>) {
+    if (!supabase || pending.current) return;
+    pending.current = true;
+    setBusy(title);
     setMessage("");
     try {
-      const { data, error } = register
-        ? await supabase.auth.signUp({
-            email: email.trim(),
-            password,
-            options: { data: { display_name: name.trim() } },
-          })
-        : await supabase.auth.signInWithPassword({
-            email: email.trim(),
-            password,
-          });
-      if (error) throw error;
-      setPassword("");
-      if (data.session) router.replace("/(tabs)");
-      else
-        setMessage(
-          "Sjekk e-posten din og bekreft kontoen. Kom deretter tilbake hit og logg inn.",
-        );
-    } catch (e) {
-      const code = (e as { code?: string }).code;
-      setMessage(
-        code === "invalid_credentials"
-          ? "Feil e-post eller passord."
-          : code === "email_not_confirmed"
-            ? "Bekreft e-postadressen før du logger inn."
-            : code === "over_email_send_rate_limit"
-              ? "For mange e-poster er sendt. Vent litt og prøv igjen."
-              : "Kunne ikke fullføre. Kontroller opplysningene og nettforbindelsen, og prøv igjen.",
-      );
+      await action();
+    } catch (error) {
+      if ((error as { code?: string }).code === "email_not_confirmed")
+        setUnconfirmed(true);
+      setMessage(authErrorMessage(error));
     } finally {
-      setBusy(false);
+      pending.current = false;
+      setBusy("");
     }
   }
+
+  async function submit() {
+    if (!supabase || pending.current) return;
+    const validation = validateAccount({
+      mode,
+      name,
+      email,
+      password,
+      confirmation,
+    });
+    if (validation) {
+      setMessage(validation);
+      return;
+    }
+    const client = supabase;
+    await run(
+      mode === "reset"
+        ? "Sender lenke …"
+        : register
+          ? "Oppretter konto …"
+          : "Logger inn …",
+      async () => {
+        if (mode === "reset") {
+          const { error } = await client.auth.resetPasswordForEmail(
+            email.trim(),
+            { redirectTo: authRedirectUrl() },
+          );
+          if (error) throw error;
+          setMessage(
+            "Hvis adressen har en konto, får du en lenke for å velge nytt passord. Åpne lenken på denne enheten.",
+          );
+          return;
+        }
+        const { data, error } = register
+          ? await client.auth.signUp({
+              email: email.trim(),
+              password,
+              options: {
+                data: { display_name: name.trim() },
+                emailRedirectTo: authRedirectUrl(),
+              },
+            })
+          : await client.auth.signInWithPassword({
+              email: email.trim(),
+              password,
+            });
+        if (error) throw error;
+        setPassword("");
+        setConfirmation("");
+        if (data.session) {
+          useAuthStore.setState({
+            session: data.session,
+            ready: true,
+            initializationSlow: false,
+          });
+          router.replace("/(tabs)");
+        } else {
+          setUnconfirmed(true);
+          setMode("login");
+          setMessage(
+            "Sjekk e-posten din for å bekrefte kontoen. Åpne lenken på denne enheten. Har du allerede en konto, kan du logge inn.",
+          );
+        }
+      },
+    );
+  }
+
+  function changeMode(next: AccountMode) {
+    setMode(next);
+    setMessage("");
+    setPassword("");
+    setConfirmation("");
+    setVisible(false);
+  }
+
   return (
     <Screen>
       <Button
         title="Tilbake"
         secondary
+        disabled={!!busy}
         onPress={() =>
           router.canGoBack() ? router.back() : router.replace("/(tabs)")
         }
       />
       <Txt size={28} weight="700">
-        {session ? "Konto" : register ? "Opprett konto" : "Logg inn"}
+        {session
+          ? "Konto"
+          : mode === "reset"
+            ? "Glemt passord"
+            : register
+              ? "Opprett konto"
+              : "Logg inn"}
       </Txt>
-      {!supabase && <Txt>Supabase er ikke konfigurert.</Txt>}
+      {!supabase && (
+        <Txt>Innlogging er ikke satt opp på denne enheten ennå.</Txt>
+      )}
       {session ? (
         <>
           <Txt>{session.user.email}</Txt>
           <Button
-            title={busy ? "Logger ut …" : "Logg ut"}
-            disabled={busy}
-            onPress={async () => {
-              setBusy(true);
-              const result = await supabase?.auth.signOut({ scope: "local" });
-              setBusy(false);
-              if (result?.error) setMessage("Kunne ikke logge ut. Prøv igjen.");
-              else router.replace("/(tabs)");
-            }}
+            title={busy || "Logg ut"}
+            disabled={!!busy}
+            onPress={() =>
+              void run("Logger ut …", async () => {
+                const result = await supabase!.auth.signOut({ scope: "local" });
+                if (result.error) throw result.error;
+                router.replace("/(tabs)");
+              })
+            }
           />
         </>
       ) : (
@@ -96,7 +171,9 @@ export default function Account() {
               placeholderTextColor={c.muted}
               value={name}
               onChangeText={setName}
+              editable={!busy}
               maxLength={50}
+              autoComplete="name"
               style={input}
             />
           )}
@@ -105,54 +182,127 @@ export default function Account() {
             placeholder="E-post"
             placeholderTextColor={c.muted}
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(value) => {
+              setEmail(value);
+              setUnconfirmed(false);
+            }}
+            editable={!busy}
             autoCapitalize="none"
+            autoCorrect={false}
             keyboardType="email-address"
             autoComplete="email"
             style={input}
           />
-          <TextInput
-            accessibilityLabel="Passord"
-            placeholder="Passord"
-            placeholderTextColor={c.muted}
-            value={password}
-            onChangeText={setPassword}
-            autoCapitalize="none"
-            secureTextEntry
-            autoComplete={register ? "new-password" : "current-password"}
-            style={input}
-          />
+          {mode !== "reset" && (
+            <>
+              <TextInput
+                accessibilityLabel="Passord"
+                placeholder="Passord"
+                placeholderTextColor={c.muted}
+                value={password}
+                onChangeText={setPassword}
+                editable={!busy}
+                autoCapitalize="none"
+                autoCorrect={false}
+                secureTextEntry={!visible}
+                autoComplete={register ? "new-password" : "current-password"}
+                returnKeyType={register ? "next" : "go"}
+                onSubmitEditing={register ? undefined : () => void submit()}
+                style={input}
+              />
+              {register && (
+                <TextInput
+                  accessibilityLabel="Bekreft passord"
+                  placeholder="Gjenta passordet"
+                  placeholderTextColor={c.muted}
+                  value={confirmation}
+                  onChangeText={setConfirmation}
+                  editable={!busy}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  secureTextEntry={!visible}
+                  autoComplete="new-password"
+                  returnKeyType="go"
+                  onSubmitEditing={() => void submit()}
+                  style={input}
+                />
+              )}
+              <Button
+                secondary
+                title={visible ? "Skjul passord" : "Vis passord"}
+                disabled={!!busy}
+                onPress={() => setVisible(!visible)}
+              />
+            </>
+          )}
           {register && (
             <Txt muted size={13}>
               Minst 8 tegn i passordet. Navnet ditt blir synlig for andre
               innloggede løpere. Økter deles bare når du selv velger det.
             </Txt>
           )}
+          {!!message && (
+            <View accessibilityLiveRegion="polite">
+              <Txt>{message}</Txt>
+            </View>
+          )}
           <Button
-            title={busy ? "Venter …" : register ? "Opprett konto" : "Logg inn"}
-            disabled={
-              !supabase ||
+            title={
               busy ||
-              !email.trim() ||
-              password.length < (register ? 8 : 1) ||
-              (register && !name.trim())
+              (mode === "reset"
+                ? "Send tilbakestillingslenke"
+                : register
+                  ? "Opprett konto"
+                  : "Logg inn")
             }
-            onPress={submit}
+            disabled={!supabase || !!busy}
+            onPress={() => void submit()}
           />
+          {unconfirmed && mode === "login" && (
+            <Button
+              secondary
+              title="Send bekreftelsen på nytt"
+              disabled={!!busy || !supabase}
+              onPress={() =>
+                void run("Sender bekreftelse …", async () => {
+                  const { error } = await supabase!.auth.resend({
+                    type: "signup",
+                    email: email.trim(),
+                    options: { emailRedirectTo: authRedirectUrl() },
+                  });
+                  if (error) throw error;
+                  setMessage(
+                    "Hvis kontoen trenger bekreftelse, får du en ny lenke på e-post. Åpne den på denne enheten.",
+                  );
+                })
+              }
+            />
+          )}
+          {mode === "login" && (
+            <Button
+              secondary
+              title="Glemt passord?"
+              disabled={!!busy}
+              onPress={() => changeMode("reset")}
+            />
+          )}
           <Button
             secondary
             title={
-              register ? "Har du konto? Logg inn" : "Ny her? Opprett konto"
+              mode === "login"
+                ? "Ny her? Opprett konto"
+                : "Tilbake til innlogging"
             }
-            disabled={busy}
-            onPress={() => {
-              setRegister(!register);
-              setMessage("");
-            }}
+            disabled={!!busy}
+            onPress={() => changeMode(mode === "login" ? "register" : "login")}
           />
         </>
       )}
-      {!!message && <Txt>{message}</Txt>}
+      {!!message && !!session && (
+        <View accessibilityLiveRegion="polite">
+          <Txt>{message}</Txt>
+        </View>
+      )}
     </Screen>
   );
 }

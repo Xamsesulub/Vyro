@@ -1,6 +1,6 @@
 # VYRO · Move Beyond
 
-En React Native-app for iOS og Android. Første leveranse er en norsk, interaktiv **visuell prototype** med Expo og TypeScript. All treningsdata er eksempeldata eller simuleringer.
+En norsk React Native-app for iOS og Android med Expo og TypeScript. Den nyere versjonen har lyst design, Mapbox, GPS-opptak i forgrunnen og Supabase-innlogging og deling. Eksempeldata og simuleringer holdes atskilt fra ekte GPS-økter. Fysisk verifikasjon på telefon gjenstår.
 
 ## Start
 
@@ -12,10 +12,12 @@ npm ci
 npm start
 ```
 
-Skann QR-koden med en Expo Go-versjon som støtter SDK 58. Telefon og utviklingsmaskin må kunne nå hverandre på nettverket. Ved SDK-mismatch: bruk en kompatibel Expo Go-versjon eller en development build. Ingen konto, API-nøkler eller posisjonstillatelser kreves for demoen.
+Native kart bruker `@rnmapbox/maps` og krever et development build; Expo Go inneholder ikke Mapbox-modulen. Nettleserforhåndsvisningen kan brukes uten et native bygg.
+
+På en ny PC må `mobile/.env.local` kopieres fra det eksisterende lokale oppsettet eller fylles ut etter `mobile/.env.example`. Filen er ignorert av Git og følger ikke med når prosjektet hentes. Mapbox krever en offentlig `pk.`-nøkkel; Supabase krever prosjekt-URL og en publishable key. Se [Mapbox-oppsett](docs/mapbox-setup.md) og [Supabase-oppsett](docs/supabase-setup.md). Uten disse vises oppsettsmeldinger for kart og innlogging. Backend kjører hos Supabase og har ingen egen lokal startkommando i dette prosjektet.
 
 ```sh
-npm run web        # nettleserforhåndsvisning; illustrasjon i stedet for native kart
+npm run web -- --localhost --port 8081
 npm run typecheck
 npm run lint
 npm test
@@ -29,19 +31,20 @@ På Windows, bruk `npm.cmd` hvis PowerShell blokkerer npm.ps1. Native iOS-bygg k
 ## Det som er implementert
 
 - Onboarding med aktivitet, ukemål, erfaring og valgfritt navn.
-- Hjem, Tren, Fremgang, Fellesskap og Profil med Expo Router.
-- Mørkt og lyst tema, norsk tekst og original VYRO-identitet.
-- Diskret Reanimated trykkfeedback; rolige kort uten inngangsanimasjon.
-- Native kart på telefon; en tydelig merket ruteillustrasjon på web.
-- Simulator med start/pause/fortsett, oppsummering, lokal lagring og sletting.
-- Gjenoppretting av simulatoren i pauset tilstand etter omstart.
-- Interaktive diagrammer, lokalt ukemål, eksempelaktiviteter og lokale sosiale demo-interaksjoner.
+- Hjem, Kart, Registrer, Løpere og Du med Expo Router; fremgang ligger under Du.
+- Lyst tema som standard, valgfritt mørkt tema, norsk tekst og VYRO-identitet.
+- Reanimated-animasjoner og trykkfeedback med støtte for redusert bevegelse.
+- Mapbox på web og native, kartkontroller og rutevisning.
+- Separat simulator og GPS-opptak i forgrunnen, med pause, oppsummering og lokal lagring.
+- Kryptert lokal øktlagring og gjenoppretting i pauset tilstand etter omstart.
+- Supabase-innlogging, registrering med e-postbekreftelse og passordgjenoppretting; aktivitetsfeed, følgerelasjoner og eksplisitt deling av GPS-økter.
+- Turf-funksjoner og PostgreSQL-migreringer; faktisk GPS og flerbrukerflyt må fortsatt verifiseres på enhet.
 - Originalt appikon og splash-konfigurasjon.
 
-Prototypen ber ikke om GPS-tillatelse. Native kart laster kartfliser fra plattformens kartleverandør. Treningsdata lastes ikke opp. AsyncStorage brukes bare til ikke-sensitive prototypeinnstillinger og simuleringer; dette er ikke den endelige lagringsløsningen for GPS-ruter eller autentisering.
+GPS krever posisjonstillatelse. Private økter publiseres ikke automatisk; simuleringer kan ikke deles som ekte økter. Deling har en egen forhåndsvisning og bekreftelse. Oppsett og tidligere backend-verifikasjon er dokumentert i [live-social-setup](docs/live-social-setup.md), [sosialt og turf](docs/social-and-turf.md) og [sikkerhet](docs/security.md).
 
 ## Neste leveranse
 
-Supabase/PostgreSQL, autentisering og RLS kommer i fase 3. Expo Location og fysisk verifisert GPS-tracking kommer i fase 4. Sosial backend, ekte ruteanbefalinger og AI kommer senere. Brukeren krever REA i videre analysearbeid; verktøyet må være tilgjengelig gjennom MCP før dette kan gjennomføres. REA er ingen runtime-avhengighet. Se [designreferansene](docs/design-references/strava/README.md).
+Fysisk GPS- og native karttesting, deling mellom to ekte kontoer, bakgrunnsopptak og lanseringskrav gjenstår. REA er valgfritt ved relevant teknisk analyse og er ingen runtime-avhengighet. Designinspirasjon fra Kokonut UI, Motion.dev og Anime.js omsettes til native komponenter og Reanimated-animasjoner, med enkel treningsflyt først. Se [designreferansene](docs/design-references/strava/README.md) og [designsystemet](docs/design-system.md).
 
 Se [roadmap](docs/roadmap.md), [arkitektur](docs/architecture.md), [designsystem](docs/design-system.md) og [testplan](docs/testing.md).

@@ -1,8 +1,9 @@
 import { View } from "react-native";
 import { Txt } from "./ui";
+import { palettes } from "../theme/tokens";
 export default function MapUnavailable({
   height = 300,
-  message = "Kartet blir tilgjengelig når Mapbox er aktivert.",
+  message = "Kartet er ikke satt opp på denne enheten ennå.",
 }: {
   height?: number;
   message?: string;
@@ -19,8 +20,10 @@ export default function MapUnavailable({
         gap: 8,
       }}
     >
-      <Txt weight="600">Kart utilgjengelig</Txt>
-      <Txt muted style={{ textAlign: "center" }}>
+      <Txt weight="600" style={{ color: palettes.light.text }}>
+        Kart utilgjengelig
+      </Txt>
+      <Txt style={{ textAlign: "center", color: palettes.light.muted }}>
         {message}
       </Txt>
     </View>

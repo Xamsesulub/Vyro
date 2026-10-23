@@ -1,4 +1,4 @@
-import { PropsWithChildren } from "react";
+import { PropsWithChildren, useEffect } from "react";
 import { View } from "react-native";
 import { router } from "expo-router";
 import { useAuthStore } from "../stores/useAuthStore";
@@ -6,8 +6,11 @@ import { Button, Screen, Txt, Logo, Icon, useTheme } from "./ui";
 import { MovementLine, Reveal } from "./motion";
 
 export function AccountGate({ children }: PropsWithChildren) {
-  const { ready, session } = useAuthStore();
+  const { ready, session, initializationSlow } = useAuthStore();
   const c = useTheme();
+  useEffect(() => {
+    if (!session) router.prefetch("/account");
+  }, [session]);
   if (!ready)
     return (
       <Screen>
@@ -17,6 +20,11 @@ export function AccountGate({ children }: PropsWithChildren) {
   if (!session)
     return (
       <Screen>
+        {initializationSlow && (
+          <Txt muted>
+            Det tar litt tid å hente kontoen. Du kan prøve å logge inn på nytt.
+          </Txt>
+        )}
         <View
           style={{
             flexDirection: "row",

@@ -1,4 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ComponentProps,
+} from "react";
 import {
   Pressable,
   StyleSheet,
@@ -21,6 +27,22 @@ import { useSavedRoutes } from "../../stores/useSavedRoutes";
 import { searchPlaces, type Place } from "../../features/maps/search";
 import type { MapKind } from "../../features/maps/config";
 import { useVisibleWorkouts } from "../../features/activities/useVisibleWorkouts";
+import { palettes } from "../../theme/tokens";
+
+// Map panels stay light even when the surrounding app uses the dark theme.
+function MapText({ style, muted, ...props }: ComponentProps<typeof Txt>) {
+  return (
+    <Txt
+      {...props}
+      muted={muted}
+      style={{
+        color: muted ? palettes.light.muted : palettes.light.text,
+        ...style,
+      }}
+    />
+  );
+}
+
 export default function Maps() {
   const saved = useSavedRoutes();
   const workouts = useVisibleWorkouts();
@@ -174,7 +196,7 @@ export default function Maps() {
             onPress={() => setSheet("search")}
             style={{ flex: 1, minHeight: 44, justifyContent: "center" }}
           >
-            <Txt muted>Søk etter sted</Txt>
+            <MapText muted>Søk etter sted</MapText>
           </Pressable>
           <Pressable
             accessibilityRole="button"
@@ -192,15 +214,15 @@ export default function Maps() {
               paddingHorizontal: 8,
             }}
           >
-            <Txt
+            <MapText
               weight="600"
               size={13}
               style={{ color: savedOnly ? "#DF4B20" : "#11182C" }}
             >
               ☆ Lagret
-            </Txt>
+            </MapText>
           </Pressable>
-        </View>{" "}
+        </View>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -213,9 +235,9 @@ export default function Maps() {
             onPress={() => router.push("/turf")}
             style={s.chip}
           >
-            <Txt size={13} weight="700">
+            <MapText size={13} weight="700">
               Soner ↗
-            </Txt>
+            </MapText>
           </Pressable>
           {["Følger", "Alle eksempler"].map((t) => (
             <Pressable
@@ -229,13 +251,13 @@ export default function Maps() {
               }}
               style={[s.chip, t === filter && { backgroundColor: "#11182C" }]}
             >
-              <Txt
+              <MapText
                 size={13}
                 weight="600"
                 style={{ color: t === filter ? "white" : "#11182C" }}
               >
                 {t}
-              </Txt>
+              </MapText>
             </Pressable>
           ))}
           <Pressable
@@ -247,9 +269,9 @@ export default function Maps() {
             }}
             style={s.chip}
           >
-            <Txt size={13} weight="600">
+            <MapText size={13} weight="600">
               {["Lengde", "Under 3 km", "3–10 km", "Over 10 km"][length]}
-            </Txt>
+            </MapText>
           </Pressable>
         </ScrollView>
       </View>
@@ -260,7 +282,7 @@ export default function Maps() {
           onPress={() => setNorth((v) => v + 1)}
           style={s.control}
         >
-          <Txt weight="700">N ↑</Txt>
+          <MapText weight="700">N ↑</MapText>
         </Pressable>
         <Pressable
           accessibilityRole="button"
@@ -276,7 +298,7 @@ export default function Maps() {
           onPress={() => setThreeD(!threeD)}
           style={s.control}
         >
-          <Txt weight="700">{threeD ? "2D" : "3D"}</Txt>
+          <MapText weight="700">{threeD ? "2D" : "3D"}</MapText>
         </Pressable>
         <Pressable
           accessibilityRole="button"
@@ -323,9 +345,9 @@ export default function Maps() {
       <View style={s.bottom}>
         {!!(message || loc.error || (follow && !position)) && (
           <View style={s.notice}>
-            <Txt size={13}>
+            <MapText size={13}>
               {message || loc.error || "Finner posisjonen din …"}
-            </Txt>
+            </MapText>
           </View>
         )}
         <View style={s.card}>
@@ -338,13 +360,13 @@ export default function Maps() {
           >
             <View style={s.tag}>
               <View style={s.dot} />
-              <Txt size={11} weight="700">
+              <MapText size={11} weight="700">
                 {turf?.example
                   ? "EKSEMPEL-TURF"
                   : turf
                     ? "DIN LAGREDE GPS-RUTE"
                     : "RUTER"}
-              </Txt>
+              </MapText>
             </View>
             {!!turf && (
               <Pressable
@@ -357,7 +379,9 @@ export default function Maps() {
                 onPress={() => saved.toggle(turf.id)}
                 style={{ padding: 12, marginLeft: "auto" }}
               >
-                <Txt size={20}>{saved.ids.includes(turf.id) ? "★" : "☆"}</Txt>
+                <MapText size={20}>
+                  {saved.ids.includes(turf.id) ? "★" : "☆"}
+                </MapText>
               </Pressable>
             )}
             <Pressable
@@ -371,35 +395,35 @@ export default function Maps() {
                 justifyContent: "center",
               }}
             >
-              <Txt size={20}>{expanded ? "−" : "+"}</Txt>
+              <MapText size={20}>{expanded ? "−" : "+"}</MapText>
             </Pressable>
           </View>
-          <Txt size={21} weight="700">
+          <MapText size={21} weight="700">
             {turf?.name ?? "Ingen ruter å vise"}
-          </Txt>
+          </MapText>
           {turf ? (
             <>
               <View style={s.metrics}>
-                <Txt weight="700">{km(turf.distance)} km</Txt>
-                <Txt muted>·</Txt>
-                <Txt weight="600">
+                <MapText weight="700">{km(turf.distance)} km</MapText>
+                <MapText muted>·</MapText>
+                <MapText weight="600">
                   {duration(turf.seconds)}
                   {turf.example ? " å slå" : " totalt"}
-                </Txt>
+                </MapText>
               </View>
               <View
                 style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
               >
                 <View style={s.avatar}>
-                  <Txt size={11} weight="700">
+                  <MapText size={11} weight="700">
                     {owner?.initials}
-                  </Txt>
+                  </MapText>
                 </View>
-                <Txt size={13} muted>
+                <MapText size={13} muted>
                   {turf.example
                     ? `${owner?.name} eier eksempelruten`
                     : "Din private GPS-rute"}
-                </Txt>
+                </MapText>
                 {turfs.length > 1 && (
                   <Pressable
                     accessibilityRole="button"
@@ -411,26 +435,26 @@ export default function Maps() {
                     }}
                     style={{ marginLeft: "auto", padding: 10 }}
                   >
-                    <Txt size={13} weight="600">
+                    <MapText size={13} weight="600">
                       Neste →
-                    </Txt>
+                    </MapText>
                   </Pressable>
                 )}
               </View>
             </>
           ) : (
-            <Txt muted size={14}>
+            <MapText muted size={14}>
               {savedOnly
                 ? "Trykk på stjernen på en rute for å finne den her."
                 : "Ingen ruter passer filteret. Lagre en GPS-økt, eller velg eksempler i innstillingene."}
-            </Txt>
+            </MapText>
           )}
           {expanded && (
-            <Txt muted size={13}>
+            <MapText muted size={13}>
               Dette panelet viser private ruter og merkede eksempler. Åpne Soner
               for konkurranseløyper. Slå hele løypa og velg om du vil utvide den
               med resten av turen.
-            </Txt>
+            </MapText>
           )}
           <Pressable
             accessibilityRole="button"
@@ -439,7 +463,7 @@ export default function Maps() {
             style={s.start}
           >
             <Icon name="record" size={20} color="#11182C" />
-            <Txt weight="700">Start en økt</Txt>
+            <MapText weight="700">Start en økt</MapText>
           </Pressable>
         </View>
       </View>
@@ -480,16 +504,16 @@ export default function Maps() {
                 justifyContent: "space-between",
               }}
             >
-              <Txt weight="700" size={22}>
+              <MapText weight="700" size={22}>
                 {sheet === "layers" ? "Karttyper og lag" : "Finn et sted"}
-              </Txt>
+              </MapText>
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="Lukk"
                 onPress={() => setSheet(null)}
                 style={{ padding: 12 }}
               >
-                <Txt size={23}>×</Txt>
+                <MapText size={23}>×</MapText>
               </Pressable>
             </View>
             {sheet === "layers" ? (
@@ -530,9 +554,9 @@ export default function Maps() {
                                 : "#5C7050",
                         }}
                       />
-                      <Txt size={12} weight="600">
+                      <MapText size={12} weight="600">
                         {title}
-                      </Txt>
+                      </MapText>
                     </Pressable>
                   ))}
                 </View>
@@ -552,7 +576,7 @@ export default function Maps() {
                       minHeight: 48,
                     }}
                   >
-                    <Txt size={15}>{label}</Txt>
+                    <MapText size={15}>{label}</MapText>
                     <Switch
                       accessibilityLabel={label}
                       value={value}
@@ -560,10 +584,10 @@ export default function Maps() {
                     />
                   </View>
                 ))}
-                <Txt muted size={13}>
+                <MapText muted size={13}>
                   Varmekart er ikke tilgjengelig ennå. Det krever ekte
                   aktivitetsdata.
-                </Txt>
+                </MapText>
               </ScrollView>
             ) : (
               <>
@@ -572,6 +596,7 @@ export default function Maps() {
                   value={query}
                   onChangeText={setQuery}
                   placeholder="Adresse eller sted"
+                  placeholderTextColor={palettes.light.muted}
                   maxLength={200}
                   onSubmitEditing={search}
                   returnKeyType="search"
@@ -581,6 +606,7 @@ export default function Maps() {
                     padding: 14,
                     borderRadius: 12,
                     fontSize: 16,
+                    color: palettes.light.text,
                   }}
                 />
                 <Pressable
@@ -590,9 +616,11 @@ export default function Maps() {
                   onPress={search}
                   style={s.start}
                 >
-                  <Txt weight="700">{searching ? "Søker …" : "Søk"}</Txt>
+                  <MapText weight="700">
+                    {searching ? "Søker …" : "Søk"}
+                  </MapText>
                 </Pressable>
-                {!!searchError && <Txt>{searchError}</Txt>}
+                {!!searchError && <MapText>{searchError}</MapText>}
                 <ScrollView keyboardShouldPersistTaps="handled">
                   {results.map((place) => (
                     <Pressable
@@ -610,7 +638,7 @@ export default function Maps() {
                         borderColor: "#EEF0EC",
                       }}
                     >
-                      <Txt>{place.name}</Txt>
+                      <MapText>{place.name}</MapText>
                     </Pressable>
                   ))}
                 </ScrollView>
@@ -618,7 +646,7 @@ export default function Maps() {
             )}
           </View>
         </View>
-      </Modal>{" "}
+      </Modal>
     </View>
   );
 }

@@ -1,5 +1,40 @@
 # Testing
 
+## Innlogging og backend på ny PC, 23. oktober 2026
+
+- Lokal `.env.local` er konfigurert mot eksisterende Supabase-prosjekt med offentlig nøkkel. Git-ignore er kontrollert. Ingen service-role-nøkkel er brukt eller lagret i appen.
+- Typecheck og lint uten cache: bestått. Jest: **68 tester i 15 suiter bestått**. Nye tester dekker validering, umiddelbar ventestatus, dobbelttrykk, faktisk sesjon før navigasjon, feil passord, bekreftelse/resending, e-postfeil, passordgjenoppretting, oppdatering av passord, nettverksbrudd, utlogging, tidsavbrudd, avbruddssignal, sen sesjonsgjenoppretting og engangslenker.
+- `node scripts/test-database.cjs`: 38 kontroller bestått. `node scripts/test-turf-database.cjs`: 35 kontroller bestått. Isolert PGlite med eksisterende migreringer, uten produksjonsskrivinger.
+- `expo export --platform all`: bestått for web og Hermes-pakker til Android/iOS etter siste kodeendring. Dette er ikke et native installasjonsbygg eller fysisk enhetstest. Jest og eksport måtte kjøres utenfor Windows-sandkassen på grunn av filtilgangsfeil; ingen tester ble fjernet eller nedjustert.
+- Live `scripts/check-supabase.cjs`: Auth HTTP 200; e-post aktivert, registrering aktivert, bekreftelse påkrevd. Anonyme forespørsler med `limit=0` mot alle 11 tabeller returnerte HTTP 401. Ingen kundeposter ble hentet. Ett tilfeldig ugyldig innloggingsforsøk ble korrekt avvist på **234 ms**; dette måler ikke vellykket innlogging eller skjermens responstid.
+- Skrivebeskyttet katalogspørring i dashboardet bekreftet 11 offentlige VYRO-tabeller med RLS. Ingen migrering ble kjørt. Tidligere utrulling gjennom SQL Editor kan forklare tom migreringshistorikk; tabellene finnes.
+- Site URL er rettet fra localhost:3000 til `http://localhost:8081/account`. Eksakte callback-adresser `http://localhost:8081/auth/callback` og `vyro://auth/callback` er lagt til og bekreftet i UI. Se `evidence/supabase-auth-redirects-2026-10-23.jpg`.
+- Egen SMTP er avslått. Supabase godtok én gjenopprettingsforespørsel til adressen brukeren oppga for e-posttest. Ingen passord ble endret, og ingen ny konto ble opprettet. Mottak og fullføring av lenken er ikke bekreftet.
+- Expo er startet på nytt på localhost:8081 med Mapbox og Supabase. Brukeren bekreftet deretter vellykket innlogging med «Jeg kommer inn». Dette er brukerbekreftet live-test; ingen måling av samlet innloggingstid. Automatisk visuell localhost-test er fortsatt blokkert av nettleserverktøyets tidligere URL-policy, og blokkeringen er ikke omgått.
+- **Gjenstår:** ny bruker med bekreftelsesmail, gjenoppretting gjennom faktisk e-post, deling mellom to ekte kontoer, SMTP for andre mottakere og fysisk Android/iOS/GPS. Appen er ikke erklært ferdig for produksjonslansering.
+
+## Kartfeil på ny PC, 23. oktober 2026
+
+- Før rettingen manglet `mobile/.env.local` og `EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN`. `hasMapbox` ble derfor false og viste tomtilstanden uten å starte Mapbox.
+- Brukerens offentlige nøkkel er deretter lagt i `mobile/.env.local`, og Git-ignore er bekreftet. Skrivebeskyttet kontroll av Mapbox Standard-stilen returnerte HTTP 200 med `http://localhost:8081` som Origin og Referer. Nøkkelverdien er ikke skrevet i dokumentasjonen. Dette verifiserer tilgang til stilen, ikke selve kartgjengivelsen eller alle kartflisene.
+- Expo er startet på nytt med `--clear`. Oppstartsloggen bekrefter at `.env.local` og `EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN` er lastet, og serveren lytter på localhost:8081.
+- To eksplisitte mellomrom direkte under `View` i kartskjermen er fjernet; disse forklarer React Native Web-varselet om en uventet tekstnode.
+- Kartpanelenes faste hvite flater fikk tidligere hvit tekst ved mørkt app-tema. Karttekst og søkefelt bruker nå den lyse palettens tekstfarger, og den lyse tomtilstanden har eksplisitt kontrast. Resten av appens valgte tema beholdes.
+- `npm run typecheck`, `npm run lint -- --no-cache`, `npm test -- --watch=false` og `npm run export:web`: bestått. 52 tester i 12 suiter. Metro gjenoppbygde en uleselig cache under eksporten; eksporten fullførte uten kodefeil.
+- Ny visuell nettleserkontroll er ikke utført: localhost ble tidligere avvist av nettleserverktøyets URL-policy. Kontroller kartpaneler, søk og knapper i både lyst og mørkt tema etter omlasting. Kontroller også kartfliser med nøkkelen aktivert. Native kart og fysisk GPS er fortsatt utestet.
+
+## Lokal fork-versjon, 23. oktober 2026
+
+- Grunnlag: `ae17eedf9df65ff339a4989fc0ef87de18bcc7f0` i `Xamsesulub/Vyro`, tre commits etter tidligere lokal versjon. Ingen endring i `mobile/src`, `mobile/app.json` eller `mobile/package.json` sammenlignet med denne committen.
+- Forkens låsefil manglet `@emnapi/core@1.11.3` og `@emnapi/runtime@1.11.3` for denne npm-versjonen. Låsefilen er synkronisert uten endring av eksisterende pakkeversjoner; npm oppdaterte også metadata.
+- `npm ci --no-audit --no-fund`: bestått på Windows med Node.js 24.22.1 og npm 11.19.1. npm hoppet over ikke-godkjente installasjonsskript for `@parcel/watcher` og `unrs-resolver`; kontrollene nedenfor bestod. Ingen ny sikkerhetsaudit kjørt.
+- `npm run typecheck`, `npm run lint -- --no-cache`, `npm test -- --watch=false`: bestått; 52 tester i 12 suiter.
+- `npm run export:web`: bestått, inkludert Mapbox, konto, sosial feed og opptak i webpakken.
+- Expo er startet fra denne prosjektmappen med `npm run web -- --localhost --port 8081 --clear`, uten `CI`, og rapporterer `Waiting on http://localhost:8081`. Serveren er beholdt kjørende for lokal forhåndsvisning.
+- Nettleserverktøyets URL-policy blokkerte visuell kontroll av localhost. Det er derfor ikke utført en ny visuell nettlesertest i denne runden.
+- Ved innhenting manglet `mobile/.env.local`. Mapbox og Supabase er senere konfigurert; se nyere kontroller ovenfor. Live deling mellom to kontoer er fortsatt ikke verifisert på denne maskinen.
+- Ingen produksjonsmigrering, nye kontoer, ekte GPS-opptak eller opplastinger utført. Fysiske native kontroller er fortsatt utestet.
+
 ## Kartbasert opptak, 20. oktober 2026
 
 - 52 Jest-tester består. Ny lagringstest dekker valgt sone, blokkert bytte under opptak, pause/gjenoppretting, kobling til lagret økt og fjerning ved simulering.
@@ -122,3 +157,15 @@ Sluttkontroll: typecheck, Expo lint --no-cache og web-export bestått. REA ev_80
 - Produksjonsmigrering 003 er aktivert etter eksplisitt godkjenning 20. oktober. SQL Editor bekreftet suksess; seks etterkontroller bekreftet followers-standard, 7 tilgangspolicies, oppdatert RPC, anon EXECUTE=false, authenticated EXECUTE=true og at gammel RPC er fjernet. Gamle innlegg beholder tidligere publikum; ny deling skal oppdatere kartet og publikum uten duplikat.
 
 Sluttkontroll etter endringene: typecheck, lint uten cache, 47 Jest-tester i 11 suiter, 38 lokale databasekontroller og web-export bestått. xcode UUID-override testet med 1000 unike gyldige ID-er. npm audit --omit=dev: 41 treff (22 high, 19 moderate), tre underliggende advisories uten tilgjengelig rettet registry-versjon.
+
+## Historisk lokal oppstart 23. oktober 2026 – før fork-oppdatering
+
+Denne kontrollen gjaldt den eldre committen `9b1a569`, før de tre nyere commitene ble hentet fra forken.
+
+- Rettet `package-lock.json`, som manglet `expo-location@58.0.18`, `@emnapi/core@1.11.3` og `@emnapi/runtime@1.11.3`. `package.json` og eksisterende låste pakkeversjoner er uendret. npm oppdaterte også avhengighetsmetadata i låsefilen.
+- Ren installasjon med `npm ci --no-audit --no-fund`: bestått på Windows med Node.js 24.22.1 og npm 11.19.1. Ingen ny sikkerhetsaudit ble kjørt.
+- Typecheck og ESLint: bestått.
+- Jest: 3 suites / 19 tester bestått. Første forsøk ble blokkert av sandkassens tilgang til Temp; samme tester bestod utenfor sandkassen.
+- Web-eksport: bestått.
+- `npm run web -- --localhost --port 8081`: startet. Onboarding-skjermen ble bekreftet i nettleseren på `http://localhost:8081/onboarding`. Testserveren brukte `CI=1`; vanlig oppstart i VS Code skal ikke sette denne variabelen, slik at automatisk oppdatering er aktiv.
+- Denne kontrollen gjelder installasjon og oppstart. Ingen ny fysisk GPS-, native kart- eller tilgjengelighetstest er utført.

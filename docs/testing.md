@@ -1,5 +1,13 @@
 # Testing
 
+## Offentlig nettversjon, 23. oktober 2026
+
+- Typecheck, lint uten cache, 68 Jest-tester i 15 suiter og Expo-webeksport: bestått. En enkel snarvei til eksisterende simulering er lagt til i AccountGate; backendtilgang og GPS-vilkår er uendret.
+- Sites meldte vellykket publisering med offentlig tilgang. HTTP-kontroller uten nettleserøkt returnerte 200 for `/`, `/map` og `/auth/callback`; SPA-fallback er konfigurert.
+- Nettlesertest på offentlig adresse: onboarding uten navn/konto, kartfliser med eksempelrute, gjesteknappen, start av simulering, tid/distanse/tempo, pause og fullføring til oppsummering. Ingen GPS-tillatelse eller produksjonsskriving ble brukt.
+- VibeOff bekreftet «Saved»; «Live link» ble deretter kontrollert i det gjenåpnede redigeringsskjemaet. Brukerens tekstendringer ble beholdt. Innlegget er ikke publisert.
+- Supabase-dashboardet krevde ny innlogging. Redirect- og SMTP-endringer er derfor ikke utført; vellykket konto-innlogging på den nye adressen, e-postlenker og fysisk mobil/GPS er ikke verifisert i denne runden.
+
 ## VibeOff-demovisning, 23. oktober 2026
 
 - Nettleserverktøyet fikk tilgang til localhost i denne runden. Fem ekte skjermbilder er kontrollert og lagret i `showcase/vibeoff/`. Kartfliser, rute, lesbare kartpaneler, eksempelinnlegg, fiktive løpere og profilstatistikk ble visuelt kontrollert i appens webeksport.

@@ -1,5 +1,9 @@
 # Leveranseplan
 
+## Offentlig testlenke, 23. oktober 2026
+
+Expo-nettversjonen er publisert på https://vyro-xamse.surelark18.chatgpt.site og lagret som «Live link» i VibeOff-utkastet. Kart og simulering kan prøves uten konto, med en egen knapp på kontoskjermen. Ingen demosesjon eller produksjonsdata er lagt i den publiserte pakken. Supabase-redirect for den nye adressen og SMTP gjenstår til dashboard-innloggingen er tilgjengelig igjen. Se `web-testing-link.md`.
+
 ## Presentasjon på VibeOff, 23. oktober 2026
 
 Fem ekte skjermbilder og norsk prosjektbeskrivelse er klargjort som et privat VibeOff-utkast. En separat lokal visning bruker fiktive brukere og eksempeløkter; den samler ikke GPS og skriver ikke til produksjonen. Brukeren publiserer selv etter gjennomgang. Se `showcase/vibeoff/README.md`. Dette er en prosjektpresentasjon, ikke en produksjonslansering; de gjenstående mobil-, e-post- og personverntestene gjelder fortsatt.

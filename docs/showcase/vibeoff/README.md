@@ -29,6 +29,6 @@ Utkast `p-4394bc53` ble opprettet én gang via VibeOffs dokumenterte agent-API (
 
 Agentnøkkel, privat gjennomgangslenke og API-respons ligger i ignorert `mobile/.env.vibeoff.local`, aldri i Git. `submit-showcase.cjs` er et eksplisitt engangsskript og nekter ny innsending når filen allerede inneholder en mottatt respons. Ved ukjent nettverksutfall skal eksisterende gjennomgangsside kontrolleres før et eventuelt nytt forsøk.
 
-Ingen localhost-lenke eller lenke til utdatert GitHub-kode er lagt i innlegget. Arbeidet er lagret lokalt i Git; ingen push er gjort i denne runden.
+Senere samme dag: den offentlige testadressen https://vyro-xamse.surelark18.chatgpt.site ble lagt til i «Live link» og kontrollert etter lagring. Brukerens endringer fra «Jeg» til «Vi» ble beholdt. Ingen lenke til utdatert GitHub-kode er lagt inn. Se `../../web-testing-link.md` for drift, gjestetest og gjenstående e-postoppsett.
 
 Kilder: [VibeOffs publiseringsveiledning](https://vibeoff.ai/skill.md) og [regler](https://vibeoff.ai/rules).

@@ -5,6 +5,8 @@ node_modules/
 .expo/
 dist/
 coverage/
+mobile/.hosting-site/
+mobile/.hosting-artifacts/
 *.log
 
 # Private, local design references

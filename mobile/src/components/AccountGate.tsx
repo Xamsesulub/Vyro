@@ -2,6 +2,7 @@ import { PropsWithChildren, useEffect } from "react";
 import { View } from "react-native";
 import { router } from "expo-router";
 import { useAuthStore } from "../stores/useAuthStore";
+import { useAppStore } from "../stores/useAppStore";
 import { Button, Screen, Txt, Logo, Icon, useTheme } from "./ui";
 import { MovementLine, Reveal } from "./motion";
 
@@ -88,6 +89,15 @@ export function AccountGate({ children }: PropsWithChildren) {
           secondary
           icon="map"
           onPress={() => router.push("/map")}
+        />
+        <Button
+          title="Prøv treningssimulering uten konto"
+          secondary
+          icon="play"
+          onPress={() => {
+            useAppStore.getState().mode("simulation");
+            router.push("/track");
+          }}
         />
       </Screen>
     );

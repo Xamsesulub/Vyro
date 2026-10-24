@@ -1,5 +1,12 @@
 # Testing
 
+## Ett stedssøk øverst i kartet, 24. oktober 2026 (skymiljø)
+
+- Typecheck og lint uten cache består. **17 tester i 4 suiter** består: fem nye skjermtester for direkte søk, valg av sted uten å opprette kartet på nytt, avbryt/redigering med sene svar, tomt søk/feil/nytt forsøk og opprydding ved avmontering; eksisterende Apple-søk-, Apple-kart- og rutepaneltester består også. Native kart/geokoding er mock i skjermtestene.
+- Web-eksport og Chromium-kontroll ved 390 × 844 og 320 × 440 består: ett felt beholder sin vertikale plass, tastaturinnsending starter søket, treff ligger under feltet, listen kan rulles og treff velges ved liten tilgjengelig høyde. Kollapset rutepanel bevares, kartlag kan åpnes/lukkes, søket kan gjenåpnes/avbrytes og Lagret-filteret virker. Ingen JavaScript-sidefeil. Den reduserte høyden er en layoutkontroll, ikke et simulert native iPhone-tastatur.
+- Nettleserkontrollen bruker isolert eksport i ignorert `.expo/map-search-validation`, en falsk offentlig kartnøkkel og lokale svarfixturer for kart og geokoding. Ingen live karttilgang eller offentlig publisering er verifisert. Expo-dokumentasjonen om tastaturhåndtering og installerte React Native 0.88-typer er kontrollert; ingen pakker er lagt til.
+- **Gjenstår på fysisk iPhone:** åpne Kart, skriv i øverste felt med tastaturet synlig, søk etter en adresse, velg et treff og kontroller kartutsnittet. Prøv lang tekst, rulling, Avbryt og fanebytte mens et søk pågår. Automatisk test og nettleser erstatter ikke denne kontrollen.
+
 ## Skjerm og låseskjerm under trening, 24. oktober 2026
 
 - Typecheck og lint uten cache består. Hele Jest-samlingen bestod med **191 tester i 39 suiter**; deretter bestod 14 målrettede tester med to nye regresjoner for Expo Go og utlogging under en ventende ActivityKit-oppdatering (**193 unike tester totalt**). Widgetkontrollen med seks tilstander består også etter siste visningsendring. `git diff --check` består.

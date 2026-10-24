@@ -1,7 +1,7 @@
 import {
+  useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
   type ComponentProps,
 } from "react";
@@ -11,14 +11,15 @@ import {
   View,
   Modal,
   ScrollView,
-  TextInput,
+  KeyboardAvoidingView,
   Switch,
   Platform,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { Txt, Icon } from "../../components/ui";
 import { MapRouteSheet } from "../../components/MapRouteSheet";
+import { MapSearch } from "../../components/MapSearch";
 import LiveMap from "../../components/LiveMap";
 import { demoTurfs, people } from "../../features/social/demo";
 import { useSocialStore } from "../../stores/useSocialStore";
@@ -26,7 +27,7 @@ import { useAppStore } from "../../stores/useAppStore";
 import { useLiveLocation } from "../../features/tracking/useLiveLocation";
 import { duration, km } from "../../features/activities/model";
 import { useSavedRoutes } from "../../stores/useSavedRoutes";
-import { searchPlaces, type Place } from "../../features/maps/search";
+import type { Place } from "../../features/maps/search";
 import type { MapKind } from "../../features/maps/config";
 import { useVisibleWorkouts } from "../../features/activities/useVisibleWorkouts";
 import { brand, palettes } from "../../theme/tokens";
@@ -50,40 +51,15 @@ export default function Maps() {
   const workouts = useVisibleWorkouts();
   const [savedOnly, setSavedOnly] = useState(false);
   const [length, setLength] = useState(0);
-  const [sheet, setSheet] = useState<"layers" | "search" | null>(null);
+  const [sheet, setSheet] = useState<"layers" | null>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
+  useFocusEffect(useCallback(() => () => setSearchOpen(false), []));
   const [mapKind, setMapKind] = useState<MapKind>("standard");
   const [poi, setPoi] = useState(true);
   const [contours, setContours] = useState(false);
   const [threeD, setThreeD] = useState(false);
   const [north, setNorth] = useState(0);
   const [target, setTarget] = useState<Place | null>(null);
-  const [query, setQuery] = useState("");
-  const [results, setResults] = useState<Place[]>([]);
-  const [searching, setSearching] = useState(false);
-  const [searchError, setSearchError] = useState("");
-  const searchController = useRef<AbortController | null>(null);
-  useEffect(() => () => searchController.current?.abort(), []);
-  async function search() {
-    if (searching || !query.trim()) return;
-    searchController.current?.abort();
-    const controller = new AbortController();
-    searchController.current = controller;
-    setSearching(true);
-    setSearchError("");
-    setResults([]);
-    try {
-      const places = await searchPlaces(query, controller.signal);
-      if (!controller.signal.aborted) {
-        setResults(places);
-        if (!places.length) setSearchError("Ingen steder funnet.");
-      }
-    } catch (e) {
-      if (!controller.signal.aborted)
-        setSearchError(e instanceof Error ? e.message : "Søket feilet.");
-    } finally {
-      if (!controller.signal.aborted) setSearching(false);
-    }
-  }
   const following = useSocialStore((s) => s.following);
   const examples = useAppStore((s) => s.examplesVisible);
   const [filter, setFilter] = useState("Følger");
@@ -181,7 +157,10 @@ export default function Maps() {
         follow={follow}
         recenter={recenter}
         padding={padding}
-        onPan={() => setFollow(false)}
+        onPan={() => {
+          setFollow(false);
+          setSearchOpen(false);
+        }}
         mapKind={mapKind}
         poi={poi}
         contours={contours}
@@ -190,99 +169,10 @@ export default function Maps() {
         target={target}
         explorer
       />
-      <View pointerEvents="box-none" style={[s.top, { top: insets.top + 16 }]}>
-        <View style={s.heading}>
-          <View style={s.brand}>
-            <Icon name="run" color={palettes.light.text} size={32} />
-          </View>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Søk etter sted"
-            onPress={() => setSheet("search")}
-            style={{ flex: 1, minHeight: 44, justifyContent: "center" }}
-          >
-            <MapText muted>Søk etter sted</MapText>
-          </Pressable>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Vis lagrede ruter"
-            accessibilityState={{ selected: savedOnly }}
-            onPress={() => {
-              setSavedOnly(!savedOnly);
-              setIndex(0);
-              setTarget(null);
-              setFollow(false);
-            }}
-            style={{
-              minHeight: 44,
-              justifyContent: "center",
-              paddingHorizontal: 8,
-            }}
-          >
-            <MapText
-              weight="600"
-              size={13}
-              style={{ color: savedOnly ? brand.route : "#11182C" }}
-            >
-              ☆ Lagret
-            </MapText>
-          </Pressable>
-        </View>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={{ marginTop: 10 }}
-          contentContainerStyle={{ gap: 8 }}
-        >
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Åpne ekte soner"
-            onPress={() => router.push("/turf")}
-            style={s.chip}
-          >
-            <MapText size={13} weight="700">
-              Soner ↗
-            </MapText>
-          </Pressable>
-          {["Følger", "Alle eksempler"].map((t) => (
-            <Pressable
-              key={t}
-              accessibilityRole="button"
-              accessibilityState={{ selected: t === filter }}
-              onPress={() => {
-                setFilter(t);
-                setIndex(0);
-                setFollow(false);
-              }}
-              style={[s.chip, t === filter && { backgroundColor: "#11182C" }]}
-            >
-              <MapText
-                size={13}
-                weight="600"
-                style={{ color: t === filter ? "white" : "#11182C" }}
-              >
-                {t}
-              </MapText>
-            </Pressable>
-          ))}
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Filtrer på lengde"
-            onPress={() => {
-              setLength((v) => (v + 1) % 4);
-              setIndex(0);
-            }}
-            style={s.chip}
-          >
-            <MapText size={13} weight="600">
-              {["Lengde", "Under 3 km", "3–10 km", "Over 10 km"][length]}
-            </MapText>
-          </Pressable>
-        </ScrollView>
-      </View>
       <View
         style={[
           s.controls,
+          searchOpen && { display: "none" },
           { top: insets.top + 145 },
           height - panelHeight - 36 < insets.top + 435 && {
             flexDirection: "row",
@@ -356,7 +246,7 @@ export default function Maps() {
           />
         </Pressable>
       </View>
-      <View style={s.bottom}>
+      <View style={[s.bottom, searchOpen && { display: "none" }]}>
         {!!(message || loc.error || (follow && !position)) && (
           <View style={s.notice}>
             <MapText size={13}>
@@ -488,6 +378,87 @@ export default function Maps() {
           </View>
         </MapRouteSheet>
       </View>
+      <KeyboardAvoidingView
+        pointerEvents="box-none"
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        enabled={searchOpen}
+        style={[s.top, { paddingTop: insets.top + 16 }]}
+      >
+        <View pointerEvents="box-none" style={{ flex: 1, paddingBottom: 12 }}>
+          <MapSearch
+            active={searchOpen}
+            onActiveChange={setSearchOpen}
+            savedOnly={savedOnly}
+            onToggleSaved={() => {
+              setSavedOnly(!savedOnly);
+              setIndex(0);
+              setTarget(null);
+              setFollow(false);
+            }}
+            onSelect={(place) => {
+              setTarget(place);
+              setFollow(false);
+              setMessage("");
+            }}
+          />
+          {!searchOpen && (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={{ marginTop: 10, flexGrow: 0, flexShrink: 0 }}
+              contentContainerStyle={{ gap: 8 }}
+            >
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Åpne ekte soner"
+                onPress={() => router.push("/turf")}
+                style={s.chip}
+              >
+                <MapText size={13} weight="700">
+                  Soner ↗
+                </MapText>
+              </Pressable>
+              {["Følger", "Alle eksempler"].map((t) => (
+                <Pressable
+                  key={t}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: t === filter }}
+                  onPress={() => {
+                    setFilter(t);
+                    setIndex(0);
+                    setFollow(false);
+                  }}
+                  style={[
+                    s.chip,
+                    t === filter && { backgroundColor: "#11182C" },
+                  ]}
+                >
+                  <MapText
+                    size={13}
+                    weight="600"
+                    style={{ color: t === filter ? "white" : "#11182C" }}
+                  >
+                    {t}
+                  </MapText>
+                </Pressable>
+              ))}
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Filtrer på lengde"
+                onPress={() => {
+                  setLength((v) => (v + 1) % 4);
+                  setIndex(0);
+                }}
+                style={s.chip}
+              >
+                <MapText size={13} weight="600">
+                  {["Lengde", "Under 3 km", "3–10 km", "Over 10 km"][length]}
+                </MapText>
+              </Pressable>
+            </ScrollView>
+          )}
+        </View>
+      </KeyboardAvoidingView>
       <Modal
         visible={sheet !== null}
         transparent
@@ -526,7 +497,7 @@ export default function Maps() {
               }}
             >
               <MapText weight="700" size={22}>
-                {sheet === "layers" ? "Karttyper og lag" : "Finn et sted"}
+                Karttyper og lag
               </MapText>
               <Pressable
                 accessibilityRole="button"
@@ -537,161 +508,104 @@ export default function Maps() {
                 <MapText size={23}>×</MapText>
               </Pressable>
             </View>
-            {sheet === "layers" ? (
-              <ScrollView contentContainerStyle={{ gap: 16 }}>
-                <View style={{ flexDirection: "row", gap: 8 }}>
-                  {(
-                    [
-                      ["standard", "Standard"],
-                      ["satellite", "Satellitt"],
-                      ["hybrid", "Hybrid"],
-                    ] as const
-                  ).map(([kind, title]) => (
-                    <Pressable
-                      key={kind}
-                      accessibilityRole="button"
-                      accessibilityState={{ selected: kind === mapKind }}
-                      onPress={() => setMapKind(kind)}
-                      style={{
-                        flex: 1,
-                        borderWidth: 2,
-                        borderColor: mapKind === kind ? brand.route : "#E7E9E5",
-                        borderRadius: 14,
-                        padding: 12,
-                        alignItems: "center",
-                        gap: 12,
-                      }}
-                    >
-                      <View
-                        style={{
-                          height: 48,
-                          width: "100%",
-                          borderRadius: 8,
-                          backgroundColor:
-                            kind === "standard"
-                              ? "#C4DDA9"
-                              : kind === "satellite"
-                                ? "#224C38"
-                                : "#5C7050",
-                        }}
-                      />
-                      <MapText size={12} weight="600">
-                        {title}
-                      </MapText>
-                    </Pressable>
-                  ))}
-                </View>
-                <MapText size={13} muted>
-                  {mapKind === "satellite"
-                    ? "Fly- og satellittbilder uten kartnavn."
-                    : mapKind === "hybrid"
-                      ? "Satellittbilder med veier og kartnavn."
-                      : "Veikart med stier og kartnavn."}
-                </MapText>
+            <ScrollView contentContainerStyle={{ gap: 16 }}>
+              <View style={{ flexDirection: "row", gap: 8 }}>
                 {(
                   [
-                    [
-                      Platform.OS === "ios"
-                        ? "Interessepunkter"
-                        : "Stedsnavn og interessepunkter",
-                      poi,
-                      setPoi,
-                    ],
-                    ["Høydekurver", contours, setContours],
-                    [
-                      Platform.OS === "ios" ? "3D-visning" : "3D-terreng",
-                      threeD,
-                      setThreeD,
-                    ],
+                    ["standard", "Standard"],
+                    ["satellite", "Satellitt"],
+                    ["hybrid", "Hybrid"],
                   ] as const
-                )
-                  .filter(
-                    ([label]) =>
-                      Platform.OS !== "ios" || label !== "Høydekurver",
-                  )
-                  .map(([label, value, set]) => (
+                ).map(([kind, title]) => (
+                  <Pressable
+                    key={kind}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: kind === mapKind }}
+                    onPress={() => setMapKind(kind)}
+                    style={{
+                      flex: 1,
+                      borderWidth: 2,
+                      borderColor: mapKind === kind ? brand.route : "#E7E9E5",
+                      borderRadius: 14,
+                      padding: 12,
+                      alignItems: "center",
+                      gap: 12,
+                    }}
+                  >
                     <View
-                      key={label}
                       style={{
-                        flexDirection: "row",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        minHeight: 48,
+                        height: 48,
+                        width: "100%",
+                        borderRadius: 8,
+                        backgroundColor:
+                          kind === "standard"
+                            ? "#C4DDA9"
+                            : kind === "satellite"
+                              ? "#224C38"
+                              : "#5C7050",
                       }}
-                    >
-                      <MapText size={15}>{label}</MapText>
-                      <Switch
-                        accessibilityLabel={label}
-                        disabled={set === setPoi && mapKind === "satellite"}
-                        value={
-                          set === setPoi && mapKind === "satellite"
-                            ? false
-                            : value
-                        }
-                        onValueChange={set}
-                      />
-                    </View>
-                  ))}
-                <MapText muted size={13}>
-                  Varmekart er ikke tilgjengelig ennå. Det krever ekte
-                  aktivitetsdata.
-                </MapText>
-              </ScrollView>
-            ) : (
-              <>
-                <TextInput
-                  accessibilityLabel="Søk etter adresse eller sted"
-                  value={query}
-                  onChangeText={setQuery}
-                  placeholder="Adresse eller sted"
-                  placeholderTextColor={palettes.light.muted}
-                  maxLength={200}
-                  onSubmitEditing={search}
-                  returnKeyType="search"
-                  style={{
-                    borderWidth: 1,
-                    borderColor: "#DDE1D9",
-                    padding: 14,
-                    borderRadius: 12,
-                    fontSize: 16,
-                    color: palettes.light.text,
-                  }}
-                />
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel="Søk"
-                  disabled={searching || !query.trim()}
-                  onPress={search}
-                  style={s.start}
-                >
-                  <MapText weight="700">
-                    {searching ? "Søker …" : "Søk"}
-                  </MapText>
-                </Pressable>
-                {!!searchError && <MapText>{searchError}</MapText>}
-                <ScrollView keyboardShouldPersistTaps="handled">
-                  {results.map((place) => (
-                    <Pressable
-                      key={place.id}
-                      accessibilityRole="button"
-                      onPress={() => {
-                        setTarget(place);
-                        setFollow(false);
-                        setSheet(null);
-                        setMessage(place.name);
-                      }}
-                      style={{
-                        paddingVertical: 14,
-                        borderBottomWidth: 1,
-                        borderColor: "#EEF0EC",
-                      }}
-                    >
-                      <MapText>{place.name}</MapText>
-                    </Pressable>
-                  ))}
-                </ScrollView>
-              </>
-            )}
+                    />
+                    <MapText size={12} weight="600">
+                      {title}
+                    </MapText>
+                  </Pressable>
+                ))}
+              </View>
+              <MapText size={13} muted>
+                {mapKind === "satellite"
+                  ? "Fly- og satellittbilder uten kartnavn."
+                  : mapKind === "hybrid"
+                    ? "Satellittbilder med veier og kartnavn."
+                    : "Veikart med stier og kartnavn."}
+              </MapText>
+              {(
+                [
+                  [
+                    Platform.OS === "ios"
+                      ? "Interessepunkter"
+                      : "Stedsnavn og interessepunkter",
+                    poi,
+                    setPoi,
+                  ],
+                  ["Høydekurver", contours, setContours],
+                  [
+                    Platform.OS === "ios" ? "3D-visning" : "3D-terreng",
+                    threeD,
+                    setThreeD,
+                  ],
+                ] as const
+              )
+                .filter(
+                  ([label]) => Platform.OS !== "ios" || label !== "Høydekurver",
+                )
+                .map(([label, value, set]) => (
+                  <View
+                    key={label}
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      minHeight: 48,
+                    }}
+                  >
+                    <MapText size={15}>{label}</MapText>
+                    <Switch
+                      accessibilityLabel={label}
+                      disabled={set === setPoi && mapKind === "satellite"}
+                      value={
+                        set === setPoi && mapKind === "satellite"
+                          ? false
+                          : value
+                      }
+                      onValueChange={set}
+                    />
+                  </View>
+                ))}
+              <MapText muted size={13}>
+                Varmekart er ikke tilgjengelig ennå. Det krever ekte
+                aktivitetsdata.
+              </MapText>
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -699,18 +613,14 @@ export default function Maps() {
   );
 }
 const s = StyleSheet.create({
-  top: { position: "absolute", left: 16, right: 16, maxWidth: 460 },
-  heading: {
-    backgroundColor: "white",
-    borderRadius: 18,
-    padding: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    boxShadow: "0 3px 16px #11182C18",
+  top: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    left: 16,
+    right: 16,
+    maxWidth: 460,
   },
-  brand: { padding: 8, backgroundColor: "#EFF5E9", borderRadius: 12 },
-  sport: { flexDirection: "row", alignItems: "center", gap: 4 },
   chip: {
     backgroundColor: "white",
     borderRadius: 24,

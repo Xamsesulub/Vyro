@@ -1,5 +1,11 @@
 # Leveranseplan
 
+## Stedssøk direkte øverst i kartet, 24. oktober 2026
+
+Kartets øverste søkefelt er nå et faktisk tekstfelt. Det separate søkepanelet nederst er fjernet. Søk sendes med tastaturets Søk-tast eller søkeknappen; treff og feil vises rett under feltet. iOS tilpasser resultatlistens plass til tastaturet, og kartknapper/rutepanel skjules under søket. Valg av treff lukker tastaturet og flytter kartet, mens rutepanelets åpne/lukkede tilstand beholdes. Redigering, avbryt og skjermbytte avbryter ventende søk, og sene svar ignoreres.
+
+Ingen nye pakker eller native byggkrav er lagt til. Apple-geokoding på iPhone og Mapbox-søk på web beholdes. Automatiserte kontroller og nettleserkontroll består; fysisk kontroll med iPhone-tastaturet gjenstår. Se [tester](testing.md).
+
 ## Skjerm under trening og iOS-låseskjerm, 24. oktober 2026
 
 Snitt/km beholder aktiv opptakstid delt på GPS-distanse. Stillstand under et løpende opptak øker snittet; Pause fryser tid og snitt. Ingen automatisk pause er innført.

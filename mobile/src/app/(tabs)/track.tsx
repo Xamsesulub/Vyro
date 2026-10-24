@@ -11,10 +11,9 @@ import {
 } from "../../components/ui";
 import RecordingMap from "../../components/RecordingMap";
 import LiveMap from "../../components/LiveMap";
-import WorkoutMap from "../../components/WorkoutMap";
 import { useAppStore } from "../../stores/useAppStore";
 import { useLiveLocation } from "../../features/tracking/useLiveLocation";
-import { RecordingMode } from "../../features/tracking/simulator";
+import { demoRoute, RecordingMode } from "../../features/tracking/simulator";
 import { sports } from "../../features/activities/model";
 import { brand } from "../../theme/tokens";
 import { useAuthStore } from "../../stores/useAuthStore";
@@ -27,6 +26,7 @@ const modes: { mode: RecordingMode; title: string }[] = [
   { mode: "gps", title: "GPS" },
   { mode: "simulation", title: "Simulering" },
 ];
+const exampleRoute = [demoRoute];
 export default function Track() {
   const r = useAppStore((s) => s.recording);
   const userId = useAuthStore((s) => s.session?.user.id);
@@ -40,7 +40,6 @@ export default function Track() {
   const [showDemo, setShowDemo] = useState(r.mode === "simulation");
   const gps = r.mode === "gps";
   const loc = useLiveLocation(gps);
-  const [denied, setDenied] = useState(false);
 
   const [chooseSport, setChooseSport] = useState(false);
   const c = useTheme();
@@ -59,11 +58,6 @@ export default function Track() {
           router.push("/account");
           return;
         }
-        if (gps && loc.permission !== "granted" && !(await loc.request())) {
-          setDenied(true);
-          return;
-        }
-        setDenied(false);
         await beginRecording("start");
       },
     },
@@ -127,8 +121,20 @@ export default function Track() {
       footer={
         <>
           <Txt size={14} muted style={{ textAlign: "center" }}>
-            {status}
+            {tracking.starting ? "Klargjør opptak …" : status}
           </Txt>
+          {!!tracking.error && (
+            <View
+              accessibilityRole="alert"
+              style={{
+                borderLeftWidth: 3,
+                borderLeftColor: brand.coral,
+                paddingLeft: 10,
+              }}
+            >
+              <Txt size={14}>{tracking.error}</Txt>
+            </View>
+          )}
           <Button
             title={tracking.starting ? "Starter …" : primary.title}
             disabled={tracking.starting}
@@ -168,70 +174,62 @@ export default function Track() {
                   selected={r.mode === m.mode}
                   onPress={() => {
                     setMode(m.mode);
-                    setDenied(false);
+                    useTrackingStatus.setState({ error: null });
                   }}
                 />
               ))}
             </View>
           )}
           <View style={{ borderRadius: 16, overflow: "hidden" }}>
-            {gps && (loc.permission === "granted" || r.challenge || r.guide) ? (
-              <LiveMap
-                height={mapHeight}
-                position={loc.position}
-                follow={!r.challenge && !r.guide}
-                overlays={
-                  r.challenge
+            <LiveMap
+              height={mapHeight}
+              position={gps ? loc.position : null}
+              follow={gps && !r.challenge && !r.guide}
+              route={
+                !gps || (!loc.position && !r.challenge && !r.guide)
+                  ? exampleRoute
+                  : undefined
+              }
+              overlays={
+                r.challenge
+                  ? [
+                      {
+                        id: r.challenge.id,
+                        name: r.challenge.name,
+                        owner: "Sone · start",
+                        points: r.challenge.route,
+                        color: brand.competition,
+                      },
+                    ]
+                  : r.guide
                     ? [
                         {
-                          id: r.challenge.id,
-                          name: r.challenge.name,
-                          owner: "Sone · start",
-                          points: r.challenge.route,
+                          id: "guide",
+                          name: r.guide.name,
+                          owner: "Din tidligere rute",
+                          points: r.guide.route,
                           color: brand.competition,
                         },
                       ]
-                    : r.guide
-                      ? [
-                          {
-                            id: "guide",
-                            name: r.guide.name,
-                            owner: "Din tidligere rute",
-                            points: r.guide.route,
-                            color: brand.competition,
-                          },
-                        ]
-                      : []
-                }
-              />
-            ) : (
-              <WorkoutMap height={mapHeight} />
-            )}
+                    : []
+              }
+            />
           </View>
-          <Txt
-            size={12}
-            muted={!denied}
-            style={denied ? { color: brand.coral } : undefined}
-          >
+          <Txt size={12} muted>
             {!gps
               ? "Simulering"
-              : denied
-                ? "VYRO fikk ikke tilgang til posisjon. Slå den på i innstillingene, eller velg simulering."
-                : loc.permission !== "granted"
-                  ? r.challenge
-                    ? "Valgt løype"
-                    : "Eksempelkart"
-                  : (tracking.error ??
-                    loc.error ??
-                    (loc.position
-                      ? background && backgroundSupported
-                        ? "GPS · bakgrunnsopptak"
-                        : "GPS"
-                      : "Leter etter GPS-signal …"))}
+              : loc.permission !== "granted"
+                ? r.challenge
+                  ? "Valgt løype"
+                  : "Eksempelkart"
+                : (tracking.error ??
+                  loc.error ??
+                  (loc.position
+                    ? background && backgroundSupported
+                      ? "GPS · bakgrunnsopptak"
+                      : "GPS"
+                    : "Leter etter GPS-signal …"))}
           </Txt>
-          {!!tracking.error && (
-            <Txt style={{ color: brand.coral }}>{tracking.error}</Txt>
-          )}
           {!!r.guide && (
             <View style={{ gap: 8 }}>
               <Txt weight="700">Følg ruten: {r.guide.name}</Txt>

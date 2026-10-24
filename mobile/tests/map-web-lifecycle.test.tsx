@@ -97,6 +97,37 @@ function engine() {
   return { callbacks, map, config, source, constructor };
 }
 
+test("a known live position is the first camera, avoiding an initial download of the default Oslo view", async () => {
+  const { constructor } = engine();
+  await act(async () =>
+    root.render(
+      <LiveMap follow position={{ latitude: 60.39, longitude: 5.32 }} />,
+    ),
+  );
+  expect(constructor.mock.calls[0][0]).toMatchObject({
+    center: [5.32, 60.39],
+    zoom: 16,
+  });
+  expect(constructor.mock.calls[0][0]).not.toHaveProperty("bounds");
+});
+
+test("a permission/position update preserves the existing map and tiles", async () => {
+  const { constructor, callbacks, map } = engine();
+  await act(async () => root.render(<LiveMap follow />));
+  await act(async () => callbacks["style.load"]());
+  await act(async () =>
+    root.render(
+      <LiveMap follow position={{ latitude: 59.9, longitude: 10.7 }} />,
+    ),
+  );
+  expect(constructor).toHaveBeenCalledTimes(1);
+  expect(map.remove).not.toHaveBeenCalled();
+  expect(map.setStyle).not.toHaveBeenCalled();
+  expect(map.easeTo).toHaveBeenCalledWith(
+    expect.objectContaining({ center: [10.7, 59.9] }),
+  );
+});
+
 test("Hybrid toggles labels while tiles are pending, without resetting the style or workout source", async () => {
   const { callbacks, map, config, source } = engine();
   await act(async () =>

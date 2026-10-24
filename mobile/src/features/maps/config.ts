@@ -3,7 +3,7 @@ export const mapboxToken = (
   process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN ?? ""
 ).trim();
 export const hasMapbox = mapboxToken.startsWith("pk.");
-// Shared light, flat Standard style for the native SDK and GL JS.
+// Mapbox is used only by the web preview. iOS uses Apple MapKit.
 export const mapStyle: StyleSpecification = {
   version: 8 as const,
   glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",

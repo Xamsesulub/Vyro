@@ -1,12 +1,14 @@
 # Mapbox-oppsett
 
+Fra 24. oktober 2026 gjelder dette bare **web-forhåndsvisningen**. iPhone bruker Apple Maps uten Mapbox-konto/nøkkel. Android er utsatt; se [kartplattformene](map-provider-options.md).
+
 1. Opprett konto på https://account.mapbox.com/auth/signup/ og bekreft e-posten.
 2. Åpne https://account.mapbox.com/access-tokens/ . Opprett en public token kalt VYRO, med standard offentlige lesetilganger. Nøkkelen starter med pk., aldri sk.
 3. Legg inn EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN=pk.… i mobile/.env.local. Behold Supabase-variablene. Filen skal ikke committes.
 4. Restart Expo med `npx expo start --clear`. For lokal statisk webvisning på 8101: kjør `npm run export:web` fra mobile og last siden på nytt.
-5. Web bruker Mapbox GL JS. Mobil bruker @rnmapbox/maps med Expo config-plugin. Mobilen må få et nytt development build; Expo Go har ikke Mapbox-modulen. Android kan bygges med `npx expo run:android` når Android-verktøyene er satt opp. iOS krever Mac eller EAS. Ingen skybygg eller betalte kontoendringer er utført.
+5. Web bruker Mapbox GL JS. Native Mapbox-pakke/plugin er fjernet. iPhone bruker `react-native-maps` med Apple MapKit og må bygges på nytt etter byttet. iOS-bygg krever Mac eller EAS. Ingen skybygg eller betalte kontoendringer er utført.
 
-Bruk separate nøkler for web og native ved publisering. Webnøkkelen kan begrenses til websidens tillatte URL-er. Ta med http://127.0.0.1:8101 og eventuelle andre faktiske utviklingsadresser; URL-begrensede webnøkler skal ikke gjenbrukes i native uten å kontrollere støtten. Secret tokens skal ikke legges i EXPO_PUBLIC-variabler. Kostnader følger Mapbox-avtalen; kartlastinger på web og mobilbruk beregnes forskjellig.
+Webnøkkelen kan begrenses til websidens tillatte URL-er. Ta med http://127.0.0.1:8101 og eventuelle andre faktiske utviklingsadresser. Secret tokens skal ikke legges i EXPO_PUBLIC-variabler. Kostnader for web-forhåndsvisningen følger Mapbox-avtalen. iOS krever ingen Mapbox-nøkkel.
 
 Standard bruker veikartet i dagslys. Satellitt og Hybrid bruker Mapbox Standard Satellite, med kartnavn/veier henholdsvis av og på. GPS-opptaket fra Henos, route/breakBefore, Supabase og private økter er uendret. Mapbox får data som er nødvendige for kartvisning. Appens ruter tegnes som lokale GeoJSON-lag, uten ruting-/map-matching-opplasting.
 
@@ -16,7 +18,7 @@ Kilder: https://docs.mapbox.com/help/dive-deeper/access-tokens/ , https://github
 
 ## Satellitt og drabart rutepanel
 
-Etter oppdateringen `ef3d26c` brukes `mapbox://styles/mapbox/standard-satellite` for begge fotografiske karttyper. Dette erstatter den tidligere kombinasjonen av Standard og et eget rasterlag. Satellitt/Hybrid-bytte oppdaterer bare veier/navn og gjenbruker bildene. 2D/3D er et separat valg. Både web og native bruker samme stildefinisjon. Gyldig Mapbox-token med tilgang til bilder/fliser er fortsatt nødvendig.
+Web bruker `mapbox://styles/mapbox/standard-satellite` for begge fotografiske karttyper. Satellitt/Hybrid-bytte oppdaterer bare veier/navn og gjenbruker bildene. 2D/3D er et separat valg. Gyldig Mapbox-token med tilgang til bilder/fliser er nødvendig på web; iOS bruker Apples egne karttyper.
 
 Rutepanelet har et merket håndtak for drag eller trykk og kan minimeres for å frigjøre kartet. Kartets kameramarg tilpasses panelets synlige høyde, og kartknappene legges i en rad på lave skjermer. Se `testing.md` for lokal berørings-/WebGL-test og avgrensningen mot ekte satellittbilder og fysisk mobil. Den offentlige testlenken er ikke oppdatert fra dette miljøet.
 

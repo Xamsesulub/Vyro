@@ -52,13 +52,23 @@ export default function LiveMap({
   const loadedStyle = useRef<typeof mapStyle | null>(null);
   const options = useRef({ mapKind, poi, contours, threeD });
   const initialBounds = useRef(mapBounds(route, overlays));
+  const firstPosition = follow ? position : target;
   const initialPadding = useRef(padding);
   const initialCamera = useRef<{
     center: [number, number];
     zoom: number;
     pitch: number;
     bearing: number;
-  } | null>(null);
+  } | null>(
+    firstPosition
+      ? {
+          center: [firstPosition.longitude, firstPosition.latitude],
+          zoom: follow ? 16 : 13,
+          pitch: threeD ? 55 : 0,
+          bearing: 0,
+        }
+      : null,
+  );
   useEffect(() => {
     options.current = { mapKind, poi, contours, threeD };
   }, [mapKind, poi, contours, threeD]);

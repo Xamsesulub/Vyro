@@ -1,6 +1,8 @@
 import { useAppStore } from "../../stores/useAppStore";
 import { useAuthStore } from "../../stores/useAuthStore";
 import { useTrackingStatus } from "../../stores/useTrackingStatus";
+import { useLocationStore } from "../../stores/useLocationStore";
+import { locationDeadline } from "./locationDeadline";
 import {
   backgroundSupported,
   requestBackgroundAccess,
@@ -19,22 +21,37 @@ export async function beginRecording(event: "start" | "resume") {
   )
     return;
   useTrackingStatus.setState({ starting: true, error: null });
+  let started = false;
   try {
+    if (
+      before.mode === "gps" &&
+      !(await useLocationStore.getState().request())
+    ) {
+      useTrackingStatus.setState({
+        error:
+          useLocationStore.getState().error ??
+          "Tillat posisjon for å starte GPS-opptak.",
+      });
+      return;
+    }
     const background =
       before.mode === "gps" &&
       useAppStore.getState().backgroundRecording &&
       backgroundSupported;
-    if (background) await requestBackgroundAccess();
+    if (background) await locationDeadline(requestBackgroundAccess());
     if (
       useAuthStore.getState().session?.user.id !== owner ||
       useAppStore.getState().recording !== before
     )
       return;
     useAppStore.getState().event(event);
-    if (background) await startBackground();
+    started = true;
+    if (background) await locationDeadline(startBackground());
   } catch (error) {
-    useAppStore.getState().event("pause");
-    await stopBackground().catch(() => undefined);
+    if (started) {
+      useAppStore.getState().event("pause");
+      void stopBackground().catch(() => undefined);
+    }
     useTrackingStatus.setState({
       error:
         error instanceof Error

@@ -24,6 +24,10 @@ jest.mock("expo-task-manager", () => ({
 jest.mock("expo-location", () => ({
   Accuracy: { BestForNavigation: 6 },
   ActivityType: { Fitness: 3 },
+  requestForegroundPermissionsAsync: jest.fn(async () => ({
+    granted: true,
+    canAskAgain: true,
+  })),
   requestBackgroundPermissionsAsync: jest.fn(async () => ({ granted: true })),
   startLocationUpdatesAsync: jest.fn(async () => {}),
   stopLocationUpdatesAsync: jest.fn(async () => {}),
@@ -45,11 +49,9 @@ beforeEach(async () => {
   });
   await stopBackground();
   jest.mocked(Location.startLocationUpdatesAsync).mockClear();
-  jest
-    .mocked(Location.requestBackgroundPermissionsAsync)
-    .mockResolvedValue({
-      granted: true,
-    } as Location.LocationPermissionResponse);
+  jest.mocked(Location.requestBackgroundPermissionsAsync).mockResolvedValue({
+    granted: true,
+  } as Location.LocationPermissionResponse);
 });
 test("background permission denial leaves the recording idle and reports an actionable error", async () => {
   jest
@@ -117,14 +119,12 @@ test("a cold task cannot resume a persisted draft or collect without an active o
 test("late pre-resume GPS callbacks are rejected and runtime GPS errors pause the workout", async () => {
   await beginRecording("start");
   const r = useAppStore.getState().recording;
-  useAppStore
-    .getState()
-    .gpsFix({
-      latitude: 59,
-      longitude: 10,
-      accuracy: 5,
-      timestamp: r.segmentStartedAt! - 1000,
-    });
+  useAppStore.getState().gpsFix({
+    latitude: 59,
+    longitude: 10,
+    accuracy: 5,
+    timestamp: r.segmentStartedAt! - 1000,
+  });
   expect(useAppStore.getState().recording.route).toEqual([[]]);
   const task = jest.mocked(TaskManager.defineTask).mock.calls[0][1];
   await task({ error: { message: "GPS stopped" } } as never);

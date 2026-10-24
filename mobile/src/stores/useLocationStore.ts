@@ -1,6 +1,9 @@
 import * as Location from "expo-location";
 import { create } from "zustand";
 import type { GpsFix } from "../features/tracking/gps";
+import { requestForegroundPermission } from "../features/tracking/foregroundPermission";
+
+let permissionRevision = 0;
 
 export type Permission = "unknown" | "granted" | "denied";
 type State = {
@@ -24,8 +27,10 @@ export const useLocationStore = create<State>()((set, get) => ({
   error: null,
   viewers: 0,
   check: async () => {
+    const revision = permissionRevision;
     try {
       const res = await Location.getForegroundPermissionsAsync();
+      if (revision !== permissionRevision) return get().permission;
       const permission = res.granted
         ? "granted"
         : res.canAskAgain
@@ -34,21 +39,33 @@ export const useLocationStore = create<State>()((set, get) => ({
       set({ permission, canAskAgain: res.canAskAgain });
       return permission;
     } catch {
-      set({ error: "Posisjon er ikke tilgjengelig på denne enheten." });
+      if (revision === permissionRevision)
+        set({ error: "Posisjon er ikke tilgjengelig på denne enheten." });
       return get().permission;
     }
   },
   request: async () => {
+    const revision = ++permissionRevision;
+    set({ error: null });
     try {
-      const res = await Location.requestForegroundPermissionsAsync();
+      const res = await requestForegroundPermission();
+      if (revision !== permissionRevision) return false;
       set({
         permission: res.granted ? "granted" : "denied",
         canAskAgain: res.canAskAgain,
-        error: res.granted ? null : get().error,
+        error: res.granted
+          ? null
+          : "Tillat posisjon i nettleseren eller telefoninnstillingene, og prøv igjen.",
       });
       return res.granted;
-    } catch {
-      set({ error: "Posisjon er ikke tilgjengelig på denne enheten." });
+    } catch (error) {
+      if (revision === permissionRevision)
+        set({
+          error:
+            error instanceof Error
+              ? error.message
+              : "Posisjon er ikke tilgjengelig på denne enheten.",
+        });
       return false;
     }
   },

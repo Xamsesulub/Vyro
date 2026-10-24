@@ -2,6 +2,7 @@
   "expo": {
     "name": "VYRO",
     "slug": "vyro",
+    "platforms": ["ios", "web"],
     "scheme": "vyro",
     "version": "0.1.0",
     "orientation": "portrait",
@@ -43,7 +44,6 @@
           "imageWidth": 160
         }
       ],
-      "@rnmapbox/maps",
       "expo-secure-store",
       "expo-sharing",
       [

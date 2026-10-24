@@ -7,18 +7,17 @@ const script = path.resolve("scripts/check-release-env.cjs");
 const valid = {
   EXPO_PUBLIC_SUPABASE_URL: "https://release-fixture.supabase.co",
   EXPO_PUBLIC_SUPABASE_KEY: "sb_publishable_aaaaaaaaaaaaaaaaaaaa",
-  EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN: "pk.fixture.signature",
 };
 function check(env: Record<string, string>) {
   return spawnSync(process.execPath, [script], { env, encoding: "utf8" });
 }
 
-test("release fails before native compilation when login and maps are not configured", () => {
+test("release fails before native compilation when login is not configured", () => {
   const result = check({});
   expect(result.status).toBe(1);
   expect(result.stderr).toContain("EXPO_PUBLIC_SUPABASE_URL");
   expect(result.stderr).toContain("EXPO_PUBLIC_SUPABASE_KEY");
-  expect(result.stderr).toContain("EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN");
+  expect(result.stderr).not.toContain("EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN");
 });
 
 test("release accepts the client's supported public configuration and key alias", () => {
@@ -34,9 +33,24 @@ test("release accepts the client's supported public configuration and key alias"
     check({ ...valid, EXPO_PUBLIC_SUPABASE_URL: "http://localhost:54321" })
       .status,
   ).toBe(1);
+});
+
+test("Apple Maps needs no token, while web preview validation still requires one", () => {
+  expect(check(valid).status).toBe(0);
+  expect(check({ ...valid, VYRO_RELEASE_PLATFORM: "web" }).status).toBe(1);
   expect(
-    check({ ...valid, EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN: "pk.local_map_fixture" })
-      .status,
+    check({
+      ...valid,
+      VYRO_RELEASE_PLATFORM: "web",
+      EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN: "pk.fixture.signature",
+    }).status,
+  ).toBe(0);
+  expect(
+    check({
+      ...valid,
+      VYRO_RELEASE_PLATFORM: "web",
+      EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN: "pk.local_map_fixture",
+    }).status,
   ).toBe(1);
 });
 

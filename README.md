@@ -1,6 +1,6 @@
 # VYRO · Move Beyond
 
-En norsk React Native-app for iOS og Android med Expo og TypeScript. Den nyere versjonen har lyst design, Mapbox, GPS-opptak i forgrunnen og Supabase-innlogging og deling. Eksempeldata og simuleringer holdes atskilt fra ekte GPS-økter. Fysisk verifikasjon på telefon gjenstår.
+En norsk React Native-app for iPhone med Expo og TypeScript. iOS bruker Apple Maps; Android/Samsung planlegges senere. Appen har lyst design, GPS-opptak og Supabase-innlogging og deling. Eksempeldata og simuleringer holdes atskilt fra ekte GPS-økter. Fysisk verifikasjon på iPhone gjenstår.
 
 ## Start
 
@@ -12,9 +12,9 @@ npm ci
 npm start
 ```
 
-Native kart bruker `@rnmapbox/maps` og krever et development build; Expo Go inneholder ikke Mapbox-modulen. Nettleserforhåndsvisningen kan brukes uten et native bygg.
+Native iOS-kart bruker Apple MapKit gjennom `react-native-maps@1.29.11`, uten kartnøkkel. Pakken er støttet i SDK 58-versjonen av Expo Go, men hele VYRO og bakgrunnsopptak må testes i et eget native bygg. En tidligere VYRO-installasjon trenger nytt bygg etter kartbyttet. Localhost er en web-forhåndsvisning med Mapbox, ikke Apple Maps.
 
-På en ny PC må `mobile/.env.local` kopieres fra det eksisterende lokale oppsettet eller fylles ut etter `mobile/.env.example`. Filen er ignorert av Git og følger ikke med når prosjektet hentes. Mapbox krever en offentlig `pk.`-nøkkel; Supabase krever prosjekt-URL og en publishable key. Se [Mapbox-oppsett](docs/mapbox-setup.md) og [Supabase-oppsett](docs/supabase-setup.md). Uten disse vises oppsettsmeldinger for kart og innlogging. Backend kjører hos Supabase og har ingen egen lokal startkommando i dette prosjektet.
+På en ny PC må `mobile/.env.local` kopieres fra det eksisterende lokale oppsettet eller fylles ut etter `mobile/.env.example`. Filen er ignorert av Git. Supabase krever prosjekt-URL og en publishable key. Bare web-forhåndsvisningen trenger Mapboxs offentlige `pk.`-nøkkel. Se [kartplattformene](docs/map-provider-options.md), [webkart-oppsett](docs/mapbox-setup.md) og [Supabase-oppsett](docs/supabase-setup.md). Backend kjører hos Supabase og har ingen egen lokal startkommando i dette prosjektet.
 
 ```sh
 npm run web -- --localhost --port 8081
@@ -31,10 +31,10 @@ På Windows, bruk `npm.cmd` hvis PowerShell blokkerer npm.ps1. Native iOS-bygg k
 ## Det som er implementert
 
 - Onboarding med aktivitet, ukemål, erfaring og valgfritt navn.
-- Hjem, Kart, Registrer, Løpere og Du med Expo Router; fremgang ligger under Du.
+- Hjem, Kart, Tren, Klubber og Du med Expo Router; fremgang ligger under Du.
 - Lyst tema som standard, valgfritt mørkt tema, norsk tekst og VYRO-identitet.
 - Reanimated-animasjoner og trykkfeedback med støtte for redusert bevegelse.
-- Mapbox på web og native, kartkontroller og rutevisning.
+- Apple Maps på iOS, Mapbox i web-forhåndsvisning, kartkontroller og rutevisning.
 - Separat simulator og GPS-opptak i forgrunnen, med pause, oppsummering og lokal lagring.
 - Kryptert lokal øktlagring og gjenoppretting i pauset tilstand etter omstart.
 - Supabase-innlogging, registrering med e-postbekreftelse og passordgjenoppretting; aktivitetsfeed, følgerelasjoner og eksplisitt deling av GPS-økter.

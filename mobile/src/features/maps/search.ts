@@ -1,49 +1,54 @@
-import { mapboxToken, hasMapbox } from "./config";
-export type Place = {
-  id: string;
-  name: string;
-  latitude: number;
-  longitude: number;
-};
-export async function searchPlaces(
+import { Platform } from "react-native";
+import { geocodeAsync } from "expo-location";
+import type { Place } from "./search.types";
+export type { Place } from "./search.types";
+
+export function searchPlaces(
   query: string,
   signal: AbortSignal,
 ): Promise<Place[]> {
-  if (!hasMapbox) throw new Error("Mapbox er ikke aktivert.");
-  const params = new URLSearchParams({
-    q: query.trim(),
-    access_token: mapboxToken,
-    autocomplete: "false",
-    limit: "5",
-    language: "nb",
-  });
-  const res = await fetch(
-    `https://api.mapbox.com/search/geocode/v6/forward?${params}`,
-    { signal },
-  );
-  if (!res.ok)
-    throw new Error(
-      res.status === 401 || res.status === 403
-        ? "Stedssøk er ikke tilgjengelig med denne karttilgangen."
-        : "Kunne ikke søke etter steder. Prøv igjen.",
+  const address = query.trim();
+  if (signal.aborted) return Promise.reject(new Error("Søket ble avbrutt."));
+  if (!address) return Promise.resolve([]);
+  if (Platform.OS !== "ios")
+    return Promise.reject(new Error("Stedssøk er tilgjengelig på iPhone."));
+  // Explicit address lookup through iOS's geocoder. No GPS permission,
+  // current-position upload, Mapbox token or extra native module is needed.
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    const finish = (error?: Error, places: Place[] = []) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      signal.removeEventListener("abort", abort);
+      if (error) reject(error);
+      else resolve(places);
+    };
+    const abort = () => finish(new Error("Søket ble avbrutt."));
+    const timer = setTimeout(
+      () => finish(new Error("Stedssøket tok for lang tid. Prøv igjen.")),
+      12_000,
     );
-  const data = await res.json();
-  return (data.features ?? []).flatMap(
-    (f: {
-      id: string;
-      properties?: { full_address?: string; name?: string };
-      geometry?: { coordinates?: number[] };
-    }) => {
-      const c = f.geometry?.coordinates;
-      if (!c || !Number.isFinite(c[0]) || !Number.isFinite(c[1])) return [];
-      return [
-        {
-          id: f.id,
-          name: f.properties?.full_address ?? f.properties?.name ?? "Sted",
-          longitude: c[0],
-          latitude: c[1],
-        },
-      ];
-    },
-  );
+    signal.addEventListener("abort", abort, { once: true });
+    geocodeAsync(address).then(
+      (results) =>
+        finish(
+          undefined,
+          results
+            .filter(
+              (result) =>
+                Number.isFinite(result.latitude) &&
+                Number.isFinite(result.longitude),
+            )
+            .slice(0, 5)
+            .map((result, index) => ({
+              id: `apple-${result.latitude}-${result.longitude}-${index}`,
+              name: address,
+              latitude: result.latitude,
+              longitude: result.longitude,
+            })),
+        ),
+      () => finish(new Error("Fant ikke adressen. Prøv med gatenavn og sted.")),
+    );
+  });
 }

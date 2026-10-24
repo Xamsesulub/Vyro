@@ -13,6 +13,7 @@ import {
   ScrollView,
   TextInput,
   Switch,
+  Platform,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
@@ -63,6 +64,7 @@ export default function Maps() {
   const searchController = useRef<AbortController | null>(null);
   useEffect(() => () => searchController.current?.abort(), []);
   async function search() {
+    if (searching || !query.trim()) return;
     searchController.current?.abort();
     const controller = new AbortController();
     searchController.current = controller;
@@ -173,6 +175,7 @@ export default function Maps() {
     >
       <LiveMap
         height={height}
+        attributionBottom={panelHeight + 12}
         overlays={routes}
         position={position}
         follow={follow}
@@ -587,37 +590,48 @@ export default function Maps() {
                 </MapText>
                 {(
                   [
-                    ["Stedsnavn og interessepunkter", poi, setPoi],
+                    [
+                      Platform.OS === "ios"
+                        ? "Interessepunkter"
+                        : "Stedsnavn og interessepunkter",
+                      poi,
+                      setPoi,
+                    ],
                     ["Høydekurver", contours, setContours],
-                    ["3D-terreng", threeD, setThreeD],
+                    [
+                      Platform.OS === "ios" ? "3D-visning" : "3D-terreng",
+                      threeD,
+                      setThreeD,
+                    ],
                   ] as const
-                ).map(([label, value, set]) => (
-                  <View
-                    key={label}
-                    style={{
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      minHeight: 48,
-                    }}
-                  >
-                    <MapText size={15}>{label}</MapText>
-                    <Switch
-                      accessibilityLabel={label}
-                      disabled={
-                        label === "Stedsnavn og interessepunkter" &&
-                        mapKind === "satellite"
-                      }
-                      value={
-                        label === "Stedsnavn og interessepunkter" &&
-                        mapKind === "satellite"
-                          ? false
-                          : value
-                      }
-                      onValueChange={set}
-                    />
-                  </View>
-                ))}
+                )
+                  .filter(
+                    ([label]) =>
+                      Platform.OS !== "ios" || label !== "Høydekurver",
+                  )
+                  .map(([label, value, set]) => (
+                    <View
+                      key={label}
+                      style={{
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        minHeight: 48,
+                      }}
+                    >
+                      <MapText size={15}>{label}</MapText>
+                      <Switch
+                        accessibilityLabel={label}
+                        disabled={set === setPoi && mapKind === "satellite"}
+                        value={
+                          set === setPoi && mapKind === "satellite"
+                            ? false
+                            : value
+                        }
+                        onValueChange={set}
+                      />
+                    </View>
+                  ))}
                 <MapText muted size={13}>
                   Varmekart er ikke tilgjengelig ennå. Det krever ekte
                   aktivitetsdata.

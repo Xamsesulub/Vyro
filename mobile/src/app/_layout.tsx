@@ -18,6 +18,7 @@ import { useTrackingStatus } from "../stores/useTrackingStatus";
 import { observeKilometerAlerts } from "../features/tracking/alerts";
 import { observeBackups } from "../features/backup/sync";
 import { cleanExports } from "../lib/shareFile";
+import { prewarmMap } from "../features/maps/prewarm";
 export { RouteError as ErrorBoundary } from "../components/RouteError";
 
 export default function RootLayout() {
@@ -38,6 +39,12 @@ export default function RootLayout() {
   useEffect(observeAuth, []);
   useEffect(observeBackups, []);
   useEffect(observeKilometerAlerts, []);
+  useEffect(() => {
+    if (!ready) return;
+    // Let the initial screen paint before preparing workers for the map tabs.
+    const timer = setTimeout(prewarmMap, 250);
+    return () => clearTimeout(timer);
+  }, [ready]);
   useEffect(() => {
     try {
       cleanExports();

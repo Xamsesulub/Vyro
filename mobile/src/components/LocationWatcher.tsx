@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { AppState } from "react-native";
-import * as Location from "expo-location";
+import { watchPosition } from "../features/tracking/watchPosition";
 import { useAppStore } from "../stores/useAppStore";
 import { useLocationStore } from "../stores/useLocationStore";
 import { useTrackingStatus } from "../stores/useTrackingStatus";
@@ -34,22 +34,11 @@ export function LocationWatcher() {
     (!ownerId || ownerId === userId);
   useEffect(() => {
     if (!active) return;
-    let sub: Location.LocationSubscription | null = null;
+    let sub: { remove(): void } | null = null;
     let cancelled = false;
-    Location.watchPositionAsync(
-      {
-        accuracy: Location.Accuracy.BestForNavigation,
-        distanceInterval: 2,
-        timeInterval: 1000,
-      },
-      ({ coords, timestamp }) => {
-        if (cancelled || Math.abs(Date.now() - timestamp) > 15000) return;
-        const fix = {
-          latitude: coords.latitude,
-          longitude: coords.longitude,
-          accuracy: coords.accuracy,
-          timestamp,
-        };
+    watchPosition(
+      (fix) => {
+        if (cancelled || Math.abs(Date.now() - fix.timestamp) > 15000) return;
         useLocationStore.getState().setPosition(fix);
         useAppStore.getState().gpsFix(fix);
       },

@@ -1,5 +1,21 @@
 # Leveranseplan
 
+## iPhone først og Apple Maps, 24. oktober 2026
+
+Brukeren har valgt iOS som første mobilplattform; Samsung/Android utsettes. iOS bruker nå Apple MapKit gjennom Expo SDK 58-kompatibel `react-native-maps@1.29.11`. Native Mapbox-pakke/plugin er fjernet. EAS-kontrollen krever bare Supabase-konfigurasjon for iOS, og native eksport retter seg mot iOS. Android-konfigurasjonen beholdes for senere arbeid, men Android er ikke en aktiv plattform eller godkjent leveranse.
+
+Rutelinjer, pauseseparasjon, turf-overlegg, blå markør, følgekamera, nord, 3D, Standard/Satellitt/Hybrid og innramming med panelmarg er implementert i Apple-adapteren. Adressesøk bruker Apples geokoding via Expo Location uten posisjonsinnsamling eller Mapbox-nøkkel. Høydekurvebryteren skjules på iOS fordi adapteren ikke har et eget slikt lag. «3D-visning» beskriver kameraet uten å love et eget terrenglag.
+
+Localhost beholder Mapbox som nettleserforhåndsvisning; det er ikke Apple Maps på web. iOS- og web-pakking og automatiserte kontroller består, men native kompilering, installasjon og fysisk iPhone-test gjenstår. Ingen hastighetsgevinst eller live satellittvisning på iPhone er målt. Se [kartvalget](map-provider-options.md) og [tester](testing.md).
+
+## Start og kartlasting, 24. oktober 2026
+
+Start/Fortsett bruker én felles oppstart med umiddelbar opptatt-tilstand, vern mot gjentatte trykk, ny tillatelseskontroll og tidsgrense. Web venter på posisjonstillatelse, ikke et presist GPS-fiks, før opptaket starter. Avslag eller manglende svar vises ved Start. Konto- og opptaksvalg kontrolleres igjen etter tillatelsesdialogen. Web-watcheren bruker nettleserens high-accuracy-valg og feilcallback; simulering og ekte GPS holdes atskilt.
+
+Treningskartet beholdes når tillatelsen endres. Mapbox-arbeidstråder forhåndslastes etter første skjerm og gjenbrukes ved bytte av skjerm. Et kjent posisjonsutsnitt brukes fra første kartkonstruksjon. Overgangen fra oppsett til den aktive treningsskjermen oppretter fortsatt én ny kartvisning. Ingen målt hastighetsgevinst på fysisk mobil er dokumentert.
+
+Ny livekontroll på denne PC-en bekrefter 200 for stil og TileJSON, men **429 på ekte satellittbilde**. Dette gjelder nå nettleserforhåndsvisningen. iOS er senere samme dag migrert til Apple Maps, som beskrevet ovenfor.
+
 ## Satellitt: undersøkelse og gjenoppretting, 23. oktober 2026
 
 Ny brukerpush `ef3d26c` er hentet og gjennomgått; klubber, stedsdeling, ny logo og Standard Satellite er beholdt. Dens dokumenterte live-feil er 429 på bildefliser selv om stil/TileJSON svarer 200. Kontogrunn og nåværende live-tilgang er fortsatt uavklart: Mapbox-nøkkelen finnes ikke i dette skymiljøet, og både Mapbox API og den offentlige testadressen avvises av miljøets nettverksproxy.

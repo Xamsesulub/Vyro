@@ -2,7 +2,7 @@
 
 ## Status
 
-TestFlight-oppsettet er klargjort lokalt. Ingen signert IPA er bygget, ingen Apple-opplasting er utført, og ingen TestFlight-invitasjon finnes fra denne økten. EAS CLI melder «Not logged in»; et faktisk byggforsøk stopper med «An Expo user account is required to proceed». Expo-prosjekt-ID, Apple-signering/App Store Connect-tilgang og de offentlige Supabase-/Mapbox-innstillingene mangler i skymiljøet. Kodekontroller, 129 tester, EAS-skjema og iOS JavaScript-eksport består; se `testing.md` for avgrensninger.
+TestFlight-oppsettet er klargjort lokalt. Ingen signert IPA er bygget, ingen Apple-opplasting er utført, og ingen TestFlight-invitasjon finnes fra denne økten. Ved siste kontokontroll meldte EAS CLI «Not logged in» og byggforsøket stoppet med «An Expo user account is required to proceed». Expo-prosjekt-ID, Apple-signering/App Store Connect-tilgang og offentlige Supabase-innstillinger må kobles til i skymiljøet. iOS bruker nå Apple Maps uten Mapbox-nøkkel. Oppdaterte testresultater og iOS JavaScript-eksport står i `testing.md`; det erstatter ikke et signert bygg.
 
 `mobile/eas.json` bruker butikkdistribusjon også for TestFlight, EAS-miljøet `production`, automatisk byggnummer fra EAS og fysisk iPhone som mål. Innsendingen velger riktig Apple-app interaktivt første gang. Ingen oppdiktet Expo-ID, Apple-ID eller demokonto er satt inn.
 
@@ -28,9 +28,8 @@ I Expo-prosjektets **Environment variables**, legg inn disse variablene for **pr
 | --- | --- |
 | `EXPO_PUBLIC_SUPABASE_URL` | HTTPS-adressen til det eksisterende Supabase-prosjektet som har VYRO-kontoene |
 | `EXPO_PUBLIC_SUPABASE_KEY` | Prosjektets offentlige `sb_publishable_`-nøkkel |
-| `EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN` | Offentlig `pk.`-token egnet for native; ikke en token begrenset til websidens URL |
 
-Disse verdiene bygges inn i appen. Synlighet «Sensitive» skjuler dem i byggelogger, men gjør dem ikke hemmelige i appen. Bruk aldri Supabase service-role/`sb_secret_` eller Mapbox `sk.` i `EXPO_PUBLIC_`. Gjeldende `@rnmapbox/maps` krever ikke en egen hemmelig download-token for standard SDK-versjon.
+Disse verdiene bygges inn i appen. Synlighet «Sensitive» skjuler dem i byggelogger, men gjør dem ikke hemmelige i appen. Bruk aldri Supabase service-role/`sb_secret_` eller andre serverhemmeligheter i `EXPO_PUBLIC_`. Apple MapKit på iOS trenger verken karttoken eller MapKit JS-oppsett. Mapbox er bare beholdt i web-forhåndsvisningen.
 
 Kontroller innstillingene uten å starte et skybygg:
 

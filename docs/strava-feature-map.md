@@ -1,5 +1,9 @@
 # VYRO – funksjonskart mot Strava
 
+## iOS først, 24. oktober 2026
+
+iPhone bruker Apple Maps med separate Standard/Satellitt/Hybrid-valg, lokale rute-/turf-overlegg, pausegrenser, følgekamera, nord og 3D-visning. Adressesøk bruker Apples geokoder, uten POI-autofullføring. Eget høydekurvelag er ikke tilgjengelig i iOS-adapteren. Android/Samsung er utsatt; web er fortsatt en Mapbox-forhåndsvisning. Automatiske tester og eksport består, fysisk iPhone-test gjenstår. Kartbyttet gir ikke automatisk offline kart, ruteplanlegging eller Strava-varmekart.
+
 ## Gjeldende tillegg, 23. oktober 2026
 
 Hjem har feed med treningsinnlegg og separate stedsbilder, oppretting og personsøk til høyre. Du har også Finn venner. Klubber erstatter Løpere: private klubber, eierinvitasjoner, aksept/avslag, medlemsliste og utmelding/fjerning er implementert. Tilhørende database og privat bildelagring er aktive i Supabase. Varsler og opptak har egen innstillingsside; treningskartet før start er større. VYROs farger og norsk språk beholdes. Dette er egen implementasjon inspirert av brukerens referanser, ikke kopierte Strava-assets.

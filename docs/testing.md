@@ -1,5 +1,22 @@
 # Testing
 
+## Apple Maps og iOS først, 24. oktober 2026
+
+- Typecheck og lint uten cache: bestått. Jest: **177 tester i 37 suiter** består. Den gamle native Mapbox-testen er erstattet av Apple-adaptertester. Nye kontroller dekker tre separate karttyper uten remount, ingen automatisk GPS fra kartet, pauseseparerte rute-/turf-linjer, panelmarg/attribusjon, første GPS-fiks, panorer/følg/recentrer, nytt rute-/søkevalg, nord og 3D. Native MapKit er mock i Jest.
+- Apples adressesøk testes med native mock: trimmet adresse, ingen posisjonstillatelse, tomt søk, avbrudd, sen respons og 12 sekunders tidsgrense. Det er eksplisitt geokoding, ikke komplett POI-autofullføring. Utgivelseskontrollen godtar iOS uten Mapbox-token og avviser fortsatt serverhemmeligheter; web-validering krever fortsatt sin offentlige kartnøkkel.
+- Metro/Hermes-eksport for iOS og web til ignorert `.expo/apple-map-export` består. `@rnmapbox/maps` og pluginen er fjernet, og iOS velger `LiveMap.ios.tsx`. Dette er JavaScript-pakking, ikke Xcode-kompilering eller signert IPA.
+- iOS-kildekart bekrefter Apple-entry, 34 React Native Maps-moduler, ingen Mapbox SDK/GL-moduler og native geokodingsadapter. Expo prebuild-konfigurasjon kan leses uten feil, aktive plattformer er iOS/web og Mapbox-pluginen er borte. Localhost-kartet åpner fortsatt i nettleseren; dette er ikke en native Apple-test.
+- Fysisk iPhone er **ikke testet**. Kontroller Standard/Satellitt/Hybrid, bildelasting, markør/følgekamera ved bevegelse, nord/3D, Apple-attribusjon over rutepanelet, stedssøk, start/pause/fortsett, tillatelsesdialog og bakgrunnsopptak. Sammenlign kald/varm kartstart på samme telefon/nett før hastighetsforbedring påstås.
+- Ingen skybygg, publisering, databaseendring eller ny Apple-konto ble opprettet. Eksisterende native VYRO trenger nytt bygg; web-forhåndsvisningen fortsetter å bruke Mapbox og har fortsatt den observerte satellitt-429-begrensningen.
+
+## Start og kartlasting, 24. oktober 2026
+
+- Typecheck og lint: bestått. Jest: **166 tester i 36 suiter** består. Nye tester dekker øyeblikkelig Start-lås, gjentatte trykk, timeout og nytt forsøk, kontobytte under tillatelse, tilbakekalt tillatelse ved Fortsett, simulering uten konto/GPS, nettleser uten Permissions API, sene callbacks, native tidsgrense og high-accuracy-watch med feil/avslutning. Karttester bekrefter første kamera ved kjent posisjon og gjenbruk av kartmotor ved posisjonsoppdatering.
+- Lokal eksport av web, iOS og Android til `.expo/start-map-export`: bestått. Dette er Metro/Hermes-pakking, ikke fysisk native installasjon eller GPS-verifikasjon.
+- Ekte nettleser på `localhost:8081/track`: Start viser «Starter …» straks; når posisjon ikke svarer blir knappen aktiv igjen med synlig forklaring. Standard-kartet vises. Simulering → Start → Pause → Fortsett → Pause → Fullfør ble kontrollert. Testutkastet ble forkastet, og GPS ble valgt igjen. Ingen testøkt er lagret eller publisert. Skjermbilder ligger lokalt under ignorert `mobile/.expo/start-map-check/`.
+- `node scripts/check-mapbox.cjs` mot ekte tjeneste: stilene og satellitt-TileJSON gir 200; én satellittflis gir **429**. Nåværende konto-/faktureringsårsak er ikke fastslått. Ingen nye nøkler, kontogrenseendringer eller automatiske gjentakelser.
+- Fysisk iPhone med Start, tillatelsesdialog, låst skjerm, dårlig GPS og Pause/Fortsett gjenstår. Apple-migreringen senere samme dag er beskrevet ovenfor. Android er utsatt. Ingen målt prosentvis ytelsesgevinst.
+
 ## Satellittgjenoppretting etter ny push, 23. oktober 2026
 
 - `ef3d26c` er hentet med fast-forward. Før endring bestod 144 Jest-tester og 318 lokale databasekontroller, samt typecheck og lint. Gjennomgangen omfatter kartets stil/livssyklus og endringene i klubber, stedsdeling og blandet feed; dette er ikke en ny kontroll av produksjonskontoer eller en full sikkerhetsrevisjon.

@@ -16,9 +16,12 @@ function releaseEnvironmentErrors(env) {
   if (!/^sb_publishable_[A-Za-z0-9_-]{20,}$/.test(key)) {
     errors.push("EXPO_PUBLIC_SUPABASE_KEY: set a public sb_publishable_ key.");
   }
-  if (!/^pk\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(mapbox)) {
+  if (
+    env.VYRO_RELEASE_PLATFORM === "web" &&
+    !/^pk\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(mapbox)
+  ) {
     errors.push(
-      "EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN: set a public pk. token for native maps.",
+      "EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN: set a public pk. token for the web preview.",
     );
   }
   for (const [name, value] of Object.entries(env)) {

@@ -110,15 +110,15 @@ export default function Profile() {
                 <IconButton
                   name="search"
                   label="Finn venner"
+                  variant="elevated"
                   onPress={() => router.push("/people")}
                 />
-                <Pressable
-                  accessibilityRole="button"
+                <IconButton
+                  name="settings"
+                  label="Innstillinger"
+                  variant="elevated"
                   onPress={() => router.push("/settings")}
-                  style={{ minHeight: 44, justifyContent: "center" }}
-                >
-                  <Txt size={14}>Innstillinger</Txt>
-                </Pressable>
+                />
               </View>
             </View>
             <View style={{ gap: 4 }}>

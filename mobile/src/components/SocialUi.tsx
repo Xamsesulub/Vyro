@@ -7,13 +7,17 @@ export function IconButton({
   label,
   onPress,
   disabled = false,
+  variant = "subtle",
 }: {
   name: IconName;
   label: string;
   onPress: () => void;
   disabled?: boolean;
+  variant?: "subtle" | "elevated";
 }) {
   const c = useTheme();
+  const elevated = variant === "elevated";
+  const size = elevated ? 48 : 46;
   return (
     <Pressable
       accessibilityRole="button"
@@ -22,16 +26,18 @@ export function IconButton({
       disabled={disabled}
       onPress={onPress}
       style={({ pressed }) => ({
-        width: 46,
-        height: 46,
-        borderRadius: 23,
+        width: size,
+        height: size,
+        borderRadius: size / 2,
+        flexShrink: 0,
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: pressed ? c.border : c.raised,
+        backgroundColor: pressed ? c.border : elevated ? c.surface : c.raised,
+        boxShadow: elevated ? "0 4px 18px #11182C14" : undefined,
         opacity: disabled ? 0.4 : 1,
       })}
     >
-      <Icon name={name} color={c.text} size={23} />
+      <Icon name={name} color={c.text} size={elevated ? 25 : 23} />
     </Pressable>
   );
 }

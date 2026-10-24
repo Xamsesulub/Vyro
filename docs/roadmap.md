@@ -1,5 +1,9 @@
 # Leveranseplan
 
+## Rund innstillingsknapp på Du, 24. oktober 2026
+
+Profilens tekstlenke til Innstillinger er erstattet av en rund knapp øverst til høyre, med et eget tannhjul i VYROs farger og svak skygge. Finn venner har samme knappestil. Begge har 48 × 48 trykkflate, tydelige tilgjengelighetsnavn og tilpasser seg mørk modus. Eksisterende navigasjon og innstillinger beholdes; ingen nye pakker eller native byggkrav.
+
 ## Stedssøk direkte øverst i kartet, 24. oktober 2026
 
 Kartets øverste søkefelt er nå et faktisk tekstfelt. Det separate søkepanelet nederst er fjernet. Søk sendes med tastaturets Søk-tast eller søkeknappen; treff og feil vises rett under feltet. iOS tilpasser resultatlistens plass til tastaturet, og kartknapper/rutepanel skjules under søket. Valg av treff lukker tastaturet og flytter kartet, mens rutepanelets åpne/lukkede tilstand beholdes. Redigering, avbryt og skjermbytte avbryter ventende søk, og sene svar ignoreres.

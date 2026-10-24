@@ -1,5 +1,11 @@
 # Testing
 
+## Rund innstillingsknapp på Du, 24. oktober 2026 (skymiljø)
+
+- Typecheck, lint uten cache, web-eksport og de tre eksisterende `auth-views`-testene består. Testene skriver fortsatt en React-advarsel om duplikatnøkkelen `runner` fra de to eksisterende kontobundne innstillingskomponentene; disse er ikke endret her.
+- Chromium ved 390 × 844 og 320 × 640: runde 48 × 48-knapper, riktig plassering og svak skygge er kontrollert visuelt. Tannhjulet åpner Innstillinger, retur til profil virker, mørk modus gir lyst ikon på mørk knapp, og Finn venner åpner personsøkets eksisterende innloggingskrav for gjester. Ingen JavaScript-sidefeil.
+- Ingen nye tester for den rent visuelle endringen. Nettleserkontrollen bruker lokal eksport uten tjenestenøkler; fysisk iPhone-visning er ikke verifisert. Ingen native pakker er endret, så endringen kan lastes i Expo Go.
+
 ## Ett stedssøk øverst i kartet, 24. oktober 2026 (skymiljø)
 
 - Typecheck og lint uten cache består. **17 tester i 4 suiter** består: fem nye skjermtester for direkte søk, valg av sted uten å opprette kartet på nytt, avbryt/redigering med sene svar, tomt søk/feil/nytt forsøk og opprydding ved avmontering; eksisterende Apple-søk-, Apple-kart- og rutepaneltester består også. Native kart/geokoding er mock i skjermtestene.

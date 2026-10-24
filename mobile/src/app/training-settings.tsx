@@ -1,12 +1,17 @@
-import { Switch, View } from "react-native";
+import { Platform, Switch, View } from "react-native";
 import { router } from "expo-router";
 import { Button, Chip, Screen, Txt, styles } from "../components/ui";
 import { useAppStore } from "../stores/useAppStore";
 import { backgroundSupported } from "../features/tracking/background";
+import { liveActivitySupported } from "../features/tracking/liveActivitySupport";
+import { useTrackingStatus } from "../stores/useTrackingStatus";
 
 export default function TrainingSettings() {
   const alerts = useAppStore((s) => s.kilometerAlerts);
   const background = useAppStore((s) => s.backgroundRecording);
+  const awake = useAppStore((s) => s.keepWorkoutAwake);
+  const liveActivity = useAppStore((s) => s.workoutLiveActivity);
+  const liveError = useTrackingStatus((s) => s.liveActivityError);
   const preferences = useAppStore((s) => s.preferences);
   const recording = useAppStore((s) => s.recording.status !== "idle");
   return (
@@ -49,6 +54,25 @@ export default function TrainingSettings() {
       </View>
       <View style={{ gap: 12 }}>
         <Txt size={20} weight="700">
+          Skjerm under økten
+        </Txt>
+        <View style={styles.row}>
+          <Txt style={{ flex: 1 }}>Hold treningskartet på</Txt>
+          <Switch
+            accessibilityLabel="Hold treningskartet på"
+            value={awake}
+            onValueChange={(keepWorkoutAwake) =>
+              preferences({ keepWorkoutAwake })
+            }
+          />
+        </View>
+        <Txt muted size={14}>
+          Hindrer automatisk skjermlås i Tren og Kart mens økten pågår eller er
+          pauset. Du kan fortsatt låse telefonen selv.
+        </Txt>
+      </View>
+      <View style={{ gap: 12 }}>
+        <Txt size={20} weight="700">
           Opptak med låst skjerm
         </Txt>
         {backgroundSupported ? (
@@ -60,7 +84,12 @@ export default function TrainingSettings() {
                 value={background}
                 disabled={recording}
                 onValueChange={(backgroundRecording) =>
-                  preferences({ backgroundRecording })
+                  preferences({
+                    backgroundRecording,
+                    ...(!backgroundRecording
+                      ? { workoutLiveActivity: false }
+                      : {}),
+                  })
                 }
               />
             </View>
@@ -72,8 +101,45 @@ export default function TrainingSettings() {
           </>
         ) : (
           <Txt muted size={14}>
-            Bakgrunnsopptak er tilgjengelig i mobilappen. I nettleseren må appen
-            være åpen under økten.
+            {Platform.OS === "web"
+              ? "I nettleseren må VYRO være åpen under økten."
+              : "Opptak med låst skjerm krever VYROs eget iPhone-bygg. Expo Go støtter ikke dette; økten pauses når appen legges i bakgrunnen."}
+          </Txt>
+        )}
+      </View>
+      <View style={{ gap: 12 }}>
+        <Txt size={20} weight="700">
+          Kart på låseskjermen
+        </Txt>
+        {liveActivitySupported ? (
+          <>
+            <View style={styles.row}>
+              <Txt style={{ flex: 1 }}>Vis kart og økttall</Txt>
+              <Switch
+                accessibilityLabel="Vis kart og økttall"
+                value={liveActivity}
+                disabled={recording}
+                onValueChange={(workoutLiveActivity) =>
+                  preferences({
+                    workoutLiveActivity,
+                    ...(workoutLiveActivity
+                      ? { backgroundRecording: true }
+                      : {}),
+                  })
+                }
+              />
+            </View>
+            <Txt muted size={14}>
+              {recording
+                ? "Avslutt økten før du endrer låseskjermvisningen."
+                : "Viser siste kartutsnitt, tid og distanse under GPS-økten. Slår også på opptak med låst skjerm. Kartet og posisjonen blir synlige på låseskjermen."}
+            </Txt>
+            {liveError && <Txt size={14}>{liveError}</Txt>}
+          </>
+        ) : (
+          <Txt muted size={14}>
+            Krever et nytt VYRO-bygg for iPhone med Liveaktiviteter. Visningen
+            er ikke tilgjengelig i Expo Go eller nettleseren.
           </Txt>
         )}
       </View>

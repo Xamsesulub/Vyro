@@ -53,6 +53,15 @@
           "cameraPermission": false,
           "microphonePermission": false
         }
+      ],
+      [
+        "expo-widgets",
+        {
+          "groupIdentifier": "group.app.vyro.mobile",
+          "bundleIdentifier": "app.vyro.mobile.widgets",
+          "enablePushNotifications": false,
+          "widgets": []
+        }
       ]
     ]
   }

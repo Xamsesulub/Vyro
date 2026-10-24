@@ -31,6 +31,21 @@ describe("simulator lifecycle", () => {
     expect(paused.seconds).toBe(60);
     expect(paused.distance).toBe(0);
   });
+  test("stationary recording increases average pace; Pause freezes both time and pace", () => {
+    const running = {
+      ...transition(initialRecording, "start", 1000),
+      distance: 1,
+      seconds: 300,
+    };
+    expect(pace(running.distance, running.seconds)).toBe("05:00");
+    const stationary = snapshot(running, 61000);
+    expect(stationary.distance).toBe(1);
+    expect(pace(stationary.distance, stationary.seconds)).toBe("06:00");
+    const paused = transition(stationary, "pause", 61000);
+    const later = snapshot(paused, 601000);
+    expect(later.seconds).toBe(360);
+    expect(pace(later.distance, later.seconds)).toBe("06:00");
+  });
   test("invalid transitions cannot reset or restart a session", () => {
     expect(transition(initialRecording, "resume")).toEqual(initialRecording);
     expect(transition(initialRecording, "finish")).toEqual(initialRecording);

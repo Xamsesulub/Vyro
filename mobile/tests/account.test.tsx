@@ -157,7 +157,7 @@ test("a rejected login restores the button and allows retry", async () => {
   expect(screen.getByRole("button", { name: "Logg inn" })).toBeEnabled();
   expect(router.replace).not.toHaveBeenCalled();
 });
-test("registration validates matching passwords, waits for confirmation, and supports resending", async () => {
+test("registration validates passwords, keeps login available, and supports resending", async () => {
   (auth.signUp as jest.Mock).mockResolvedValue({
     data: { session: null },
     error: null,
@@ -186,7 +186,11 @@ test("registration validates matching passwords, waits for confirmation, and sup
   expect(router.replace).not.toHaveBeenCalled();
   expect(useAuthStore.getState().session).toBeNull();
   expect(useAuthStore.getState().confirmationEmail).toBe("runner@example.com");
-  expect(screen.getByText("Bekreft e-posten")).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Logg inn" })).toBeEnabled();
+  expect(screen.queryByText("Bekreft e-posten")).toBeNull();
+  expect(
+    screen.getByText(/Registrering på nytt endrer ikke passordet/),
+  ).toBeTruthy();
   await screen.unmount();
   await render(<Account />);
   expect(screen.getByLabelText("E-post").props.value).toBe(

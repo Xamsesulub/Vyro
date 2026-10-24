@@ -24,7 +24,8 @@ export default function Account() {
   const [busy, setBusy] = useState("");
   const pending = useRef(false);
   const [message, setMessage] = useState("");
-  const unconfirmed = !!confirmationEmail && confirmationEmail === email.trim();
+  const pendingEmail =
+    !!confirmationEmail && confirmationEmail === email.trim();
   const register = mode === "register";
   const input = {
     borderWidth: 1,
@@ -107,7 +108,7 @@ export default function Account() {
           useAuthStore.setState({ confirmationEmail: email.trim() });
           setMode("login");
           setMessage(
-            "Du er ikke innlogget ennå. Åpne bekreftelseslenken på denne enheten, og gå tilbake til appen eller nettleseren du registrerte deg i. Sjekk også søppelpost. Har du allerede en bekreftet konto, kan du logge inn nedenfor.",
+            "For en ny konto: sjekk e-posten og søppelposten, og åpne bekreftelseslenken på denne enheten. Har du konto fra før, logg inn med det opprinnelige passordet. Registrering på nytt endrer ikke passordet ditt.",
           );
         } else {
           throw new Error("Missing session after sign-in");
@@ -143,9 +144,7 @@ export default function Account() {
             ? "Glemt passord"
             : register
               ? "Opprett konto"
-              : unconfirmed
-                ? "Bekreft e-posten"
-                : "Logg inn"}
+              : "Logg inn"}
       </Txt>
       {!supabase && (
         <Txt>Innlogging er ikke satt opp på denne enheten ennå.</Txt>
@@ -170,10 +169,10 @@ export default function Account() {
         </>
       ) : (
         <>
-          {unconfirmed && mode === "login" && (
+          {pendingEmail && mode === "login" && (
             <Txt muted>
-              Venter på bekreftelse av {confirmationEmail}. Registrering alene
-              logger deg ikke inn.
+              Har du konto fra før? Bruk det opprinnelige passordet, eller velg
+              «Glemt passord?».
             </Txt>
           )}
           {register && (
@@ -269,7 +268,7 @@ export default function Account() {
             disabled={!supabase || !!busy}
             onPress={() => void submit()}
           />
-          {unconfirmed && mode === "login" && (
+          {pendingEmail && mode === "login" && (
             <Button
               secondary
               title="Send bekreftelsen på nytt"

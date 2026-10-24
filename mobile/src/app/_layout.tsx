@@ -19,6 +19,8 @@ import { observeKilometerAlerts } from "../features/tracking/alerts";
 import { observeBackups } from "../features/backup/sync";
 import { cleanExports } from "../lib/shareFile";
 import { prewarmMap } from "../features/maps/prewarm";
+import { WorkoutAwake } from "../components/WorkoutAwake";
+import { observeWorkoutActivity } from "../features/tracking/liveActivity";
 export { RouteError as ErrorBoundary } from "../components/RouteError";
 
 export default function RootLayout() {
@@ -39,6 +41,7 @@ export default function RootLayout() {
   useEffect(observeAuth, []);
   useEffect(observeBackups, []);
   useEffect(observeKilometerAlerts, []);
+  useEffect(observeWorkoutActivity, []);
   useEffect(() => {
     if (!ready) return;
     // Let the initial screen paint before preparing workers for the map tabs.
@@ -73,6 +76,7 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <LocationWatcher />
+        <WorkoutAwake />
         <StatusBar style={theme === "dark" ? "light" : "dark"} />
         {!ready ? (
           <View

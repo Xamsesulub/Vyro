@@ -142,13 +142,10 @@ test("a local name and pending confirmation never unlock private screens", async
   });
   await render(<Screens />);
   expect(screen.getByText("Lokalt navn")).toBeTruthy();
-  expect(
-    screen.getByText("Venter på e-postbekreftelse · ikke innlogget"),
-  ).toBeTruthy();
+  expect(screen.getByText("Fullfør innlogging · ikke innlogget")).toBeTruthy();
   expect(screen.queryByText("Privat innhold")).toBeNull();
   expect(
-    screen.getAllByRole("button", { name: "Bekreft e-post eller logg inn" })
-      .length,
+    screen.getAllByRole("button", { name: "Logg inn" }).length,
   ).toBeTruthy();
 });
 

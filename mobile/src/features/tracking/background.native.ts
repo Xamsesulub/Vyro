@@ -1,5 +1,6 @@
 import * as Location from "expo-location";
 import * as TaskManager from "expo-task-manager";
+import Constants, { ExecutionEnvironment } from "expo-constants";
 import { appPersistence, useAppStore } from "../../stores/useAppStore";
 import { useAuthStore } from "../../stores/useAuthStore";
 import { useLocationStore } from "../../stores/useLocationStore";
@@ -7,7 +8,8 @@ import { useTrackingStatus } from "../../stores/useTrackingStatus";
 
 let lastCheckpoint = 0;
 const TASK = "vyro-private-workout-v1";
-export const backgroundSupported = true;
+export const backgroundSupported =
+  Constants.executionEnvironment !== ExecutionEnvironment.StoreClient;
 let operations: Promise<unknown> = Promise.resolve();
 const serial = <T>(action: () => Promise<T>) => {
   const next = operations.then(action);

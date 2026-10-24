@@ -20,8 +20,8 @@ export function AccountGate({ children }: PropsWithChildren) {
       <Screen>
         {!!confirmationEmail && (
           <Txt muted>
-            Du er ikke innlogget ennå. Bekreft e-posten for å bruke kontoen i
-            hele VYRO.
+            Du er ikke innlogget ennå. Har du konto fra før, bruk det
+            opprinnelige passordet. For en ny konto: sjekk e-posten.
           </Txt>
         )}
         <View
@@ -75,9 +75,7 @@ export function AccountGate({ children }: PropsWithChildren) {
         </Reveal>
         <Button
           title={
-            confirmationEmail
-              ? "Bekreft e-post eller logg inn"
-              : "Logg inn eller opprett konto"
+            confirmationEmail ? "Logg inn" : "Logg inn eller opprett konto"
           }
           icon="arrow"
           onPress={() => router.push("/account")}

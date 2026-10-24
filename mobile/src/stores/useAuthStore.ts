@@ -6,6 +6,8 @@ export const useAuthStore = create<{
   session: Session | null;
   ready: boolean;
   initializationSlow: boolean;
+  // A signup without a session can also be an existing, confirmed account.
+  // This remembers the address for the form; it is not a verified account status.
   confirmationEmail: string | null;
 }>()(() => ({
   session: null,

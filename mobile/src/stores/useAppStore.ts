@@ -27,6 +27,8 @@ type State = {
   goal: number;
   weeklyGoals: Record<string, WeeklyGoal>;
   backgroundRecording: boolean;
+  keepWorkoutAwake: boolean;
+  workoutLiveActivity: boolean;
   kilometerAlerts: "off" | "voice" | "vibration";
   backupOwners: string[];
   backupReceipts: Record<string, string>;
@@ -48,6 +50,8 @@ type State = {
         | "goal"
         | "weeklyGoals"
         | "backgroundRecording"
+        | "keepWorkoutAwake"
+        | "workoutLiveActivity"
         | "kilometerAlerts"
         | "backupOwners"
         | "experience"
@@ -77,6 +81,8 @@ type SavedState = Pick<
   | "goal"
   | "weeklyGoals"
   | "backgroundRecording"
+  | "keepWorkoutAwake"
+  | "workoutLiveActivity"
   | "kilometerAlerts"
   | "backupOwners"
   | "backupReceipts"
@@ -134,6 +140,8 @@ export const useAppStore = create<State>()(
       goal: 20,
       weeklyGoals: {},
       backgroundRecording: false,
+      keepWorkoutAwake: true,
+      workoutLiveActivity: false,
       kilometerAlerts: "off",
       backupOwners: [],
       backupReceipts: {},
@@ -314,6 +322,8 @@ export const useAppStore = create<State>()(
         goal: s.goal,
         weeklyGoals: s.weeklyGoals,
         backgroundRecording: s.backgroundRecording,
+        keepWorkoutAwake: s.keepWorkoutAwake,
+        workoutLiveActivity: s.workoutLiveActivity,
         kilometerAlerts: s.kilometerAlerts,
         backupOwners: s.backupOwners,
         backupReceipts: s.backupReceipts,

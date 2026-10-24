@@ -1,5 +1,23 @@
 # Testing
 
+## Skjerm og låseskjerm under trening, 24. oktober 2026
+
+- Typecheck og lint uten cache består. Hele Jest-samlingen bestod med **191 tester i 39 suiter**; deretter bestod 14 målrettede tester med to nye regresjoner for Expo Go og utlogging under en ventende ActivityKit-oppdatering (**193 unike tester totalt**). Widgetkontrollen med seks tilstander består også etter siste visningsendring. `git diff --check` består.
+- Regresjonstest bekrefter at 1 km / 300 sekunder gir 05:00/km; ett minutt stillstand under opptak gir 06:00/km; Pause fryser resultatet. Beregningen er uendret.
+- Testene dekker våken skjerm på Tren/Kart under opptak/pause og frigjøring ved skjermbytte, deaktivering, avslutt og kontobytte. Liveaktivitetstester dekker start/pause/fortsett/avslutt, begrenset oppdateringsfrekvens, avslag, brukerens avvisning, feil eier, simulering, kaldstart, sene kartbilder etter utlogging og kartlasting som feiler. Native API-er er mock i Jest.
+- SDK 58 iOS Metro/Hermes-eksport består. Widgetens separate runtime er bygget med `node node_modules/expo-widgets/scripts/build-bundle.mjs . ios .expo/widgets-runtime.bundle`. `node scripts/check-workout-widget.cjs` kontrollerer seks tilstander med den faktiske Babel-serialiseringen og Expos isolerte widget-runtime: opptak, pause, utdaterte data, mørk visning, dempet skjerm og manglende kart. Dette er ikke SwiftUI-rendering på en enhet.
+- Expo autolinking finner både `ExpoWidgets` og lokal `VyroWorkoutMap`. Introspeksjon bekrefter appgruppen `group.app.vyro.mobile`, `NSSupportsLiveActivities` og bakgrunnsmodus `location`. Liveaktiviteten opprettes ved kjøretid; `widgets`-listen skal være tom, ikke ha en hjemskjerm-widget uten størrelser.
+- **Ikke fysisk verifisert:** Swift-kompilering, signering, faktisk MapKit-kartbilde, Live Activity/Dynamic Island, bakgrunnsoppdateringer og skjermlås på iPhone. Expo Go starter uten å laste widget-modulen, men støtter bare våken skjerm og forgrunnsopptak. Ingen IPA eller skybygg er laget.
+- Enhetskontroll etter nytt bygg: slå på «Vis kart og økttall» i Varsler og opptak, gi bakgrunnsposisjon ved Start, gå en kort tur og lås telefonen. Kontroller kartets attribusjon, posisjon/rutesegmenter, oppdatering, liten/stor tekst og Always-On. Test Pause/Fortsett og at avslutt/utlogging fjerner aktivitet og bildefiler. Avvis Live Activities, nekt bakgrunnstillatelse, mist nett/GPS, og tvangsavslutt/gjenåpne; et gammelt opptak skal aldri fortsette automatisk. Slått-av telefon støttes ikke.
+- Nettleserkontroll av nye innstillinger ble forsøkt, men IAB svarte med CDP-tidsavbrudd på både eksisterende og ny lokal fane. En gammel Expo-server på IPv6-loopback ble funnet på samme port som den nye LAN-serveren og stoppet. Oppdatert Expo Go-server svarer med HTTP 200 og VYRO/SDK 58-manifest via IPv4. Ingen vellykket visuell nettlesertest påstås.
+
+## Registrering av eksisterende konto, 24. oktober 2026
+
+- Lesende kontroll i Supabase viste at den berørte kontoen allerede var bekreftet og hadde en tidligere vellykket innlogging. Ingen konto, passord eller bekreftelseskrav ble endret, og ingen e-post ble sendt fra denne kontrollen.
+- Et registreringssvar uten sesjon tolkes ikke lenger i skjermtekstene som bevis på at kontoen er ubekreftet. Konto, Hjem, Du og Innstillinger beholder vanlig innlogging. Teksten forklarer at eksisterende kontoer bruker det opprinnelige passordet, mens nye kontoer må sjekke e-post. Eksplisitt `email_not_confirmed` fra innlogging viser fortsatt riktig feilmelding.
+- Typecheck og lint består. **25 tester i 3 suiter** (`account`, `auth-views`, `auth-session`) består, inkludert videresending av bekreftelse, passordgjenoppretting og felles sesjon på tvers av skjermene. Fysisk innlogging etter denne tekstendringen avventer brukerens kontroll.
+- Egen SMTP er fortsatt avslått, bekreftet i dashboardet. E-postlevering til nye brukere er ikke ferdig konfigurert eller ende-til-ende-testet.
+
 ## Apple Maps og iOS først, 24. oktober 2026
 
 - Typecheck og lint uten cache: bestått. Jest: **177 tester i 37 suiter** består. Den gamle native Mapbox-testen er erstattet av Apple-adaptertester. Nye kontroller dekker tre separate karttyper uten remount, ingen automatisk GPS fra kartet, pauseseparerte rute-/turf-linjer, panelmarg/attribusjon, første GPS-fiks, panorer/følg/recentrer, nytt rute-/søkevalg, nord og 3D. Native MapKit er mock i Jest.

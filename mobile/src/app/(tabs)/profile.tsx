@@ -131,20 +131,14 @@ export default function Profile() {
                   : session
                     ? "Innlogget"
                     : confirmationEmail
-                      ? "Venter på e-postbekreftelse · ikke innlogget"
+                      ? "Fullfør innlogging · ikke innlogget"
                       : "Gjest · ikke innlogget"}
               </Txt>
             </View>
             {!!s.storageError && <Txt>{s.storageError}</Txt>}
             {!session && (
               <Button
-                title={
-                  !ready
-                    ? "Laster konto …"
-                    : confirmationEmail
-                      ? "Bekreft e-post"
-                      : "Logg inn"
-                }
+                title={!ready ? "Laster konto …" : "Logg inn"}
                 disabled={!ready}
                 secondary
                 onPress={() => router.push("/account")}

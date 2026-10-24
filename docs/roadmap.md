@@ -1,5 +1,19 @@
 # Leveranseplan
 
+## Skjerm under trening og iOS-låseskjerm, 24. oktober 2026
+
+Snitt/km beholder aktiv opptakstid delt på GPS-distanse. Stillstand under et løpende opptak øker snittet; Pause fryser tid og snitt. Ingen automatisk pause er innført.
+
+«Varsler og opptak» har nå «Hold treningskartet på» (på som standard, kun Tren/Kart under opptak eller pause). En separat, valgfri «Vis kart og økttall» aktiverer også bakgrunnsopptak. Liveaktiviteten viser tid, distanse, snitt/km og ekte MapKit-kartutsnitt med siste del av ruten. Den åpner Tren ved trykk og følger pause/fortsett/avslutt. Kartoppdateringer begrenses til hvert 30. sekund ved ruteendring; økttall sendes normalt hvert 15. sekund, mens SwiftUI driver tidtakeren. Utdaterte data markeres, og iOS styrer Always-On, personvernsladding og hvor lenge aktiviteten vises.
+
+Ny lokal Expo-modul `VyroWorkoutMap` genererer kartutsnitt uten egen posisjonsinnsamling. Kun gjeldende GPS-økt for innlogget eier kan vises; simuleringer og gjenopprettede, pausede økter starter ingen liveaktivitet. Midlertidige bilder ligger i appens private delte container, uten sikkerhetskopi, og ryddes ved avslutt/utlogging/ny oppstart. Kartbilder sendes ikke til VYROs backend.
+
+Koden, SDK-pakkingen og autolinking er kontrollert, men **nytt signert iPhone-bygg og fysisk verifikasjon gjenstår**. Liveaktiviteter og bakgrunns-GPS er ikke tilgjengelig i Expo Go; våken treningsskjerm er tilgjengelig der. Telefonen må være slått på. Ingen skybygg, App Store-publisering eller databaseendring er utført.
+
+## Tydelig innlogging etter registreringsforsøk, 24. oktober 2026
+
+Registrering uten sesjon kan gjelde en eksisterende, bekreftet konto. Appen hevder derfor ikke lenger automatisk at e-posten må bekreftes på nytt. Vanlig innlogging med det opprinnelige passordet er tydelig på Konto, Hjem, Du og Innstillinger; ekte bekreftelsesfeil og ny utsending støttes fortsatt. Ingen autentiseringsregler er endret. Typecheck, lint og 25 relevante tester består. Oppsett av SMTP for nye brukere gjenstår.
+
 ## iPhone først og Apple Maps, 24. oktober 2026
 
 Brukeren har valgt iOS som første mobilplattform; Samsung/Android utsettes. iOS bruker nå Apple MapKit gjennom Expo SDK 58-kompatibel `react-native-maps@1.29.11`. Native Mapbox-pakke/plugin er fjernet. EAS-kontrollen krever bare Supabase-konfigurasjon for iOS, og native eksport retter seg mot iOS. Android-konfigurasjonen beholdes for senere arbeid, men Android er ikke en aktiv plattform eller godkjent leveranse.

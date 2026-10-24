@@ -50,7 +50,7 @@ export default function Settings() {
             : session
               ? "Konto og utlogging"
               : confirmationEmail
-                ? "Bekreft e-post"
+                ? "Logg inn"
                 : "Logg inn eller opprett konto"
         }
         disabled={!ready}

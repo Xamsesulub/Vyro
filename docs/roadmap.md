@@ -4,7 +4,7 @@
 
 En første SwiftUI-klokkeapp for watchOS 10+ er implementert med Start/Pause/Fortsett/Avslutt, utendørs GPS, aktiv tid, distanse, tempo og HealthKit-puls. Innstillinger → Apple Watch gir eksplisitt kontokobling og synkronisering. Fullførte klokkeøkter importeres privat til eksisterende treningslogg, med validering, duplikatkvitteringer og bekreftelse først etter kryptert lagring på iPhone. Klokkens utboks beholdes ved forbindelses- eller lagringsfeil.
 
-216 tester, typecheck, lint, iOS/web JavaScript-eksport og generering/kontroll av Xcode-mål består. Watch-appen bestod usignert Swift-kompilering i GitHub Actions [40187025416](https://github.com/Xamsesulub/Vyro/actions/runs/40187025416). iPhone-bygget feilet under klargjøring av Swift-pakker. Byggesjekken er flyttet fra standard Xcode 16.4 til SDK 58s anbefalte Xcode 27.1, med compilerlogger og konkrete feilannotasjoner. Ny kjøring verifiserer rettingen. **iPhone-kompilering, signert bygg, TestFlight og fysisk iPhone-/Watch-test gjenstår**. Expo Go kan ikke kjøre klokkedelen. Se [klokkeoppsett og testplan](apple-watch.md).
+216 tester, typecheck, lint, iOS/web JavaScript-eksport og generering/kontroll av Xcode-mål består. **Både Watch-appen og hele iPhone-appen består usignert simulatorbygg** i GitHub Actions [40188672169](https://github.com/Xamsesulub/Vyro/actions/runs/40188672169), commit `0901069`. Det første iPhone-bygget stoppet under klargjøring av Swift-pakker på standard Xcode 16.4. Workflowen bruker nå SDK 58s anbefalte Xcode 27.1 og lagrer compilerlogger med konkrete feilannotasjoner. **Signert bygg, TestFlight og fysisk iPhone-/Watch-test gjenstår.** Expo Go kan ikke kjøre klokkedelen. Se [klokkeoppsett og testplan](apple-watch.md).
 
 ## Rund innstillingsknapp på Du, 24. oktober 2026
 

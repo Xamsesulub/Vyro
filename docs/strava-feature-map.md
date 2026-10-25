@@ -2,7 +2,7 @@
 
 ## Apple Watch, 25. oktober 2026
 
-En første watchOS-app med GPS-opptak, økttall, HealthKit-puls og privat synkronisering til iPhone er implementert. Ingen generell Health-import eller Garmin/Wear OS-støtte. Swift-kompilering, signering og fysisk klokketest gjenstår; funksjonen er ikke godkjent som ferdig enhetsstøtte. Se [klokkestatus og oppsett](apple-watch.md).
+En første watchOS-app med GPS-opptak, økttall, HealthKit-puls og privat synkronisering til iPhone er implementert. Ingen generell Health-import eller Garmin/Wear OS-støtte. Usignert iPhone-/Watch-simulatorbygg består i GitHub Actions. Signering og fysisk klokketest gjenstår; funksjonen er ikke godkjent som ferdig enhetsstøtte. Se [klokkestatus og oppsett](apple-watch.md).
 
 ## iOS først, 24. oktober 2026
 

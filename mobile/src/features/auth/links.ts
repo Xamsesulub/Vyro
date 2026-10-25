@@ -1,6 +1,6 @@
 import { createURL } from "expo-linking";
 import { supabase } from "../../lib/supabase";
-import { acceptAuthSession } from "../../stores/useAuthStore";
+import { acceptAuthSession, useAuthStore } from "../../stores/useAuthStore";
 
 export function authRedirectUrl() {
   return createURL("auth/callback", { scheme: "vyro" });
@@ -8,6 +8,16 @@ export function authRedirectUrl() {
 
 // Strict Mode and repeated link events must share a single code exchange.
 const exchanges = new Map<string, ReturnType<typeof exchangeCode>>();
+// A browser result and Expo Router can deliver the same callback sequentially.
+// Keep only the last successful result briefly, and never restore its session.
+let completed:
+  | {
+      code: string;
+      userId: string;
+      until: number;
+      result: { recovery: boolean };
+    }
+  | undefined;
 async function exchangeCode(code: string) {
   if (!supabase) throw new Error("Supabase is not configured");
   let recovery = false;
@@ -25,12 +35,30 @@ async function exchangeCode(code: string) {
   }
 }
 export function completeAuthCode(code: string) {
+  if (
+    completed?.code === code &&
+    completed.until > Date.now() &&
+    completed.userId === useAuthStore.getState().session?.user.id
+  )
+    return Promise.resolve(completed.result);
   const existing = exchanges.get(code);
   if (existing) return existing;
-  const exchange = exchangeCode(code).finally(() => exchanges.delete(code));
+  const exchange = exchangeCode(code)
+    .then((result) => {
+      const userId = useAuthStore.getState().session?.user.id;
+      if (userId)
+        completed = { code, userId, until: Date.now() + 60_000, result };
+      return result;
+    })
+    .finally(() => exchanges.delete(code));
   exchanges.set(code, exchange);
   return exchange;
 }
+
+useAuthStore.subscribe((next, previous) => {
+  if (next.session?.user.id !== previous.session?.user.id)
+    completed = undefined;
+});
 
 /** Older confirmation/resend links can still use a token fragment. */
 export function authFragment(url: string | null) {

@@ -10,7 +10,8 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "app.vyro.mobile"
+      "bundleIdentifier": "app.vyro.mobile",
+      "usesAppleSignIn": true
     },
     "android": {
       "adaptiveIcon": {
@@ -63,7 +64,9 @@
           "widgets": []
         }
       ],
-      "@bacons/apple-targets"
+      "@bacons/apple-targets",
+      "expo-web-browser",
+      "expo-apple-authentication"
     ]
   }
 }

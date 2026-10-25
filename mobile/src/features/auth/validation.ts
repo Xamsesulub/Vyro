@@ -6,6 +6,7 @@ export function validateAccount(input: {
   password: string;
   confirmation: string;
   name: string;
+  lastName?: string;
 }): string | undefined {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.email.trim()))
     return "Skriv inn en gyldig e-postadresse.";
@@ -14,6 +15,8 @@ export function validateAccount(input: {
   if (input.mode === "register") {
     if (!input.name.trim() || input.name.trim().length > 50)
       return "Skriv inn navnet ditt (maks 50 tegn).";
+    if ((input.lastName?.trim().length ?? 0) > 50)
+      return "Etternavnet kan ha maks 50 tegn.";
     return validatePassword(input.password, input.confirmation);
   }
 }
@@ -32,6 +35,14 @@ export function authErrorMessage(error: unknown): string {
   if (message?.includes("VYRO_REQUEST_TIMEOUT"))
     return "Serveren brukte for lang tid. Sjekk forbindelsen og prøv igjen.";
   switch (code) {
+    case "provider_disabled":
+    case "oauth_provider_not_supported":
+      return "Denne innloggingsmåten er ikke tilgjengelig ennå. Bruk e-post.";
+    case "oauth_failed":
+    case "bad_oauth_callback":
+    case "bad_oauth_state":
+    case "bad_id_token":
+      return "Innloggingen kunne ikke bekreftes. Prøv igjen, eller bruk e-post.";
     case "invalid_credentials":
       return "Feil e-post eller passord.";
     case "email_not_confirmed":

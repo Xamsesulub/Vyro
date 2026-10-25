@@ -113,6 +113,26 @@ test("a failed link cannot be mistaken for a session", async () => {
   expect(unsubscribe).toHaveBeenCalledTimes(1);
 });
 
+test("a later Router delivery of the browser callback does not reuse a consumed code or restore logout", async () => {
+  const session = { user: { id: "oauth-runner" } } as Session;
+  (auth.exchangeCodeForSession as jest.Mock).mockResolvedValue({
+    data: { session },
+    error: null,
+  });
+  await completeAuthCode("browser-and-router-code");
+  await completeAuthCode("browser-and-router-code");
+  expect(auth.exchangeCodeForSession).toHaveBeenCalledTimes(1);
+  acceptAuthSession(null);
+  (auth.exchangeCodeForSession as jest.Mock).mockResolvedValue({
+    data: { session: null },
+    error: { code: "flow_state_not_found" },
+  });
+  await expect(
+    completeAuthCode("browser-and-router-code"),
+  ).rejects.toMatchObject({ code: "flow_state_not_found" });
+  expect(useAuthStore.getState().session).toBeNull();
+});
+
 test("a confirmed email session reaches every screen before navigation, even without an SDK event", async () => {
   const session = { user: { id: "confirmed-runner" } } as Session;
   useAuthStore.setState({ confirmationEmail: "runner@example.com" });

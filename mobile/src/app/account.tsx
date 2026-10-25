@@ -11,12 +11,18 @@ import {
 } from "../features/auth/validation";
 import { authRedirectUrl } from "../features/auth/links";
 import { AuthLoading } from "../components/AuthLoading";
+import { SocialSignIn } from "../components/SocialSignIn";
+import { AccountLastName } from "../components/AccountLastName";
+import { signInWithApple } from "../features/auth/apple";
+import { signInWithBrowser } from "../features/auth/socialBrowser";
+import type { SocialProvider } from "../features/auth/socialConfig";
 
 export default function Account() {
   const c = useTheme();
   const { session, ready, confirmationEmail } = useAuthStore();
   const [mode, setMode] = useState<AccountMode>("login");
   const [name, setName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState(confirmationEmail ?? "");
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
@@ -58,6 +64,7 @@ export default function Account() {
     const validation = validateAccount({
       mode,
       name,
+      lastName,
       email,
       password,
       confirmation,
@@ -90,7 +97,10 @@ export default function Account() {
               email: email.trim(),
               password,
               options: {
-                data: { display_name: name.trim() },
+                data: {
+                  display_name: name.trim(),
+                  ...(lastName.trim() ? { last_name: lastName.trim() } : {}),
+                },
                 emailRedirectTo: authRedirectUrl(),
               },
             })
@@ -125,6 +135,19 @@ export default function Account() {
     setVisible(false);
   }
 
+  function socialSignIn(provider: SocialProvider) {
+    void run(
+      `Åpner ${provider === "apple" ? "Apple" : "Google"} …`,
+      async () => {
+        const result =
+          provider === "apple"
+            ? await signInWithApple()
+            : await signInWithBrowser("google");
+        if (result === "signed_in") router.replace("/(tabs)");
+      },
+    );
+  }
+
   if (!ready && !session) return <AuthLoading />;
 
   return (
@@ -153,6 +176,7 @@ export default function Account() {
         <>
           <Txt>Du er innlogget i hele VYRO.</Txt>
           <Txt>{session.user.email}</Txt>
+          <AccountLastName key={session.user.id} user={session.user} />
           <Button
             title={busy || "Logg ut"}
             disabled={!!busy}
@@ -169,6 +193,12 @@ export default function Account() {
         </>
       ) : (
         <>
+          {mode !== "reset" && (
+            <SocialSignIn
+              disabled={!!busy || !supabase}
+              onPress={socialSignIn}
+            />
+          )}
           {pendingEmail && mode === "login" && (
             <Txt muted>
               Har du konto fra før? Bruk det opprinnelige passordet, eller velg
@@ -176,17 +206,31 @@ export default function Account() {
             </Txt>
           )}
           {register && (
-            <TextInput
-              accessibilityLabel="Visningsnavn"
-              placeholder="Navnet ditt"
-              placeholderTextColor={c.muted}
-              value={name}
-              onChangeText={setName}
-              editable={!busy}
-              maxLength={50}
-              autoComplete="name"
-              style={input}
-            />
+            <>
+              <TextInput
+                accessibilityLabel="Visningsnavn"
+                placeholder="Visningsnavn"
+                placeholderTextColor={c.muted}
+                value={name}
+                onChangeText={setName}
+                editable={!busy}
+                maxLength={50}
+                autoComplete="name"
+                style={input}
+              />
+              <TextInput
+                accessibilityLabel="Etternavn (valgfritt)"
+                placeholder="Etternavn (valgfritt)"
+                placeholderTextColor={c.muted}
+                value={lastName}
+                onChangeText={setLastName}
+                editable={!busy}
+                maxLength={50}
+                autoComplete="family-name"
+                autoCapitalize="words"
+                style={input}
+              />
+            </>
           )}
           <TextInput
             accessibilityLabel="E-post"
@@ -247,8 +291,9 @@ export default function Account() {
           )}
           {register && (
             <Txt muted size={13}>
-              Minst 8 tegn i passordet. Navnet ditt blir synlig for andre
-              innloggede løpere. Økter deles bare når du selv velger det.
+              Minst 8 tegn i passordet. Visningsnavnet er synlig for andre
+              innloggede løpere. Etternavnet er valgfritt og privat. Økter deles
+              bare når du selv velger det.
             </Txt>
           )}
           {!!message && (

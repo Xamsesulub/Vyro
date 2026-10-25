@@ -1,5 +1,12 @@
 # Testing
 
+## Google, Apple og valgfritt etternavn, 25. oktober 2026
+
+- Hele Jest-pakken består: **263 tester / 49 suiter**. Typecheck og lint uten varsler består. 57 av testene dekker konto, autentisering og de nye innloggingsvalgene: avbrutt/avvist OAuth, feil returadresse, PKCE-feil, Apples hash/original-nonce og serverbekreftede sesjon, skjulte leverandører før oppsett, Expo Go-avgrensning og etternavn som kan utelates, endres og fjernes. En sen duplisert callback utveksler ikke engangskoden på nytt og gjenoppretter ikke en utlogget konto.
+- Expo SDK 58-konfigurasjonskontroll bekrefter `usesAppleSignIn`, `com.apple.developer.applesignin = [Default]` og lokalisering av Apple-knappen. iOS Hermes- og webeksport består i `.expo/social-auth-validation`, med offentlige testverdier og leverandørflagg aktivert kun i valideringsprosessen.
+- Nettleserkontroll ved 390 × 844 og 320 × 640 viser begge leverandørknappene, separat valgfritt etternavn, ingen telefonfelt og fungerende navigering til glemt passord uten JavaScript-feil. Testen bruker en oppdiktet Supabase-adresse med nettverk blokkert og oppretter ingen kontoer. Skjermbilder ligger midlertidig i `/tmp/vyro-social-*.png`.
+- **Ikke verifisert:** ekte Google-/Apple-innlogging, kontokobling i eksisterende Supabase, fysisk iPhone, signering eller ny Xcode-kompilering. Eieren har ingen Google Cloud-/Apple Developer-konfigurasjon ennå. Leverandørene er av som standard. Se [kontooppsett og akseptansetest](social-login.md).
+
 ## Bakgrunnsopptak og appbytte, 25. oktober 2026
 
 - **233 tester i 45 suiter består.** Nye kontroller dekker AppState-overganger uten pause når native bakgrunnsopptak er aktivt, GPS-/tidssjekkpunkter mens timere er suspendert, manuell pause, tjeneste som ikke starter, tapt tillatelse/tjeneste, forsinkede kontrollsvar, Expo Go-fallback, eksisterende avvalg og innstillingsflyt. Ingen native posisjonstjeneste eller fysisk iPhone brukes i Jest.

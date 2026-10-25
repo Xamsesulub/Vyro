@@ -14,6 +14,13 @@ test("rejects invalid registration locally but accepts existing short passwords 
     confirmation: "long-password",
   };
   expect(validateAccount(input)).toBeUndefined();
+  expect(validateAccount({ ...input, lastName: "   " })).toBeUndefined();
+  expect(
+    validateAccount({ ...input, lastName: "Ødegård-Hansen" }),
+  ).toBeUndefined();
+  expect(validateAccount({ ...input, lastName: "x".repeat(51) })).toContain(
+    "Etternavnet",
+  );
   expect(validateAccount({ ...input, email: "wrong" })).toContain("e-post");
   expect(validateAccount({ ...input, name: "  " })).toContain("navnet");
   expect(validateAccount({ ...input, confirmation: "different" })).toContain(

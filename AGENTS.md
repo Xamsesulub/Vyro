@@ -1,5 +1,6 @@
 # VYRO development
 
+- When resuming on another machine, read [CODEX_HANDOFF.md](CODEX_HANDOFF.md) for the 25 October 2026 handoff and next steps. Verify current repository/account state; the handoff is a dated snapshot.
 - This is a native React Native / Expo mobile project, not a website.
 - Work in `mobile`; follow its version-specific Expo guidance.
 - Keep user-selected stack: TypeScript, Expo, native maps, Reanimated, Zustand, then Supabase/PostgreSQL and Expo Location in later phases.

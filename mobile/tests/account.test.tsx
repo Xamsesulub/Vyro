@@ -203,6 +203,110 @@ test("registration validates passwords, keeps login available, and supports rese
     options: { emailRedirectTo: "vyro://auth/callback" },
   });
 });
+
+test("signup keeps an optional surname separate from the public display name and has no phone field", async () => {
+  (auth.signUp as jest.Mock).mockResolvedValue({
+    data: { session: null },
+    error: null,
+  });
+  await render(<Account />);
+  await tap("Ny her? Opprett konto");
+  await fillLogin();
+  await fireEvent.changeText(
+    screen.getByLabelText("Visningsnavn"),
+    "  Xamse  ",
+  );
+  await fireEvent.changeText(
+    screen.getByLabelText("Etternavn (valgfritt)"),
+    "  Sulub  ",
+  );
+  await fireEvent.changeText(
+    screen.getByLabelText("Bekreft passord"),
+    "a-long-password",
+  );
+  expect(screen.queryByLabelText(/telefon/i)).toBeNull();
+  expect(
+    screen.queryByRole("button", { name: "Fortsett med Google" }),
+  ).toBeNull();
+  expect(
+    screen.queryByRole("button", { name: "Fortsett med Apple" }),
+  ).toBeNull();
+  await tap("Opprett konto");
+  expect(auth.signUp).toHaveBeenCalledWith(
+    expect.objectContaining({
+      options: {
+        data: { display_name: "Xamse", last_name: "Sulub" },
+        emailRedirectTo: "vyro://auth/callback",
+      },
+    }),
+  );
+});
+
+test("a social account can save or remove its private surname without changing its display name", async () => {
+  const user = {
+    id: "social-runner",
+    app_metadata: {},
+    aud: "authenticated",
+    created_at: "2026-10-25T00:00:00Z",
+    user_metadata: { display_name: "Runner", last_name: "Old" },
+  } as Session["user"];
+  useAuthStore.setState({ session: { user } as Session });
+  (auth.updateUser as jest.Mock).mockImplementation(async ({ data }) => ({
+    data: {
+      user: { ...user, user_metadata: { ...user.user_metadata, ...data } },
+    },
+    error: null,
+  }));
+  await render(<Account />);
+  await fireEvent.changeText(
+    screen.getByLabelText("Etternavn (valgfritt)"),
+    "  Nytt  ",
+  );
+  await tap("Lagre etternavn");
+  expect(auth.updateUser).toHaveBeenLastCalledWith({
+    data: { last_name: "Nytt" },
+  });
+  expect(useAuthStore.getState().session?.user.user_metadata).toEqual({
+    display_name: "Runner",
+    last_name: "Nytt",
+  });
+  await fireEvent.changeText(
+    screen.getByLabelText("Etternavn (valgfritt)"),
+    "",
+  );
+  await tap("Lagre etternavn");
+  expect(auth.updateUser).toHaveBeenLastCalledWith({
+    data: { last_name: null },
+  });
+  expect(screen.getByLabelText("Etternavn (valgfritt)").props.value).toBe("");
+});
+
+test("a late surname save cannot restore a logged-out account", async () => {
+  const user = { id: "old-runner", user_metadata: {} } as Session["user"];
+  useAuthStore.setState({ session: { user } as Session });
+  let finish!: (value: unknown) => void;
+  (auth.updateUser as jest.Mock).mockImplementation(
+    () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+  );
+  await render(<Account />);
+  await fireEvent.changeText(
+    screen.getByLabelText("Etternavn (valgfritt)"),
+    "Privat",
+  );
+  await tap("Lagre etternavn");
+  await act(() => useAuthStore.setState({ session: null }));
+  await act(() =>
+    finish({
+      data: { user: { ...user, user_metadata: { last_name: "Privat" } } },
+      error: null,
+    }),
+  );
+  expect(useAuthStore.getState().session).toBeNull();
+  expect(screen.queryByLabelText("Etternavn (valgfritt)")).toBeNull();
+});
 test("password recovery requests the callback and does not disclose account existence", async () => {
   (auth.resetPasswordForEmail as jest.Mock).mockResolvedValue({ error: null });
   await render(<Account />);

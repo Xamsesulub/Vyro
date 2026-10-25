@@ -1,5 +1,9 @@
 # Leveranseplan
 
+## Google, Apple og etternavn, 25. oktober 2026
+
+Valgfritt etternavn ved e-postregistrering og redigering/fjerning i konto er implementert. Etternavn holdes utenfor den delte profiltabellen; visningsnavnet velges separat. Ingen telefoninnsamling. Google er forberedt med Supabase PKCE via systemnettleser; Apple med native ID-token/nonce på iPhone og OAuth på web. Knappene er skjult til leverandørene er konfigurert og offentlige byggeflagg aktiveres. Eieren har foreløpig verken Google Cloud-prosjekt eller Apple Developer-medlemskap. Kontokonfigurasjon, signering, fysisk ende-til-ende-test og produksjonsaktivering gjenstår. Se [social-login.md](social-login.md).
+
 ## Opptak med låst skjerm og appbytte, 25. oktober 2026
 
 Bakgrunnsopptak er nå standard i nye installasjoner og synlig før Start; lagrede avvalg beholdes. Native tjenestestart bekreftes, opptakstid oppdateres etter suspenderte timere, og tapt tjeneste/tillatelse gir pause med bevart rute. Expo Go viser at eget VYRO-bygg kreves. En intern `preview`-profil er klargjort for fysisk iPhone uten Metro-server. 233 tester, typecheck, lint, iOS/web-eksport og konfigurasjonskontroll består. Signering, installasjon og fysisk skjermlås-/appbyttetest gjenstår; Expo-innlogging og Apple-signering er ikke koblet til skymiljøet. Se [oppsett og testplan](background-recording.md).

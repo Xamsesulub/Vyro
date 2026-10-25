@@ -35,7 +35,8 @@ concurrency:
 
 jobs:
   watch-simulator:
-    runs-on: macos-15
+    # Expo SDK 58 uses Xcode 27.1. macos-15 still defaults to Xcode 16.4.
+    runs-on: xcode-27
     timeout-minutes: 45
     defaults:
       run:
@@ -43,8 +44,15 @@ jobs:
     env:
       CI: "1"
       EXPO_NO_TELEMETRY: "1"
+      DEVELOPER_DIR: /Applications/Xcode_27.1.app/Contents/Developer
     steps:
       - uses: actions/checkout@v4
+      - name: Verify Xcode 27.1 and simulator SDKs
+        run: |
+          xcodebuild -version
+          xcrun swift --version
+          xcrun --sdk iphonesimulator --show-sdk-version
+          xcrun --sdk watchsimulator --show-sdk-version
       - uses: actions/setup-node@v4
         with:
           node-version: "24"

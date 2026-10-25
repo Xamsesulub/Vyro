@@ -8,7 +8,12 @@ const escape = (text) =>
 for (const file of process.argv.slice(2)) {
   if (!fs.existsSync(file)) continue;
   const lines = fs.readFileSync(file, "utf8").split(/\r?\n/);
-  const errors = [...new Set(lines.filter((line) => /\b(?:fatal )?error:/.test(line)))];
+  // Package-resolution errors explain the cause on the following lines.
+  const errors = [...new Set(lines.flatMap((line, index) =>
+    /\b(?:fatal )?error:/.test(line)
+      ? [lines.slice(index, index + 8).join("\n").trim().slice(0, 10000)]
+      : [],
+  ))];
   const selected = errors.slice(0, 15);
   for (const error of selected) console.log(`::error::${escape(error)}`);
   if (process.env.GITHUB_STEP_SUMMARY && selected.length) {

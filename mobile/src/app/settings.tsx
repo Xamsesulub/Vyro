@@ -34,6 +34,11 @@ export default function Settings() {
         secondary
         onPress={() => router.push("/training-settings")}
       />
+      <Button
+        title="Apple Watch"
+        secondary
+        onPress={() => router.push("/apple-watch")}
+      />
       {!!storageError && (
         <Button
           title="Prøv lokal lagring igjen"

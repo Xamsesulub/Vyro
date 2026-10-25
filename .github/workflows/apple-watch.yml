@@ -1,0 +1,58 @@
+name: Apple Watch build
+
+on:
+  pull_request:
+    paths:
+      [
+        "mobile/targets/**",
+        "mobile/modules/**",
+        "mobile/app.json",
+        "mobile/package*.json",
+        "mobile/scripts/check-watch-target.cjs",
+        ".github/workflows/apple-watch.yml",
+      ]
+  push:
+    branches: [main]
+    paths:
+      [
+        "mobile/targets/**",
+        "mobile/modules/**",
+        "mobile/app.json",
+        "mobile/package*.json",
+        "mobile/scripts/check-watch-target.cjs",
+        ".github/workflows/apple-watch.yml",
+      ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: watch-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  watch-simulator:
+    runs-on: macos-15
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: mobile
+    env:
+      CI: "1"
+      EXPO_NO_TELEMETRY: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npx expo prebuild --platform ios --no-install
+      - run: node scripts/check-watch-target.cjs
+      - name: Compile the SwiftUI watch app without signing
+        run: xcodebuild -project ios/VYRO.xcodeproj -target VyroWatch -sdk watchsimulator -configuration Debug CODE_SIGNING_ALLOWED=NO SYMROOT="$RUNNER_TEMP/vyro-watch-build" build
+      - run: pod install --project-directory=ios
+      - name: Compile the iPhone app and native WatchConnectivity bridge
+        run: xcodebuild -workspace ios/VYRO.xcworkspace -scheme VYRO -configuration Debug -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build

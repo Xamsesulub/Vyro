@@ -31,6 +31,8 @@ type State = {
   workoutLiveActivity: boolean;
   kilometerAlerts: "off" | "voice" | "vibration";
   backupOwners: string[];
+  watchOwners: string[];
+  watchReceipts: string[];
   backupReceipts: Record<string, string>;
   hiddenBackups: string[];
   experience: string;
@@ -85,6 +87,8 @@ type SavedState = Pick<
   | "workoutLiveActivity"
   | "kilometerAlerts"
   | "backupOwners"
+  | "watchOwners"
+  | "watchReceipts"
   | "backupReceipts"
   | "hiddenBackups"
   | "experience"
@@ -144,6 +148,8 @@ export const useAppStore = create<State>()(
       workoutLiveActivity: false,
       kilometerAlerts: "off",
       backupOwners: [],
+      watchOwners: [],
+      watchReceipts: [],
       backupReceipts: {},
       hiddenBackups: [],
       experience: "Litt erfaring",
@@ -326,6 +332,8 @@ export const useAppStore = create<State>()(
         workoutLiveActivity: s.workoutLiveActivity,
         kilometerAlerts: s.kilometerAlerts,
         backupOwners: s.backupOwners,
+        watchOwners: s.watchOwners,
+        watchReceipts: s.watchReceipts,
         backupReceipts: s.backupReceipts,
         hiddenBackups: s.hiddenBackups,
         experience: s.experience,

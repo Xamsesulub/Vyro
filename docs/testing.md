@@ -1,5 +1,13 @@
 # Testing
 
+## Apple Watch, 25. oktober 2026 (skymiljø)
+
+- Hele Jest-samlingen består: **216 tester i 42 suiter**, inkludert 18 nye tilfeller for klokkeformat, avvisning av feil eier/simulering/ugyldige koordinater og tid, distanseberegning, pause-/GPS-gap, duplikater, tapt bekreftelse, lagringsfeil og kontobytte mens en overføring pågår. Synkroniseringstester bruker en transport-/lagringsdobbel; de kjører ikke WatchConnectivity.
+- Typecheck, lint uten cache, Expo SDK 58 iOS Hermes-eksport og web-eksport består. Watch-skjermen i web viser at eget bygg kreves, med fungerende navigasjon fra Innstillinger og tilbake, ved 390 × 844 og 320 × 640. Ingen JavaScript-sidefeil. Ingen native forbindelse påstås fra nettleserkontrollen.
+- Prebuild i en isolert kopi under `/tmp` består. `check-watch-target.cjs` verifiserer `VyroWatch`, fire Swift-kilder via Xcodes synkroniserte mapper, watchOS 10, companion bundle ID, appversjon, HealthKit-rettighet, tillatelsestekster, bakgrunnsmodus, byggavhengighet og innbygging i iPhone-appen. Eksisterende `ExpoWidgetsTarget` består. EAS-konfigurasjonen har begge tilleggsmålene. Autolinking finner `VyroWatchModule`, `VyroWatchAppDelegate`, `VyroWorkoutMap` og `ExpoWidgets`.
+- De fem nye Swift-filene er syntaksanalysert med tree-sitter-swift. **Dette er ikke Swift-typekontroll, Xcode-kompilering eller signering.** macOS-workflowen for Watch-/iPhone-kompilering er skrevet, men ikke kjørt her. `ios.appleTeamId` er fortsatt ikke konfigurert; ingen Apple-identifikator eller signeringsfil er diktet opp.
+- Ingen nye native enhetstester, faktisk HealthKit-tillatelse, puls/GPS-måling, session-gjenoppretting, OS-filbeskyttelse, batterimåling eller fysisk WatchConnectivity-overføring er verifisert i dette Linux-miljøet. Ingen IPA, TestFlight-opplasting eller databaseendring er laget. Følg [fysisk testplan og byggekrav](apple-watch.md) før klokkestøtte godkjennes for bruk.
+
 ## Rund innstillingsknapp på Du, 24. oktober 2026 (skymiljø)
 
 - Typecheck, lint uten cache, web-eksport og de tre eksisterende `auth-views`-testene består. Testene skriver fortsatt en React-advarsel om duplikatnøkkelen `runner` fra de to eksisterende kontobundne innstillingskomponentene; disse er ikke endret her.

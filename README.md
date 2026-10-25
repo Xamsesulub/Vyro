@@ -40,6 +40,7 @@ På Windows, bruk `npm.cmd` hvis PowerShell blokkerer npm.ps1. Native iOS-bygg k
 - Supabase-innlogging, registrering med e-postbekreftelse og passordgjenoppretting; aktivitetsfeed, følgerelasjoner og eksplisitt deling av GPS-økter.
 - Turf-funksjoner og PostgreSQL-migreringer; faktisk GPS og flerbrukerflyt må fortsatt verifiseres på enhet.
 - Originalt appikon og splash-konfigurasjon.
+- Første Apple Watch-app og privat synkronisering til iPhone er skrevet. Krever eget bygg; Swift-kompilering og fysisk test gjenstår. Se [Apple Watch-oppsettet](docs/apple-watch.md).
 
 GPS krever posisjonstillatelse. Private økter publiseres ikke automatisk; simuleringer kan ikke deles som ekte økter. Deling har en egen forhåndsvisning og bekreftelse. Oppsett og tidligere backend-verifikasjon er dokumentert i [live-social-setup](docs/live-social-setup.md), [sosialt og turf](docs/social-and-turf.md) og [sikkerhet](docs/security.md).
 

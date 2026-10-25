@@ -1,5 +1,11 @@
 # Leveranseplan
 
+## Apple Watch, 25. oktober 2026
+
+En første SwiftUI-klokkeapp for watchOS 10+ er implementert med Start/Pause/Fortsett/Avslutt, utendørs GPS, aktiv tid, distanse, tempo og HealthKit-puls. Innstillinger → Apple Watch gir eksplisitt kontokobling og synkronisering. Fullførte klokkeøkter importeres privat til eksisterende treningslogg, med validering, duplikatkvitteringer og bekreftelse først etter kryptert lagring på iPhone. Klokkens utboks beholdes ved forbindelses- eller lagringsfeil.
+
+216 tester, typecheck, lint, iOS/web JavaScript-eksport og generering/kontroll av Xcode-mål består. Swift-syntaks er analysert, men **Swift-kompilering, signert bygg, TestFlight og fysisk iPhone-/Watch-test gjenstår**. En macOS-workflow er lagt til, men ikke kjørt her. Expo Go kan ikke kjøre klokkedelen. Se [klokkeoppsett og testplan](apple-watch.md).
+
 ## Rund innstillingsknapp på Du, 24. oktober 2026
 
 Profilens tekstlenke til Innstillinger er erstattet av en rund knapp øverst til høyre, med et eget tannhjul i VYROs farger og svak skygge. Finn venner har samme knappestil. Begge har 48 × 48 trykkflate, tydelige tilgjengelighetsnavn og tilpasser seg mørk modus. Eksisterende navigasjon og innstillinger beholdes; ingen nye pakker eller native byggkrav.

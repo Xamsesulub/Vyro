@@ -45,6 +45,8 @@ Bekreftelses- og gjenopprettingslenker må åpnes på telefonen som startet fore
 
 ## Bygg og last opp
 
+Appen har nå også et Apple Watch-mål. Før signert bygg må det faktiske Apple-teamets Team ID settes som `expo.ios.appleTeamId` i `mobile/app.json`, og EAS må signere både `app.vyro.mobile.watchkitapp` og det eksisterende widget-målet. Se [Apple Watch-oppsettet](apple-watch.md) for byggekontroll, installasjon og fysisk akseptansetest. Klokkestøtten er ikke prøvd i et signert bygg her.
+
 Etter at kontoer og miljøvariabler er koblet, kjør fra `mobile`:
 
 ```sh

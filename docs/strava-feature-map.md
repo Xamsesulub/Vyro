@@ -1,5 +1,9 @@
 # VYRO – funksjonskart mot Strava
 
+## Apple Watch, 25. oktober 2026
+
+En første watchOS-app med GPS-opptak, økttall, HealthKit-puls og privat synkronisering til iPhone er implementert. Ingen generell Health-import eller Garmin/Wear OS-støtte. Swift-kompilering, signering og fysisk klokketest gjenstår; funksjonen er ikke godkjent som ferdig enhetsstøtte. Se [klokkestatus og oppsett](apple-watch.md).
+
 ## iOS først, 24. oktober 2026
 
 iPhone bruker Apple Maps med separate Standard/Satellitt/Hybrid-valg, lokale rute-/turf-overlegg, pausegrenser, følgekamera, nord og 3D-visning. Adressesøk bruker Apples geokoder, uten POI-autofullføring. Eget høydekurvelag er ikke tilgjengelig i iOS-adapteren. Android/Samsung er utsatt; web er fortsatt en Mapbox-forhåndsvisning. Automatiske tester og eksport består, fysisk iPhone-test gjenstår. Kartbyttet gir ikke automatisk offline kart, ruteplanlegging eller Strava-varmekart.

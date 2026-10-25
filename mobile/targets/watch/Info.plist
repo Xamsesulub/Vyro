@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+  <key>WKApplication</key><true/>
+  <key>WKBackgroundModes</key><array><string>workout-processing</string></array>
+  <key>NSHealthShareUsageDescription</key><string>VYRO leser pulsen din under økten du starter på klokken.</string>
+  <key>NSHealthUpdateUsageDescription</key><string>VYRO lagrer økten du starter i Apple Helse når du velger Lagre.</string>
+  <key>NSLocationWhenInUseUsageDescription</key><string>VYRO bruker GPS under økten du starter for å måle distanse og lagre den private ruten.</string>
+</dict></plist>

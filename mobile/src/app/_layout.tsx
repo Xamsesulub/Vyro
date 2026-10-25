@@ -21,6 +21,7 @@ import { cleanExports } from "../lib/shareFile";
 import { prewarmMap } from "../features/maps/prewarm";
 import { WorkoutAwake } from "../components/WorkoutAwake";
 import { observeWorkoutActivity } from "../features/tracking/liveActivity";
+import { observeWatch } from "../features/watch/sync";
 export { RouteError as ErrorBoundary } from "../components/RouteError";
 
 export default function RootLayout() {
@@ -42,6 +43,7 @@ export default function RootLayout() {
   useEffect(observeBackups, []);
   useEffect(observeKilometerAlerts, []);
   useEffect(observeWorkoutActivity, []);
+  useEffect(observeWatch, []);
   useEffect(() => {
     if (!ready) return;
     // Let the initial screen paint before preparing workers for the map tabs.

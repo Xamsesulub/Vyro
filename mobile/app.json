@@ -62,7 +62,8 @@
           "enablePushNotifications": false,
           "widgets": []
         }
-      ]
+      ],
+      "@bacons/apple-targets"
     ]
   }
 }

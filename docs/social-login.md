@@ -2,7 +2,9 @@
 
 ## Status, 25. oktober 2026
 
-Appdelen er implementert. Google Cloud-prosjekt og Apple Developer-medlemskap finnes ikke ennå, ifølge eieren. Ingen leverandør er aktivert, ingen hemmeligheter er opprettet og ingen ekte Google-/Apple-innlogging er gjennomført. E-postinnlogging beholdes. Telefonnummer samles ikke inn.
+Appdelen er implementert. Google Cloud-prosjektet `vyro-512719` og en Web application OAuth-klient er opprettet. Google er aktivert i eksisterende Supabase, bekreftet med en lesende kontroll av Auth-innstillingene. Eieren bekreftet vellykket Google-innlogging på `http://localhost:8081` 25. oktober 2026. Google er aktivert i PC-ens ignorerte `.env.local`, mens Apple fortsatt er deaktivert. Apple-oppsett, signering og fysisk iPhone-test gjenstår. E-postinnlogging beholdes. Telefonnummer samles ikke inn.
+
+Lokal Google-test er ikke en full akseptansetest eller produksjonsaktivering. Den gamle Google-klienthemmeligheten skal deaktiveres etter rotasjonen; dette er ennå ikke bekreftet. Ingen hemmeligheter lagres i denne dokumentasjonen.
 
 `EXPO_PUBLIC_GOOGLE_AUTH_ENABLED` og `EXPO_PUBLIC_APPLE_AUTH_ENABLED` er offentlige byggeflagg som er av som standard. Sett dem bare til `true` i en testinstallasjon etter oppsettet under; aktiver dem i produksjon etter godkjente innloggingstester. På iPhone vises Google først når Apple også er konfigurert og tilgjengelig. Expo Go viser ingen av knappene: identiteten og returadressen er ikke den samme som i VYROs egen installasjon.
 

@@ -2,7 +2,7 @@
 
 ## Google, Apple og etternavn, 25. oktober 2026
 
-Valgfritt etternavn ved e-postregistrering og redigering/fjerning i konto er implementert. Etternavn holdes utenfor den delte profiltabellen; visningsnavnet velges separat. Ingen telefoninnsamling. Google er forberedt med Supabase PKCE via systemnettleser; Apple med native ID-token/nonce på iPhone og OAuth på web. Knappene er skjult til leverandørene er konfigurert og offentlige byggeflagg aktiveres. Eieren har foreløpig verken Google Cloud-prosjekt eller Apple Developer-medlemskap. Kontokonfigurasjon, signering, fysisk ende-til-ende-test og produksjonsaktivering gjenstår. Se [social-login.md](social-login.md).
+Valgfritt etternavn ved e-postregistrering og redigering/fjerning i konto er implementert. Etternavn holdes utenfor den delte profiltabellen; visningsnavnet velges separat. Ingen telefoninnsamling. Google bruker Supabase PKCE via systemnettleser; Apple er forberedt med native ID-token/nonce på iPhone og OAuth på web. Google Cloud-prosjekt og OAuth-klient er nå opprettet, Google er aktivert i eksisterende Supabase, og eieren bekreftet vellykket innlogging på localhost 25. oktober 2026. Det lokale Google-flagget er aktivert; produksjonsflagg er ikke endret. Apple-oppsett, signering, fysisk ende-til-ende-test og produksjonsaktivering gjenstår. Google på iPhone krever fortsatt at Apple også er tilgjengelig. Se [social-login.md](social-login.md).
 
 ## Opptak med låst skjerm og appbytte, 25. oktober 2026
 

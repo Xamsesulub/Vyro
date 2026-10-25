@@ -1,10 +1,12 @@
 # Til Codex på PC: fortsett herfra
 
-Oppdatert 25. oktober 2026 på brukerens uttrykkelige ønske. Brukeren flytter arbeidet fra skymiljøet til PC og vil fortsette fra denne statusen, ikke starte implementasjonen på nytt.
+Oppdatert 25. oktober 2026 etter oppsett og innloggingstest på PC. Fortsett fra denne statusen, ikke start implementasjonen på nytt.
 
 ## Neste oppgave
 
-Hjelp brukeren med å opprette og konfigurere Google Cloud, Apple Developer og innloggingsleverandørene i **eksisterende Supabase-prosjekt**. Appkoden for Google/Apple og valgfritt etternavn er allerede laget. Brukeren svarte at verken Google Cloud-prosjekt eller Apple Developer-medlemskap finnes ennå; sjekk om dette er endret på PC-en.
+Google Cloud-prosjektet `vyro-512719` og en Web application OAuth-klient er opprettet. Google er aktivert i **eksisterende Supabase-prosjekt**, og brukeren bekreftet vellykket Google-innlogging på `http://localhost:8081` 25. oktober 2026. Google-flagget er aktivert i PC-ens ignorerte `mobile/.env.local`; Apple er fortsatt av. Hemmeligheter skal ikke kopieres hit.
+
+Neste oppgave er Apple-oppsett, EAS-prosjekt og signering for en egen VYRO-installasjon, deretter fysisk iPhone-test av begge innloggingsvalgene. Sjekk nåværende Apple-/Expo-kontostatus før oppsett. En gammel Google-klienthemmelighet ble erstattet under oppsettet; deaktivering av den gamle er ennå ikke bekreftet.
 
 Les [docs/social-login.md](docs/social-login.md) for konkret oppsett, callback-adresser, krav og akseptansetest. Eieren fullfører selv kontoinnlogging, medlemskap, avtaler og betaling. Ikke be om passord/private nøkler i chatten. Legg leverandørhemmeligheter direkte i Supabase-dashboardet, aldri i Git eller `EXPO_PUBLIC_*`.
 
@@ -35,7 +37,7 @@ Relevante filer: `mobile/src/app/account.tsx`, `mobile/src/features/auth/`, `mob
 
 Før denne overleveringen bestod **263 tester i 49 suiter**, TypeScript-kontroll og lint uten varsler. iOS Hermes- og webeksport bestod. Expo-introspeksjon bekreftet Apple Sign in-entitlement og lokalisert knapp. Nettleserkontroll ved 390 og 320 piksler bestod med oppdiktet offentlig Supabase-testkonfigurasjon og blokkert nettverk.
 
-**Ekte Google-/Apple-innlogging, leverandøroppsett, signering, fysisk iPhone og ny Xcode-kompilering av disse endringene er ikke verifisert.** Ingen kontoer er opprettet, hemmeligheter lastet opp eller TestFlight-versjon publisert fra dette arbeidet. Se [docs/testing.md](docs/testing.md) for evidens og begrensninger. Midlertidige eksportfiler/skjermbilder i skymiljøets `.expo` og `/tmp` følger ikke med Git.
+**Google-innlogging på lokal web er bekreftet av brukeren.** En lesende kontroll av Supabases Auth-innstillinger ga HTTP 200 med Google aktivert og Apple deaktivert. Apple-innlogging, faktisk kontokobling, full akseptansetest, signering, fysisk iPhone og ny Xcode-kompilering av disse endringene gjenstår. Ingen TestFlight-versjon eller produksjonsflagg er publisert fra dette oppsettet. Se [docs/testing.md](docs/testing.md) for evidens og begrensninger. Midlertidige eksportfiler/skjermbilder i skymiljøets `.expo` og `/tmp` følger ikke med Git.
 
 Ved kodeendringer: kjør `npm run typecheck`, `npm run lint` og relevante tester fra `mobile`. `npm test` kjører hele Jest-pakken. En push kan starte Apple-bygget i GitHub Actions; sjekk den konkrete nye kjøringen før du sier at siste native bygg består.
 

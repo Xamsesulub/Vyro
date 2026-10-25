@@ -9,6 +9,7 @@ on:
         "mobile/app.json",
         "mobile/package*.json",
         "mobile/scripts/check-watch-target.cjs",
+        "mobile/scripts/report-apple-build.cjs",
         ".github/workflows/apple-watch.yml",
       ]
   push:
@@ -20,6 +21,7 @@ on:
         "mobile/app.json",
         "mobile/package*.json",
         "mobile/scripts/check-watch-target.cjs",
+        "mobile/scripts/report-apple-build.cjs",
         ".github/workflows/apple-watch.yml",
       ]
   workflow_dispatch:
@@ -52,7 +54,22 @@ jobs:
       - run: npx expo prebuild --platform ios --no-install
       - run: node scripts/check-watch-target.cjs
       - name: Compile the SwiftUI watch app without signing
-        run: xcodebuild -project ios/VYRO.xcodeproj -target VyroWatch -sdk watchsimulator -configuration Debug CODE_SIGNING_ALLOWED=NO SYMROOT="$RUNNER_TEMP/vyro-watch-build" build
+        run: |
+          set -o pipefail
+          xcodebuild -project ios/VYRO.xcodeproj -target VyroWatch -sdk watchsimulator -configuration Debug CODE_SIGNING_ALLOWED=NO SYMROOT="$RUNNER_TEMP/vyro-watch-build" build 2>&1 | tee "$RUNNER_TEMP/vyro-watch-build.log"
       - run: pod install --project-directory=ios
       - name: Compile the iPhone app and native WatchConnectivity bridge
-        run: xcodebuild -workspace ios/VYRO.xcworkspace -scheme VYRO -configuration Debug -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
+        run: |
+          set -o pipefail
+          xcodebuild -workspace ios/VYRO.xcworkspace -scheme VYRO -configuration Debug -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build 2>&1 | tee "$RUNNER_TEMP/vyro-iphone-build.log"
+      - name: Report Xcode errors in the build summary
+        if: failure()
+        run: node scripts/report-apple-build.cjs "$RUNNER_TEMP/vyro-watch-build.log" "$RUNNER_TEMP/vyro-iphone-build.log"
+      - name: Save compiler logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: apple-build-logs
+          path: ${{ runner.temp }}/vyro-*-build.log
+          if-no-files-found: ignore
+          retention-days: 7

@@ -2,7 +2,7 @@
 
 ## Status, 25. oktober 2026
 
-En første watchOS-app og synkronisering til iPhone er implementert. **Swift-kompilering, signering, installasjon og fysisk testing er ikke utført i skymiljøet.** Dette er ikke en publisert eller godkjent klokkeapp. Nytt iPhone-/Watch-bygg kreves; Expo Go støtter ikke WatchConnectivity eller den lokale native-modulen. Den eksisterende iPhone-appen kan fortsatt åpnes i Expo Go med klokkestøtten deaktivert.
+En første watchOS-app og synkronisering til iPhone er implementert. **Watch-appen bestod usignert simulator-kompilering i GitHub Actions [40187025416](https://github.com/Xamsesulub/Vyro/actions/runs/40187025416). iPhone-bygget feilet med Xcode-kode 65; den konkrete årsaken undersøkes. Signering, installasjon og fysisk testing gjenstår.** Dette er ikke en publisert eller godkjent klokkeapp. Nytt iPhone-/Watch-bygg kreves; Expo Go støtter ikke WatchConnectivity eller den lokale native-modulen. Den eksisterende iPhone-appen kan fortsatt åpnes i Expo Go med klokkestøtten deaktivert.
 
 Klokkemålet krever watchOS 10 eller nyere. Android/Wear OS og Garmin er ikke del av denne leveransen.
 
@@ -51,7 +51,7 @@ node scripts/check-watch-target.cjs
 xcodebuild -project ios/VYRO.xcodeproj -target VyroWatch -sdk watchsimulator -configuration Debug CODE_SIGNING_ALLOWED=NO build
 ```
 
-GitHub Actions-filen `.github/workflows/apple-watch.yml` er lagt til for generering, kontroll av mål/innbygging og usignert Swift-kompilering av Watch-appen og iPhone-appen på macOS. **Denne workflowen er ikke kjørt i denne leveransen.** Den krever ikke Apple-konto for simulatorbygg. Simulatorbygg verifiserer ikke reell GPS, puls eller transport mellom parede enheter.
+GitHub Actions-filen `.github/workflows/apple-watch.yml` er lagt til for generering, kontroll av mål/innbygging og usignert Swift-kompilering av Watch-appen og iPhone-appen på macOS. Første kjøring bestod Watch-kompilering og CocoaPods-installasjon, men feilet på iPhone-kompilering. Workflowen lagrer nå compilerlogger og viser konkrete Xcode-feil som annotasjoner og i sammendraget; kode 65 alene forklarer ikke årsaken. Den krever ikke Apple-konto for simulatorbygg. Simulatorbygg verifiserer ikke reell GPS, puls eller transport mellom parede enheter.
 
 ## Fysisk akseptansetest før godkjenning
 

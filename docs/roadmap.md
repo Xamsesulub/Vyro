@@ -1,5 +1,15 @@
 # Leveranseplan
 
+## Hjem, profil og innstillinger, 25. oktober 2026
+
+Strava-inspirert omarbeiding av brukerens skjermbilder er implementert i VYROs egne farger og grafikk. Gjester får tre sveipbare introduksjonskort med separate valg for registrering og innlogging. En gjenopprettet sesjon går direkte til Hjem også når introduksjonen ikke er fullført på enheten. Hjem viser uketall, aktivitetsstrøm, innleggsdeling og privat GPS-logg, med bevarte innlegg under oppdatering og nytt forsøk ved nettfeil.
+
+Du har Fremgang/Aktiviteter/Mer, 12-ukers distansegraf, månedens aktive dager, uker på rad, eksisterende ukemål/milepæler og søk/filtre. Bare egne GPS-økter teller. Følgertall og sideinndelte følgelister hentes fra eksisterende backend. Profilen kan deles som navn/brukernavn via delingsarket eller utklippstavlen. Profilredigering lagrer offentlig visningsnavn og valgfrie private felt (etternavn, biografi, sted og hovedidrett); ingen ny databasemigrering.
+
+Innstillinger har fast toppfelt, rund tilbakeknapp og grupperte rader. Lys/mørk/system, Standard/Satellitt/Hybrid, foretrukket Hjem-strøm, eksempler og kontobundet delingsforvalg er koblet til vedvarende valg. Kartvalget gjelder både Kart og treningskartet. Konto/e-post/passord, personvern, sikkerhetskopi, opptak, ukemål, Apple Watch og hjelp har egne sider. E-postendring krever leverandørens bekreftelse. GPS-økter forblir private til eksplisitt publisering.
+
+Ingen abonnementer, betalingsflyt, falske varsler, nye helsetillatelser eller uferdige partnerintegrasjoner er lagt til fra referansebildene. Eksisterende soner, bakgrunnsopptak, innloggingsleverandører og oblig-materiale er bevart. Ingen nye pakker, native konfigurasjon eller produksjonsmigreringer. Fysisk iPhone-kontroll av tastatur, tekstskalering og navigasjon gjenstår; se [testgrunnlaget](testing.md).
+
 ## Google, Apple og etternavn, 25. oktober 2026
 
 Valgfritt etternavn ved e-postregistrering og redigering/fjerning i konto er implementert. Etternavn holdes utenfor den delte profiltabellen; visningsnavnet velges separat. Ingen telefoninnsamling. Google bruker Supabase PKCE via systemnettleser; Apple er forberedt med native ID-token/nonce på iPhone og OAuth på web. Google Cloud-prosjekt og OAuth-klient er nå opprettet, Google er aktivert i eksisterende Supabase, og eieren bekreftet vellykket innlogging på localhost 25. oktober 2026. Det lokale Google-flagget er aktivert; produksjonsflagg er ikke endret. Apple-oppsett, signering, fysisk ende-til-ende-test og produksjonsaktivering gjenstår. Google på iPhone krever fortsatt at Apple også er tilgjengelig. Se [social-login.md](social-login.md).

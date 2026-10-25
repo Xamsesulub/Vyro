@@ -16,6 +16,7 @@ import { duration, km, pace } from "../features/activities/model";
 import { MapKind } from "../features/maps/config";
 
 import { useTrackingStatus } from "../stores/useTrackingStatus";
+import { useAppStore } from "../stores/useAppStore";
 import { brand } from "../theme/tokens";
 
 export default function RecordingMap({
@@ -44,7 +45,9 @@ export default function RecordingMap({
   const [recenter, setRecenter] = useState(0);
   const [north, setNorth] = useState(0);
   const [threeD, setThreeD] = useState(false);
-  const [kind, setKind] = useState<MapKind>("standard");
+  const kind = useAppStore((s) => s.defaultMapKind ?? "standard");
+  const setKind = (defaultMapKind: MapKind) =>
+    useAppStore.getState().preferences({ defaultMapKind });
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000);

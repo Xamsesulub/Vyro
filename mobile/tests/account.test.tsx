@@ -1,6 +1,7 @@
 import type { Session } from "@supabase/supabase-js";
 import { act, fireEvent, render, screen } from "@testing-library/react-native";
 jest.mock("expo-router", () => ({
+  useLocalSearchParams: () => ({}),
   router: { replace: jest.fn(), back: jest.fn(), canGoBack: () => false },
 }));
 jest.mock("expo-linking", () => ({
@@ -23,6 +24,7 @@ jest.mock("../src/components/ui", () => {
   const { View, Text, Pressable } = require("react-native");
   return {
     Screen: View,
+    Icon: () => null,
     Txt: Text,
     useTheme: () => ({ border: "#ddd", text: "#111", muted: "#555" }),
     Button: ({

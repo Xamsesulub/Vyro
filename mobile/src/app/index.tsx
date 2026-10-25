@@ -1,9 +1,10 @@
 import { Redirect } from "expo-router";
 import { useAppStore } from "../stores/useAppStore";
+import { useAuthStore } from "../stores/useAuthStore";
+import { AuthLoading } from "../components/AuthLoading";
 export default function Index() {
-  return (
-    <Redirect
-      href={useAppStore((s) => s.onboarded) ? "/(tabs)" : "/onboarding"}
-    />
-  );
+  const { session, ready } = useAuthStore();
+  const onboarded = useAppStore((s) => s.onboarded);
+  if (!ready && !session) return <AuthLoading />;
+  return <Redirect href={session || onboarded ? "/(tabs)" : "/onboarding"} />;
 }

@@ -1,128 +1,221 @@
-import { useShallow } from "zustand/react/shallow";
-import { Switch, TextInput, View } from "react-native";
+import { useRef, useState } from "react";
+import { Pressable, TextInput, View } from "react-native";
 import { router } from "expo-router";
-import { Button, Screen, Txt, styles, useTheme } from "../components/ui";
-import { appPersistence, useAppStore } from "../stores/useAppStore";
-import { useAuthStore } from "../stores/useAuthStore";
-import { EditProfile } from "../components/EditProfile";
-import { BackupSettings } from "../components/BackupSettings";
+import { Page, SettingsGroup, SettingsRow } from "../components/SettingsUi";
+import { Avatar } from "../components/SocialUi";
+import { Txt, useTheme } from "../components/ui";
+import { useAppStore } from "../stores/useAppStore";
+import { acceptAuthSession, useAuthStore } from "../stores/useAuthStore";
+import { useOwnProfile } from "../features/auth/useOwnProfile";
+import { authErrorMessage } from "../features/auth/validation";
+import { supabase } from "../lib/supabase";
+
 export default function Settings() {
-  const s = useAppStore(
-    useShallow((s) => ({
-      name: s.name,
-      theme: s.theme,
-      examplesVisible: s.examplesVisible,
-      preferences: s.preferences,
-    })),
-  );
+  const { session, ready } = useAuthStore();
+  const { profile } = useOwnProfile();
+  const theme = useAppStore((s) => s.theme);
+  const localName = useAppStore((s) => s.name);
+  const mapKind = useAppStore((s) => s.defaultMapKind ?? "standard");
+  const pending = useRef(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
   const c = useTheme();
-  const storageError = useAppStore((s) => s.storageError);
-  const { session, ready, confirmationEmail } = useAuthStore();
+  const name =
+    profile?.display_name ??
+    session?.user.user_metadata?.display_name ??
+    "Din profil";
   return (
-    <Screen>
-      <Button
-        title="Tilbake til profil"
-        secondary
-        onPress={() => router.replace("/profile")}
-      />
-      <Txt size={28} weight="700">
-        Innstillinger
-      </Txt>
-      <Button
-        title="Varsler og opptak"
-        icon="settings"
-        secondary
-        onPress={() => router.push("/training-settings")}
-      />
-      <Button
-        title="Apple Watch"
-        secondary
-        onPress={() => router.push("/apple-watch")}
-      />
-      {!!storageError && (
-        <Button
-          title="Prøv lokal lagring igjen"
-          secondary
-          onPress={() => {
-            void appPersistence.retry();
+    <Page title="Innstillinger" fallback="/profile">
+      {session ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Rediger profil"
+          onPress={() => router.push("/edit-profile")}
+          style={{
+            flexDirection: "row",
+            gap: 14,
+            alignItems: "center",
+            padding: 22,
+            backgroundColor: c.surface,
           }}
-        />
-      )}
-      <Button
-        title={
-          !ready
-            ? "Laster konto …"
-            : session
-              ? "Konto og utlogging"
-              : confirmationEmail
-                ? "Logg inn"
-                : "Logg inn eller opprett konto"
-        }
-        disabled={!ready}
-        onPress={() => router.push("/account")}
-      />
-      {session && (
-        <EditProfile key={session.user.id} userId={session.user.id} />
-      )}
-      {!session && (
-        <>
-          <Txt weight="600">Lokalt visningsnavn</Txt>
-          <TextInput
-            accessibilityLabel="Endre fornavn"
-            value={s.name}
-            onChangeText={(name) => s.preferences({ name })}
-            maxLength={30}
-            placeholder="Ditt navn"
-            placeholderTextColor={c.muted}
-            style={{
-              fontSize: 18,
-              color: c.text,
-              paddingVertical: 16,
-              borderBottomWidth: 1,
-              borderColor: c.border,
-            }}
+        >
+          <Avatar name={name} size={60} />
+          <View style={{ flex: 1, gap: 5 }}>
+            <Txt size={20} weight="700">
+              {name}
+            </Txt>
+            <Txt muted size={13}>
+              Rediger profil og kontoinformasjon
+            </Txt>
+          </View>
+        </Pressable>
+      ) : (
+        <SettingsGroup>
+          <SettingsRow
+            title={ready ? "Logg inn eller opprett konto" : "Laster konto …"}
+            description="Ta vare på turene dine og finn venner."
+            icon="user"
+            disabled={!ready}
+            onPress={() => router.push("/account")}
           />
-        </>
+        </SettingsGroup>
       )}
-      <View style={styles.row}>
-        <Txt>Mørkt utseende</Txt>
-        <Switch
-          accessibilityLabel="Mørkt utseende"
-          value={s.theme === "dark"}
-          onValueChange={(dark) =>
-            s.preferences({ theme: dark ? "dark" : "light" })
+      <SettingsGroup title="Konto">
+        <SettingsRow
+          title={session ? "Konto og sikkerhet" : "Innlogging"}
+          description={session?.user.email}
+          icon="lock"
+          onPress={() =>
+            router.push(session ? "/settings/account" : "/account")
           }
         />
-      </View>
-      <View style={styles.row}>
-        <Txt>Vis eksempeløkter</Txt>
-        <Switch
-          accessibilityLabel="Vis eksempeløkter"
-          value={s.examplesVisible}
-          onValueChange={(examplesVisible) =>
-            s.preferences({ examplesVisible })
-          }
+        <SettingsRow
+          title="Personvern og deling"
+          icon="people"
+          onPress={() => router.push("/settings/privacy")}
         />
-      </View>
+        <SettingsRow
+          title="Data og sikkerhetskopi"
+          icon="cloud"
+          onPress={() => router.push("/settings/data")}
+        />
+      </SettingsGroup>
+      {!session && ready && (
+        <SettingsGroup
+          title="Gjest"
+          note="Navnet lagres bare på denne enheten. Det oppretter ingen konto."
+        >
+          <View style={{ padding: 22, gap: 10 }}>
+            <Txt muted size={13}>
+              Lokalt visningsnavn
+            </Txt>
+            <TextInput
+              accessibilityLabel="Lokalt visningsnavn"
+              value={localName}
+              onChangeText={(name) =>
+                useAppStore.getState().preferences({ name })
+              }
+              maxLength={30}
+              placeholder="Ditt navn"
+              placeholderTextColor={c.muted}
+              style={{
+                minHeight: 44,
+                color: c.text,
+                fontSize: 17,
+                borderBottomWidth: 1,
+                borderColor: c.border,
+              }}
+            />
+          </View>
+        </SettingsGroup>
+      )}
+      <SettingsGroup title="Din VYRO">
+        <SettingsRow
+          title="Utseende"
+          value={
+            theme === "system"
+              ? "Følg telefonen"
+              : theme === "dark"
+                ? "Mørkt"
+                : "Lyst"
+          }
+          icon="sun"
+          onPress={() => router.push("/settings/appearance")}
+        />
+        <SettingsRow
+          title="Standardkart"
+          value={
+            { standard: "Standard", satellite: "Satellitt", hybrid: "Hybrid" }[
+              mapKind
+            ]
+          }
+          icon="layers"
+          onPress={() => router.push("/settings/maps")}
+        />
+        <SettingsRow
+          title="Hjem og innhold"
+          description="Velg strøm og visning av eksempler"
+          icon="home"
+          onPress={() => router.push("/settings/feed")}
+        />
+        <SettingsRow title="Måleenheter" value="km · min/km" />
+      </SettingsGroup>
+      <SettingsGroup title="Trening">
+        <SettingsRow
+          title="Varsler og opptak"
+          description="Kilometervarsler, skjerm og bakgrunnsopptak"
+          icon="bell"
+          onPress={() => router.push("/training-settings")}
+        />
+        <SettingsRow
+          title="Treningsmål"
+          description="Sett ditt eget mål for uken"
+          icon="chart"
+          onPress={() => router.push("/training-goal")}
+        />
+        <SettingsRow
+          title="Apple Watch"
+          description="Klokke og synkronisering"
+          icon="device"
+          onPress={() => router.push("/apple-watch")}
+        />
+      </SettingsGroup>
+      <SettingsGroup title="Hjelp">
+        <SettingsRow
+          title="Hjelp og om VYRO"
+          description="GPS, konto og vanlige spørsmål"
+          icon="info"
+          onPress={() => router.push("/settings/help")}
+        />
+      </SettingsGroup>
       {session && (
-        <BackupSettings key={session.user.id} owner={session.user.id} />
+        <View style={{ padding: 22, gap: 12 }}>
+          {!!error && <Txt>{error}</Txt>}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ disabled: busy }}
+            disabled={busy}
+            onPress={async () => {
+              if (pending.current || !supabase) return;
+              pending.current = true;
+              setBusy(true);
+              setError("");
+              try {
+                const { error: failure } = await supabase.auth.signOut({
+                  scope: "local",
+                });
+                if (failure) throw failure;
+                acceptAuthSession(null);
+                useAuthStore.setState({ confirmationEmail: null });
+                router.replace("/(tabs)");
+              } catch (e) {
+                setError(authErrorMessage(e));
+              } finally {
+                pending.current = false;
+                setBusy(false);
+              }
+            }}
+            style={{
+              borderWidth: 1,
+              borderColor: c.border,
+              borderRadius: 28,
+              padding: 16,
+              alignItems: "center",
+              backgroundColor: c.surface,
+            }}
+          >
+            <Txt
+              weight="700"
+              style={{ color: c.bg === "#0B1120" ? "#FF8D79" : "#B33A28" }}
+            >
+              {busy ? "Logger ut …" : "Logg ut"}
+            </Txt>
+          </Pressable>
+        </View>
       )}
-      <View
-        style={{
-          borderTopWidth: 1,
-          borderColor: c.border,
-          paddingTop: 24,
-          gap: 10,
-        }}
-      >
-        <Txt weight="600">Personvern</Txt>
-        <Txt muted size={14}>
-          Økter og utkast lagres kryptert på denne enheten. Ved deling skjules
-          500 meter rundt start og slutt. Følgere er standard; du kan velge alle
-          innloggede. Du kan trekke tilbake innlegget fra Hjem. Tidligere delte
-          kart skjermes først når du deler økten på nytt.
-        </Txt>
-      </View>
-    </Screen>
+      <Txt muted size={12} style={{ textAlign: "center", paddingTop: 16 }}>
+        VYRO · Ta turen videre.
+      </Txt>
+    </Page>
   );
 }

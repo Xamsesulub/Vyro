@@ -1,6 +1,16 @@
 # Til Codex på PC: fortsett herfra
 
-Oppdatert 25. oktober 2026 etter oppsett og innloggingstest på PC. Fortsett fra denne statusen, ikke start implementasjonen på nytt.
+Oppdatert 25. oktober 2026 etter ny designrunde i skyen, basert på PC-push `b0039b1` («Google test bestått»). Fortsett fra denne statusen, ikke start implementasjonen på nytt.
+
+## Nyeste arbeid: Hjem, Du og innstillinger
+
+Brukeren ba om Strava-inspirert design på referansebildenes sider, særlig Innstillinger, og riktig Hjem etter innlogging. Dette er implementert med VYROs egen merkevare. Detaljene står øverst i [docs/roadmap.md](docs/roadmap.md) og [docs/strava-feature-map.md](docs/strava-feature-map.md).
+
+- Ny introduksjon med tre sider, «Kom i gang» og «Logg inn». Gyldig sesjon hopper over introduksjonen; Hjem har uketall, blandet aktivitetsstrøm og privat GPS-logg. Oppdatering beholder innlegg ved nettfeil, og kontobytte forkaster gamle svar.
+- Du: Fremgang/Aktiviteter/Mer, 12 uker, aktive dager/uker på rad, eksisterende ukemål og treningsfiltre. Simuleringer/eksempler teller aldri. Følgere/følger er faktiske backendtall og lister, ikke lokale eksempler.
+- Rediger profil: offentlig visningsnavn + valgfrie **private** etternavn, biografi, sted og hovedidrett i Auth-metadata. Ikke flytt dem til en offentlig tabell uten en ny produktbeslutning. «Del profil» deler bare offentlig navn/brukernavn; ingen falsk profil-URL.
+- Innstillinger: egne sider for konto/e-post/passord, personvern, data/sikkerhetskopi, utseende, kart, Hjem/eksempler og hjelp. Trening/Watch beholder eksisterende funksjon med nytt toppfelt. Systemtema, standardkart, startstrøm og kontobundet delingsforvalg lagres. Ingen nye pakker/migreringer/native innstillinger.
+- Første kontroll på PC/iPhone: last siste kode og test Hjem etter innlogging/omstart, Du-fanene, profil-Lagre med tastaturet åpent, små/store tekststørrelser, mørkt/systemtema og kartvalget i både Kart og Tren. Sjekk ekte følgerantall, lagring/feil og e-postbekreftelse mot eksisterende Supabase. Ikke publiser testinnlegg uten å velge det selv.
 
 ## Neste oppgave
 
@@ -13,7 +23,7 @@ Les [docs/social-login.md](docs/social-login.md) for konkret oppsett, callback-a
 ## Det vi nettopp har laget
 
 - Valgfritt etternavn ved e-postregistrering. Telefonnummer er droppet etter brukerens valg.
-- Etternavn lagres privat i Auth-metadata (`last_name`), separat fra offentlig visningsnavn. Det kan endres eller fjernes under **Innstillinger → Konto og utlogging**. Ingen ny SQL-migrering trengs.
+- Etternavn lagres privat i Auth-metadata (`last_name`), separat fra offentlig visningsnavn. Det kan endres eller fjernes under **Du → Rediger profil** (og den eldre Konto-siden). Ingen ny SQL-migrering trengs.
 - Google via Supabase PKCE og systemets innloggingsnettleser på iPhone; samme fane på web.
 - Apple via den native Apple-knappen, ID-token og nonce på iPhone; Supabase OAuth på web. Apple «Skjul e-postadressen min» er håndtert i koden, men ikke testet med en ekte konto.
 - E-postinnlogging beholdes. `EXPO_PUBLIC_GOOGLE_AUTH_ENABLED` og `EXPO_PUBLIC_APPLE_AUTH_ENABLED` er **av som standard**. Knappene er skjult før oppsettet er klart. På iPhone krever Google-knappen også at Apple er aktivert og tilgjengelig.
@@ -35,7 +45,7 @@ Relevante filer: `mobile/src/app/account.tsx`, `mobile/src/features/auth/`, `mob
 
 ## Verifisert og utestet
 
-Før denne overleveringen bestod **263 tester i 49 suiter**, TypeScript-kontroll og lint uten varsler. iOS Hermes- og webeksport bestod. Expo-introspeksjon bekreftet Apple Sign in-entitlement og lokalisert knapp. Nettleserkontroll ved 390 og 320 piksler bestod med oppdiktet offentlig Supabase-testkonfigurasjon og blokkert nettverk.
+Siste designrunde består **280 tester i 53 suiter**, TypeScript-kontroll og lint uten varsler. iOS Hermes- og webeksport består. Nettleserkontroll ved 390 og 320 piksler består for gjest/innlogget Hjem, profilfaner/redigering, følgelister, innstillingsvalg, kryptert lagring/omstart, nettfeil/nytt forsøk og utlogging. Dette bruker oppdiktede testdata og mockbackend; ingen ekte konto-/e-postendringer er utført. Tidligere Expo-introspeksjon bekreftet Apple Sign in-entitlement og lokalisert knapp. Se nyeste avsnitt i `docs/testing.md` for fysisk akseptanseliste.
 
 **Google-innlogging på lokal web er bekreftet av brukeren.** En lesende kontroll av Supabases Auth-innstillinger ga HTTP 200 med Google aktivert og Apple deaktivert. Apple-innlogging, faktisk kontokobling, full akseptansetest, signering, fysisk iPhone og ny Xcode-kompilering av disse endringene gjenstår. Ingen TestFlight-versjon eller produksjonsflagg er publisert fra dette oppsettet. Se [docs/testing.md](docs/testing.md) for evidens og begrensninger. Midlertidige eksportfiler/skjermbilder i skymiljøets `.expo` og `/tmp` følger ikke med Git.
 

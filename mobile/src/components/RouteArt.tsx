@@ -1,7 +1,7 @@
 import Svg, { Circle, Path, Rect, Text as SvgText } from "react-native-svg";
-import { useAppStore } from "../stores/useAppStore";
+import { useTheme } from "./ui";
 export function RouteArt({ height = 210 }: { height?: number }) {
-  const light = useAppStore((s) => s.theme) === "light";
+  const light = useTheme().bg === "#FFFFFF";
   return (
     <Svg
       width="100%"

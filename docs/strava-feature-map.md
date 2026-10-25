@@ -1,5 +1,11 @@
 # VYRO – funksjonskart mot Strava
 
+## Profil, Hjem og innstillinger, 25. oktober 2026
+
+Referansens struktur er brukt til en egen VYRO-utforming: sveipbar introduksjon, direkte Hjem for innloggede, rund toppnavigasjon, profilfaner, 12-ukers graf, aktivitetsdager, ukerekke, redigering/deling av profil og faktiske følgelister. Innstillinger er gruppert i Konto, Din VYRO, Trening og Hjelp med funksjonelle undersider. Utseende følger også telefonen; standardkart, Hjem-strøm, eksempler og kontoens delingsforvalg lagres lokalt.
+
+VYRO viser distanse, tid og økter, ikke oppdiktet høydestigning/kalorier. Biografi, sted, hovedidrett og etternavn er private kontodetaljer; offentlig profil inneholder fortsatt bare visningsnavn og brukernavn. Profilbilder, offentlige biografier, fødselsdato, vekt/kjønn, abonnement, imperialmåling, temperatur/vær, push-/e-postvarsler, Siri, Beacon og generelle helsedata-/partnerintegrasjoner er ikke implementert av denne designendringen. De vises derfor ikke som virksomme valg. Strava-bilder/merkevare er ikke inkludert i appen. Se [leveranseplan](roadmap.md) og [verifikasjon](testing.md).
+
 ## Apple Watch, 25. oktober 2026
 
 En første watchOS-app med GPS-opptak, økttall, HealthKit-puls og privat synkronisering til iPhone er implementert. Ingen generell Health-import eller Garmin/Wear OS-støtte. Usignert iPhone-/Watch-simulatorbygg består i GitHub Actions. Signering og fysisk klokketest gjenstår; funksjonen er ikke godkjent som ferdig enhetsstøtte. Se [klokkestatus og oppsett](apple-watch.md).

@@ -125,10 +125,12 @@ test("saving and reloading preserve unrounded distance and time for average pace
       status: "finishing",
       seconds: 358.25,
       distance: 0.5455,
-      route: [[
-        { latitude: 59.9, longitude: 10.7 },
-        { latitude: 59.9049058, longitude: 10.7 },
-      ]],
+      route: [
+        [
+          { latitude: 59.9, longitude: 10.7 },
+          { latitude: 59.9049058, longitude: 10.7 },
+        ],
+      ],
     },
   });
   const id = useAppStore.getState().save("Precision fixture", "");
@@ -326,4 +328,34 @@ test("repeat route is limited to own saved GPS routes and never carries competit
   expect(useAppStore.getState().repeatRoute(workout)).toBe(false);
   useAppStore.getState().event("discard");
   useAuthStore.setState({ session: null });
+});
+
+test("appearance, map and Home preferences survive reload without changing privacy or workouts", async () => {
+  const initial = useAppStore.getInitialState();
+  expect(initial.sharingAudienceByOwner).toEqual({});
+  expect(initial.defaultMapKind).toBe("standard");
+  expect(initial.homeFeed).toBe("following");
+  useAppStore
+    .getState()
+    .preferences({
+      theme: "system",
+      defaultMapKind: "hybrid",
+      homeFeed: "own",
+      sharingAudienceByOwner: { a: "everyone", b: "followers" },
+    });
+  await appPersistence.flush();
+  const raw = JSON.parse((await AsyncStorage.getItem("vyro-prototype-v1"))!);
+  expect(raw.state).toMatchObject({
+    theme: "system",
+    defaultMapKind: "hybrid",
+    homeFeed: "own",
+    sharingAudienceByOwner: { a: "everyone", b: "followers" },
+    workouts: [],
+  });
+  await useAppStore.persist.rehydrate();
+  expect(useAppStore.getState().sharingAudienceByOwner.b).toBe("followers");
+  expect(useAppStore.getState().sharingAudienceByOwner.c).toBeUndefined();
+  expect(useAppStore.getState().theme).toBe("system");
+  expect(useAppStore.getState().defaultMapKind).toBe("hybrid");
+  expect(useAppStore.getState().homeFeed).toBe("own");
 });

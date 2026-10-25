@@ -7,6 +7,7 @@ import {
   TextStyle,
   View,
   ViewStyle,
+  useColorScheme,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, {
@@ -23,7 +24,9 @@ import { BrandMark, BrandWordmark } from "./Brand";
 import { brand, palettes } from "../theme/tokens";
 
 export function useTheme() {
-  return palettes[useAppStore((s) => s.theme)];
+  const theme = useAppStore((s) => s.theme);
+  const system = useColorScheme();
+  return palettes[theme === "system" ? (system ?? "light") : theme];
 }
 export function Txt({
   children,
@@ -58,6 +61,15 @@ export function Txt({
   );
 }
 const paths = {
+  more: "M4 6h16M4 12h16M4 18h16",
+  chevronRight: "m9 5 7 7-7 7",
+  close: "m6 6 12 12M18 6 6 18",
+  share: "M12 15V3m-4 4 4-4 4 4M5 12v9h14v-9",
+  clock: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18M12 7v6l4 2",
+  bell: "M5 16h14l-2-3V9a5 5 0 0 0-10 0v4l-2 3ZM10 20h4",
+  device: "M8 2h8v4H8V2Zm0 16h8v4H8v-4ZM6 6h12v12H6V6Zm4 6 2 2 3-4",
+  cloud: "M6 18a5 5 0 0 1-1-10 7 7 0 0 1 13-1 5.5 5.5 0 0 1 0 11H6Z",
+  info: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18M12 11v6m0-10v.1",
   search: "M10.5 3a7.5 7.5 0 1 0 0 15 7.5 7.5 0 0 0 0-15M16 16l5 5",
   plus: "M12 4v16M4 12h16",
   photo: "M3 4h18v16H3ZM3 16l5-5 5 5 3-3 5 5M16 8h.01",

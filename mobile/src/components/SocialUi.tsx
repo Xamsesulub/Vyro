@@ -99,17 +99,19 @@ export function Field(props: TextInputProps) {
 export function Avatar({
   name,
   club = false,
+  size = 46,
 }: {
   name: string;
   club?: boolean;
+  size?: number;
 }) {
   const c = useTheme();
   return (
     <View
       style={{
-        width: 46,
-        height: 46,
-        borderRadius: club ? 14 : 23,
+        width: size,
+        height: size,
+        borderRadius: club ? 14 : size / 2,
         backgroundColor: c.raised,
         alignItems: "center",
         justifyContent: "center",
@@ -118,7 +120,7 @@ export function Avatar({
       {club ? (
         <Icon name="club" color={c.accent} />
       ) : (
-        <Txt size={20} weight="700">
+        <Txt size={size * 0.43} weight="700">
           {name.trim().slice(0, 1).toLocaleUpperCase("nb-NO")}
         </Txt>
       )}

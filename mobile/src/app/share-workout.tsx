@@ -23,7 +23,8 @@ function ShareForm({ userId }: { userId: string }) {
   const [error, setError] = useState("");
   const [selected, setSelected] = useState<string | null>(null);
   const [audience, setAudience] = useState<"followers" | "everyone">(
-    "followers",
+    () =>
+      useAppStore.getState().sharingAudienceByOwner?.[userId] ?? "followers",
   );
   const eligible = workouts.filter((w) => shareable(w) && w.ownerId === userId);
   const workout = eligible.find((w) => w.id === selected);
@@ -40,7 +41,8 @@ function ShareForm({ userId }: { userId: string }) {
         følger alltid med.
       </Txt>
       <Txt muted size={12}>
-        Velg hvem som får se økten. Følgere er standard.
+        Velg hvem som får se økten. Du kan endre forvalget i
+        personverninnstillingene.
       </Txt>
       <Button
         secondary

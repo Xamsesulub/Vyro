@@ -54,7 +54,9 @@ export default function Maps() {
   const [sheet, setSheet] = useState<"layers" | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   useFocusEffect(useCallback(() => () => setSearchOpen(false), []));
-  const [mapKind, setMapKind] = useState<MapKind>("standard");
+  const mapKind = useAppStore((s) => s.defaultMapKind ?? "standard");
+  const setMapKind = (defaultMapKind: MapKind) =>
+    useAppStore.getState().preferences({ defaultMapKind });
   const [poi, setPoi] = useState(true);
   const [contours, setContours] = useState(false);
   const [threeD, setThreeD] = useState(false);

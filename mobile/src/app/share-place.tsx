@@ -9,6 +9,7 @@ import { publishPlace } from "../features/places/api";
 import { validatePlace } from "../features/places/model";
 import { socialError } from "../features/social/api";
 import { useAuthStore } from "../stores/useAuthStore";
+import { useAppStore } from "../stores/useAppStore";
 export default function SharePlace() {
   const user = useAuthStore((s) => s.session?.user.id);
   return (
@@ -21,7 +22,8 @@ function Composer({ userId }: { userId: string }) {
   const [caption, setCaption] = useState("");
   const [place, setPlace] = useState("");
   const [audience, setAudience] = useState<"followers" | "everyone">(
-    "followers",
+    () =>
+      useAppStore.getState().sharingAudienceByOwner?.[userId] ?? "followers",
   );
   const [busy, setBusy] = useState(false);
   const lock = useRef(false);

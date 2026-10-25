@@ -15,15 +15,17 @@ export function PeopleSearch({
   userId,
   onChoose,
   excluded = [],
+  initialQuery = "",
 }: {
   userId: string;
   onChoose?: (person: Profile) => Promise<void>;
   excluded?: string[];
+  initialQuery?: string;
 }) {
   const [people, setPeople] = useState<Profile[]>([]);
   const [following, setFollowing] = useState<string[]>([]);
-  const [term, setTerm] = useState("");
-  const [query, setQuery] = useState("");
+  const [term, setTerm] = useState(cleanPeopleQuery(initialQuery));
+  const [query, setQuery] = useState(cleanPeopleQuery(initialQuery));
   const [revision, setRevision] = useState(0);
   const [busy, setBusy] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);

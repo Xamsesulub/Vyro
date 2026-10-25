@@ -10,7 +10,14 @@ import Home from "../src/app/(tabs)/index";
 import { acceptAuthSession } from "../src/stores/useAuthStore";
 
 jest.mock("expo-router", () => ({
-  router: { prefetch: jest.fn(), push: jest.fn() },
+  router: {
+    prefetch: jest.fn(),
+    push: jest.fn(),
+    setParams: jest.fn(),
+    canGoBack: () => false,
+    replace: jest.fn(),
+  },
+  useLocalSearchParams: () => ({}),
   useFocusEffect: (callback: () => void) =>
     jest.requireActual("react").useEffect(callback, [callback]),
 }));
@@ -32,7 +39,27 @@ jest.mock("../src/stores/useAppStore", () => {
     goal: 20,
     theme: "light",
     preferences: jest.fn(),
-    workouts: [],
+    workouts: [
+      {
+        id: "sim",
+        title: "Lokal testsimulering",
+        sport: "Løping",
+        date: "2026-10-25T10:00:00Z",
+        source: "simulation",
+        distance: 1,
+        seconds: 300,
+      },
+      {
+        id: "private",
+        title: "En annen kontos GPS-økt",
+        sport: "Løping",
+        date: "2026-10-25T10:00:00Z",
+        source: "gps",
+        ownerId: "someone-else",
+        distance: 1,
+        seconds: 300,
+      },
+    ],
     storageError: null,
   };
   return {
@@ -44,7 +71,14 @@ jest.mock("../src/features/activities/useVisibleWorkouts", () => ({
   useVisibleWorkouts: () => [],
 }));
 jest.mock("../src/components/ActivityCard", () => ({
-  ActivityCard: () => null,
+  ActivityCard: ({ workout }: { workout: { title: string } }) =>
+    jest
+      .requireActual("react")
+      .createElement(
+        jest.requireActual("react-native").Text,
+        null,
+        workout.title,
+      ),
 }));
 jest.mock("../src/components/motion", () => ({
   Reveal: ({ children }: { children: React.ReactNode }) => children,
@@ -109,15 +143,15 @@ test("recovered login, token refresh and logout update home, profile and setting
   } as unknown as Session;
   await act(() => event("INITIAL_SESSION", session));
   expect(screen.getByText("Privat innhold")).toBeTruthy();
-  expect(screen.getByText("Innlogget")).toBeTruthy();
+  expect(screen.getByText("0 aktiviteter")).toBeTruthy();
   expect(
-    screen.getByRole("button", { name: "Konto og utlogging" }),
+    screen.getByRole("button", { name: "Konto og sikkerhet" }),
   ).toBeTruthy();
   expect(screen.queryByText(/Logg inn/)).toBeNull();
   expect(screen.getByText("Turer å dele.")).toBeTruthy();
   await screen.unmount();
   await render(<Screens />);
-  expect(screen.getByText("Kontonavn")).toBeTruthy();
+  expect(screen.getAllByText("Kontonavn").length).toBeTruthy();
   await act(() =>
     event("TOKEN_REFRESHED", {
       ...session,
@@ -129,7 +163,7 @@ test("recovered login, token refresh and logout update home, profile and setting
   expect(screen.queryByText("Privat innhold")).toBeNull();
   expect(screen.getByText("Gjest · ikke innlogget")).toBeTruthy();
   expect(
-    screen.queryByRole("button", { name: "Konto og utlogging" }),
+    screen.queryByRole("button", { name: "Konto og sikkerhet" }),
   ).toBeNull();
   stop?.();
 });
@@ -170,19 +204,26 @@ test("Home never flashes the sign-in page during slow recovery or a stale initia
     await jest.advanceTimersByTimeAsync(9_000);
   });
   expect(screen.getByText(/gjenopprette innloggingen/)).toBeTruthy();
-  expect(
-    screen.queryByRole("button", { name: "Logg inn eller opprett konto" }),
-  ).toBeNull();
+  expect(screen.queryByRole("button", { name: "Kom i gang" })).toBeNull();
   await act(() => acceptAuthSession({ user: { id: "signed-in" } } as Session));
   await act(() => event("INITIAL_SESSION", null));
   expect(screen.getByText("Turer å dele.")).toBeTruthy();
-  expect(
-    screen.queryByRole("button", { name: "Logg inn eller opprett konto" }),
-  ).toBeNull();
+  expect(screen.queryByRole("button", { name: "Kom i gang" })).toBeNull();
   await act(() => event("SIGNED_OUT", null));
-  expect(
-    screen.getByRole("button", { name: "Logg inn eller opprett konto" }),
-  ).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Kom i gang" })).toBeTruthy();
   stop?.();
   jest.useRealTimers();
+});
+
+test("guests can still open local simulations without seeing another account's GPS history", async () => {
+  useAuthStore.setState({
+    ready: true,
+    session: null,
+    confirmationEmail: null,
+  });
+  await render(<Profile />);
+  expect(screen.getByText("Lokal testsimulering")).toBeTruthy();
+  expect(screen.queryByText("En annen kontos GPS-økt")).toBeNull();
+  expect(screen.getByRole("tab", { name: "Aktiviteter" })).toBeTruthy();
+  expect(screen.queryByRole("tab", { name: "Fremgang" })).toBeNull();
 });

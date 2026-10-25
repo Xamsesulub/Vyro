@@ -36,7 +36,10 @@ type State = {
   backupReceipts: Record<string, string>;
   hiddenBackups: string[];
   experience: string;
-  theme: "dark" | "light";
+  theme: "dark" | "light" | "system";
+  defaultMapKind: "standard" | "satellite" | "hybrid";
+  homeFeed: "following" | "reposted" | "own";
+  sharingAudienceByOwner: Record<string, "followers" | "everyone">;
   examplesVisible: boolean;
   workouts: Workout[];
   recording: Recording;
@@ -58,6 +61,9 @@ type State = {
         | "backupOwners"
         | "experience"
         | "theme"
+        | "defaultMapKind"
+        | "homeFeed"
+        | "sharingAudienceByOwner"
         | "examplesVisible"
         | "joined"
         | "liked"
@@ -93,6 +99,9 @@ type SavedState = Pick<
   | "hiddenBackups"
   | "experience"
   | "theme"
+  | "defaultMapKind"
+  | "homeFeed"
+  | "sharingAudienceByOwner"
   | "examplesVisible"
   | "workouts"
   | "recording"
@@ -156,6 +165,9 @@ export const useAppStore = create<State>()(
       hiddenBackups: [],
       experience: "Litt erfaring",
       theme: "light",
+      defaultMapKind: "standard",
+      homeFeed: "following",
+      sharingAudienceByOwner: {},
       examplesVisible: true,
       workouts: [],
       recording: initialRecording,
@@ -340,6 +352,9 @@ export const useAppStore = create<State>()(
         hiddenBackups: s.hiddenBackups,
         experience: s.experience,
         theme: s.theme,
+        defaultMapKind: s.defaultMapKind,
+        homeFeed: s.homeFeed,
+        sharingAudienceByOwner: s.sharingAudienceByOwner,
         examplesVisible: s.examplesVisible,
         workouts: s.workouts,
         recording: s.recording,

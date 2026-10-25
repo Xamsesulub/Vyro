@@ -28,7 +28,6 @@ export default function RootLayout() {
   const ready = useAppStore((s) => s.ready);
   const storageError = useAppStore((s) => s.storageError);
   const [retrying, setRetrying] = useState(false);
-  const theme = useAppStore((s) => s.theme);
   const idle = useAppStore((s) => s.recording.status === "idle");
   const c = useTheme();
   const reduced = useReducedMotion();
@@ -63,7 +62,7 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <LocationWatcher />
         <WorkoutAwake />
-        <StatusBar style={theme === "dark" ? "light" : "dark"} />
+        <StatusBar style={c.bg === "#0B1120" ? "light" : "dark"} />
         {!ready ? (
           <View
             style={{

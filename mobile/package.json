@@ -70,6 +70,7 @@
     "release:check": "node scripts/check-release-env.cjs",
     "eas-build-pre-install": "node scripts/check-release-env.cjs",
     "ios:testflight": "npx eas-cli@latest build --platform ios --profile testflight --auto-submit",
+    "ios:preview": "npx eas-cli@latest build --platform ios --profile preview",
     "ios:submit": "npx eas-cli@latest submit --platform ios --profile testflight"
   },
   "overrides": {

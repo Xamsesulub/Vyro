@@ -6,7 +6,9 @@ TestFlight-oppsettet er klargjort lokalt. Ingen signert IPA er bygget, ingen App
 
 `mobile/eas.json` bruker butikkdistribusjon også for TestFlight, EAS-miljøet `production`, automatisk byggnummer fra EAS og fysisk iPhone som mål. Innsendingen velger riktig Apple-app interaktivt første gang. Ingen oppdiktet Expo-ID, Apple-ID eller demokonto er satt inn.
 
-Brukeren har bekreftet at Expo-konto og Apple Developer-medlemskap mangler. Neste økt kan fortsette med apputvikling; TestFlight krever først at disse kontoene opprettes og kobles til. Den offentlige web-testlenken og produksjonsdatabasen er ikke oppdatert med de lokale endringene.
+Ved et tidligere oppsett manglet Expo-konto og Apple Developer-medlemskap. Ved ny kontroll 25. oktober svarer skymiljøet fortsatt «Not logged in»; faktisk EAS-prosjekt og Apple-signering må kobles til før et installerbart bygg kan lages. Ingen ny offentlig web-publisering eller databaseendring er gjort i denne leveransen.
+
+For å teste låst skjerm og appbytte uten å gå via TestFlight først, finnes nå en intern `preview`-profil. Etter samme konto-/signeringsoppsett registreres iPhonen med `npx eas-cli@latest device:create`, og `npm run ios:preview` lager et eget installasjonsbygg uten Metro-server. Expo Go støtter ikke denne funksjonen på iPhone. Se [bakgrunnsopptak og fysisk testplan](background-recording.md).
 
 ## Koble kontoene én gang
 

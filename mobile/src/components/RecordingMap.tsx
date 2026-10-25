@@ -318,7 +318,7 @@ export default function RecordingMap({
           <Txt size={10} style={{ textAlign: "center", color: "#596579" }}>
             {gps
               ? tracking.backgroundActive
-                ? "GPS-opptak fortsetter med låst skjerm"
+                ? "GPS fortsetter med låst skjerm og i andre apper"
                 : "Hold appen åpen · opptaket pauser i bakgrunnen"
               : "Eksempelfart og illustrert rute · lagres aldri som GPS"}
           </Txt>

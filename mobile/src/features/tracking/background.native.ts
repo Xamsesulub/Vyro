@@ -27,14 +27,14 @@ const ownsRecording = () => {
   );
 };
 export async function requestBackgroundAccess() {
-  if (!(await TaskManager.isAvailableAsync()))
+  if (!backgroundSupported || !(await TaskManager.isAvailableAsync()))
     throw new Error(
       "Bakgrunnsopptak krever et nytt mobilbygg på denne enheten.",
     );
   const result = await Location.requestBackgroundPermissionsAsync();
   if (!result.granted)
     throw new Error(
-      "Tillat posisjon også i bakgrunnen i telefonens innstillinger, eller slå av bakgrunnsopptak.",
+      "Velg Alltid for VYRO under Posisjon i telefonens innstillinger. Slå på Presis posisjon. Du kan også slå av opptak med låst skjerm og holde appen åpen.",
     );
 }
 export function startBackground() {
@@ -61,7 +61,47 @@ export function startBackground() {
       await Location.stopLocationUpdatesAsync(TASK);
       return;
     }
+    if (!(await Location.hasStartedLocationUpdatesAsync(TASK)))
+      throw new Error(
+        "GPS-opptak med låst skjerm startet ikke. Prøv Start eller Fortsett igjen.",
+      );
+    if (!ownsRecording()) {
+      await Location.stopLocationUpdatesAsync(TASK);
+      return;
+    }
     useTrackingStatus.setState({ backgroundActive: true });
+  });
+}
+
+// Verify on return to the app. Never restart GPS silently after permission loss
+// or a stopped service; leave the recorded route available for Save/Resume.
+export async function verifyBackgroundRecording() {
+  if (!useTrackingStatus.getState().backgroundActive || !ownsRecording())
+    return;
+  const before = useAppStore.getState().recording;
+  let available = false;
+  try {
+    const [started, permission] = await Promise.all([
+      Location.hasStartedLocationUpdatesAsync(TASK),
+      Location.getBackgroundPermissionsAsync(),
+    ]);
+    available = started && permission.granted;
+  } catch {
+    // A failed native check must not be presented as active background GPS.
+  }
+  const current = useAppStore.getState().recording;
+  if (
+    available ||
+    !ownsRecording() ||
+    !useTrackingStatus.getState().backgroundActive ||
+    current.ownerId !== before.ownerId ||
+    current.segmentStartedAt !== before.segmentStartedAt
+  )
+    return;
+  useAppStore.getState().event("pause");
+  useTrackingStatus.setState({
+    error:
+      "GPS-opptaket ble stoppet av telefonen. Økten er pauset. Sjekk posisjonstillatelsen og trykk Fortsett.",
   });
 }
 export function stopBackground() {

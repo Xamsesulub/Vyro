@@ -16,6 +16,13 @@
       "ios": {
         "simulator": false
       }
+    },
+    "preview": {
+      "extends": "production",
+      "distribution": "internal",
+      "ios": {
+        "simulator": false
+      }
     }
   },
   "submit": {

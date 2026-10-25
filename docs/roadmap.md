@@ -1,5 +1,13 @@
 # Leveranseplan
 
+## Opptak med låst skjerm og appbytte, 25. oktober 2026
+
+Bakgrunnsopptak er nå standard i nye installasjoner og synlig før Start; lagrede avvalg beholdes. Native tjenestestart bekreftes, opptakstid oppdateres etter suspenderte timere, og tapt tjeneste/tillatelse gir pause med bevart rute. Expo Go viser at eget VYRO-bygg kreves. En intern `preview`-profil er klargjort for fysisk iPhone uten Metro-server. 233 tester, typecheck, lint, iOS/web-eksport og konfigurasjonskontroll består. Signering, installasjon og fysisk skjermlås-/appbyttetest gjenstår; Expo-innlogging og Apple-signering er ikke koblet til skymiljøet. Se [oppsett og testplan](background-recording.md).
+
+## Kontroll av snittempo, 25. oktober 2026
+
+VYROs snittempo er kontrollert mot brukerens VYRO-/Strava-bilder og gjennom 52 relevante tester. Ingen regnefeil er funnet; full distansepresisjon beholdes fra opptak til lagret økt. Seks nye regresjonstester er lagt til. Sammenligning av GPS-nøyaktighet på samme rute gjenstår; Expo Go pauser når VYRO går i bakgrunnen. Ingen funksjonsendring er gjort. Se [kontrollen av snittempo](pace-comparison.md).
+
 ## Apple Watch, 25. oktober 2026
 
 En første SwiftUI-klokkeapp for watchOS 10+ er implementert med Start/Pause/Fortsett/Avslutt, utendørs GPS, aktiv tid, distanse, tempo og HealthKit-puls. Innstillinger → Apple Watch gir eksplisitt kontokobling og synkronisering. Fullførte klokkeøkter importeres privat til eksisterende treningslogg, med validering, duplikatkvitteringer og bekreftelse først etter kryptert lagring på iPhone. Klokkens utboks beholdes ved forbindelses- eller lagringsfeil.

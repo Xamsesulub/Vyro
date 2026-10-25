@@ -1,5 +1,16 @@
 # Testing
 
+## Bakgrunnsopptak og appbytte, 25. oktober 2026
+
+- **233 tester i 45 suiter består.** Nye kontroller dekker AppState-overganger uten pause når native bakgrunnsopptak er aktivt, GPS-/tidssjekkpunkter mens timere er suspendert, manuell pause, tjeneste som ikke starter, tapt tillatelse/tjeneste, forsinkede kontrollsvar, Expo Go-fallback, eksisterende avvalg og innstillingsflyt. Ingen native posisjonstjeneste eller fysisk iPhone brukes i Jest.
+- Typecheck, lint uten cache, iOS Hermes-eksport, web-eksport og Expo-introspeksjon består. `UIBackgroundModes: location`, tillatelsestekster og den interne iPhone-profilen `preview` er kontrollert. Chromium ved 390 × 844 og 320 × 640: informasjon om bakgrunnsstøtte og Start er synlige, støtteløs bryter skjules, innstillingsskjermen virker og ingen JavaScript-sidefeil oppstår.
+- Expo CLI svarer «Not logged in». Ingen signert IPA, installasjonslenke eller fysisk test er laget; tidligere simulatorbygg er ikke bevis på fysisk bakgrunnsopptak. Se [byggekrav og enhetstest](background-recording.md).
+
+## Snittempo sammenlignet med Strava, 25. oktober 2026
+
+- **52 tester i seks suiter består**, inkludert seks nye regresjoner for distansepresisjon, tall som passer skjermbildene, GPS-opptak ved ulik fart med pause og bevaring av råverdier ved lagring/gjeninnlasting. Typecheck og lint uten cache består.
+- Ingen feil funnet i VYROs tempoberegning; ingen produksjonskode er endret. Bildenes ulike tider/distanser og Expo Gos pause i bakgrunnen begrenser sammenligningen. Rå GPS-nøyaktighet og Stravas interne beregningsregler er ikke verifisert. Se [tall, metode og fysisk testplan](pace-comparison.md).
+
 ## Apple Watch, 25. oktober 2026 (skymiljø)
 
 - Hele Jest-samlingen består: **216 tester i 42 suiter**, inkludert 18 nye tilfeller for klokkeformat, avvisning av feil eier/simulering/ugyldige koordinater og tid, distanseberegning, pause-/GPS-gap, duplikater, tapt bekreftelse, lagringsfeil og kontobytte mens en overføring pågår. Synkroniseringstester bruker en transport-/lagringsdobbel; de kjører ikke WatchConnectivity.

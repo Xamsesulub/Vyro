@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { AppState, View, ActivityIndicator } from "react-native";
+import { View, ActivityIndicator } from "react-native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useReducedMotion } from "react-native-reanimated";
-import { appPersistence, useAppStore } from "../stores/useAppStore";
+import { useAppStore } from "../stores/useAppStore";
 // Migrate legacy private GPS drafts on launch, including lazy web routes.
 import "../stores/useGpsStore";
 import { Button, Txt, useTheme } from "../components/ui";
@@ -14,7 +14,6 @@ import { observeAuth, useAuthStore } from "../stores/useAuthStore";
 
 import { LocationWatcher } from "../components/LocationWatcher";
 import { LaunchSignature } from "../components/motion";
-import { useTrackingStatus } from "../stores/useTrackingStatus";
 import { observeKilometerAlerts } from "../features/tracking/alerts";
 import { observeBackups } from "../features/backup/sync";
 import { cleanExports } from "../lib/shareFile";
@@ -22,6 +21,7 @@ import { prewarmMap } from "../features/maps/prewarm";
 import { WorkoutAwake } from "../components/WorkoutAwake";
 import { observeWorkoutActivity } from "../features/tracking/liveActivity";
 import { observeWatch } from "../features/watch/sync";
+import { observeRecording } from "../features/tracking/lifecycle";
 export { RouteError as ErrorBoundary } from "../components/RouteError";
 
 export default function RootLayout() {
@@ -44,6 +44,7 @@ export default function RootLayout() {
   useEffect(observeKilometerAlerts, []);
   useEffect(observeWorkoutActivity, []);
   useEffect(observeWatch, []);
+  useEffect(observeRecording, []);
   useEffect(() => {
     if (!ready) return;
     // Let the initial screen paint before preparing workers for the map tabs.
@@ -56,23 +57,6 @@ export default function RootLayout() {
     } catch {
       /* Cache cleanup can retry on the next export. */
     }
-  }, []);
-  useEffect(() => {
-    const timer = setInterval(() => {
-      if (useAppStore.getState().recording.status === "recording")
-        useAppStore.getState().tick();
-    }, 1000);
-    const sub = AppState.addEventListener("change", (status) => {
-      if (status !== "active") {
-        if (!useTrackingStatus.getState().backgroundActive)
-          useAppStore.getState().event("pause");
-        void appPersistence.flush();
-      }
-    });
-    return () => {
-      clearInterval(timer);
-      sub.remove();
-    };
   }, []);
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

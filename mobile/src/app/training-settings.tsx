@@ -1,14 +1,13 @@
-import { Platform, Switch, View } from "react-native";
+import { Switch, View } from "react-native";
 import { router } from "expo-router";
 import { Button, Chip, Screen, Txt, styles } from "../components/ui";
 import { useAppStore } from "../stores/useAppStore";
-import { backgroundSupported } from "../features/tracking/background";
+import { BackgroundRecordingSetting } from "../components/BackgroundRecordingSetting";
 import { liveActivitySupported } from "../features/tracking/liveActivitySupport";
 import { useTrackingStatus } from "../stores/useTrackingStatus";
 
 export default function TrainingSettings() {
   const alerts = useAppStore((s) => s.kilometerAlerts);
-  const background = useAppStore((s) => s.backgroundRecording);
   const awake = useAppStore((s) => s.keepWorkoutAwake);
   const liveActivity = useAppStore((s) => s.workoutLiveActivity);
   const liveError = useTrackingStatus((s) => s.liveActivityError);
@@ -71,42 +70,7 @@ export default function TrainingSettings() {
           pauset. Du kan fortsatt låse telefonen selv.
         </Txt>
       </View>
-      <View style={{ gap: 12 }}>
-        <Txt size={20} weight="700">
-          Opptak med låst skjerm
-        </Txt>
-        {backgroundSupported ? (
-          <>
-            <View style={styles.row}>
-              <Txt style={{ flex: 1 }}>Fortsett med låst skjerm</Txt>
-              <Switch
-                accessibilityLabel="Fortsett med låst skjerm"
-                value={background}
-                disabled={recording}
-                onValueChange={(backgroundRecording) =>
-                  preferences({
-                    backgroundRecording,
-                    ...(!backgroundRecording
-                      ? { workoutLiveActivity: false }
-                      : {}),
-                  })
-                }
-              />
-            </View>
-            <Txt muted size={14}>
-              {recording
-                ? "Avslutt økten før du endrer bakgrunnsopptak."
-                : "Krever posisjonstilgang i bakgrunnen. GPS brukes fra du starter til du pauser eller avslutter økten."}
-            </Txt>
-          </>
-        ) : (
-          <Txt muted size={14}>
-            {Platform.OS === "web"
-              ? "I nettleseren må VYRO være åpen under økten."
-              : "Opptak med låst skjerm krever VYROs eget iPhone-bygg. Expo Go støtter ikke dette; økten pauses når appen legges i bakgrunnen."}
-          </Txt>
-        )}
-      </View>
+      <BackgroundRecordingSetting />
       <View style={{ gap: 12 }}>
         <Txt size={20} weight="700">
           Kart på låseskjermen

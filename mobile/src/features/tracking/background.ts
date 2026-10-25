@@ -4,3 +4,4 @@ export async function requestBackgroundAccess() {
 }
 export async function startBackground() {}
 export async function stopBackground() {}
+export async function verifyBackgroundRecording() {}

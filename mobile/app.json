@@ -33,7 +33,7 @@
           "isIosBackgroundLocationEnabled": true,
           "isAndroidBackgroundLocationEnabled": true,
           "isAndroidForegroundServiceEnabled": true,
-          "locationAlwaysAndWhenInUsePermission": "VYRO bruker posisjonen under en økt du starter, også med låst skjerm når du velger bakgrunnsopptak."
+          "locationAlwaysAndWhenInUsePermission": "VYRO bruker posisjonen under en økt du starter, også med låst skjerm og i andre apper når opptak med låst skjerm er slått på. GPS stoppes når du pauser eller avslutter økten."
         }
       ],
       [

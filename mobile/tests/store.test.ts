@@ -5,6 +5,7 @@ jest.mock("../src/lib/workoutStorage", () => ({
 }));
 import { appPersistence, useAppStore } from "../src/stores/useAppStore";
 import { initialRecording } from "../src/features/tracking/simulator";
+import { km, pace } from "../src/features/activities/model";
 const originalWrite = jest
   .mocked(AsyncStorage.setItem)
   .getMockImplementation()!;
@@ -117,6 +118,28 @@ test("save is private and idempotent, and clears the pending session", () => {
   });
   expect(useAppStore.getState().recording.status).toBe("idle");
 });
+test("saving and reloading preserve unrounded distance and time for average pace", async () => {
+  useAppStore.setState({
+    recording: {
+      ...initialRecording,
+      status: "finishing",
+      seconds: 358.25,
+      distance: 0.5455,
+      route: [[
+        { latitude: 59.9, longitude: 10.7 },
+        { latitude: 59.9049058, longitude: 10.7 },
+      ]],
+    },
+  });
+  const id = useAppStore.getState().save("Precision fixture", "");
+  await appPersistence.flush();
+  await useAppStore.persist.rehydrate();
+  const workout = useAppStore.getState().workouts.find((w) => w.id === id)!;
+  expect(workout.distance).toBe(0.5455);
+  expect(workout.seconds).toBe(358.25);
+  expect(km(workout.distance)).toBe("0,55");
+  expect(pace(workout.distance, workout.seconds)).toBe("10:56");
+});
 test("sport cannot change while recording and empty sessions cannot save", () => {
   useAppStore.getState().event("start");
   useAppStore.getState().sport("Sykling");
@@ -125,6 +148,13 @@ test("sport cannot change while recording and empty sessions cannot save", () =>
     recording: { ...initialRecording, status: "finishing" },
   });
   expect(useAppStore.getState().save("", "")).toBeNull();
+});
+test("new installations default to background recording while existing opt-outs survive hydration", async () => {
+  expect(useAppStore.getInitialState().backgroundRecording).toBe(true);
+  useAppStore.getState().preferences({ backgroundRecording: false });
+  await appPersistence.flush();
+  await useAppStore.persist.rehydrate();
+  expect(useAppStore.getState().backgroundRecording).toBe(false);
 });
 test("a simulated session is saved as a simulation, never as GPS", () => {
   useAppStore.setState({

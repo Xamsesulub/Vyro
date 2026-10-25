@@ -21,6 +21,7 @@ import { useAuthStore } from "../../stores/useAuthStore";
 import { beginRecording } from "../../features/tracking/controls";
 import { backgroundSupported } from "../../features/tracking/background";
 import { useTrackingStatus } from "../../stores/useTrackingStatus";
+import { BackgroundRecordingSetting } from "../../components/BackgroundRecordingSetting";
 
 const modes: { mode: RecordingMode; title: string }[] = [
   { mode: "gps", title: "GPS" },
@@ -135,6 +136,7 @@ export default function Track() {
               <Txt size={14}>{tracking.error}</Txt>
             </View>
           )}
+          {gps && <BackgroundRecordingSetting compact />}
           <Button
             title={tracking.starting ? "Starter …" : primary.title}
             disabled={tracking.starting}

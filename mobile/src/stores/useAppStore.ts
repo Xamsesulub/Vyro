@@ -143,7 +143,9 @@ export const useAppStore = create<State>()(
       preferred: ["Løping"],
       goal: 20,
       weeklyGoals: {},
-      backgroundRecording: false,
+      // Only takes effect in a native build, after permission at Start. Persisted
+      // opt-outs are retained by the normal storage merge.
+      backgroundRecording: true,
       keepWorkoutAwake: true,
       workoutLiveActivity: false,
       kilometerAlerts: "off",

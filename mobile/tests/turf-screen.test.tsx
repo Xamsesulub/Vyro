@@ -158,7 +158,8 @@ test("creation reviews one workout then clearly confirms publication and opens t
   await render(<TurfScreen />);
   await press("Velg Langs elva");
   expect(screen.queryByRole("button", { name: "Velg Langs elva" })).toBeNull();
-  expect(screen.getByRole("button", { name: "Legg ut sone" })).toBeEnabled();
+  expect(screen.getByRole("button", { name: "Legg ut sone" })).toBeDisabled();
+  expect(screen.getByLabelText("Navn på sonen")).toHaveDisplayValue("");
   await fireEvent.changeText(
     screen.getByLabelText("Navn på sonen"),
     "Elvesonen",
@@ -196,6 +197,10 @@ test("short recordings show the reason and cannot publish; changing workout clea
   await press("Velg en annen løpetur");
   await press("Velg Langs elva");
   expect(screen.queryByRole("alert")).toBeNull();
+  await fireEvent.changeText(
+    screen.getByLabelText("Navn på sonen"),
+    "Langs elva",
+  );
   expect(screen.getByRole("button", { name: "Legg ut sone" })).toBeEnabled();
   expect(submitTurf).not.toHaveBeenCalled();
 });
@@ -207,6 +212,10 @@ test("a failed submission keeps the name and route, blocks double taps and can r
     .mockRejectedValueOnce(new Error("Nettfeil"))
     .mockReturnValueOnce(pending.promise);
   await render(<TurfScreen />);
+  await fireEvent.changeText(
+    screen.getByLabelText("Navn på sonen"),
+    "Langs elva",
+  );
   await press("Legg ut sone");
   expect(screen.getByRole("alert")).toHaveTextContent(/Nettfeil/);
   expect(screen.getByLabelText("Navn på sonen")).toHaveProp(

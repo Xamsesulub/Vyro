@@ -40,7 +40,7 @@ export function TurfComposer({
   const [selected, setSelected] = useState(workoutId ?? "");
   const workout = workouts.find((w) => w.id === selected);
   const { turf, error: loadError, loading, retry } = useTurf(turfId);
-  const [name, setName] = useState(workout?.title.slice(0, 80) ?? "");
+  const [name, setName] = useState("");
   const [extend, setExtend] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -190,7 +190,7 @@ export function TurfComposer({
               label={`Velg ${w.title}`}
               onPress={() => {
                 setSelected(w.id);
-                setName(w.title.slice(0, 80));
+                setName("");
                 setError("");
               }}
             />

@@ -12,6 +12,8 @@ import {
 
 let mockProps: MapViewProps;
 const mockAnimate = jest.fn();
+const mockSet = jest.fn();
+const mockCamera = jest.fn();
 const mockFit = jest.fn();
 const mockMount = jest.fn();
 jest.mock("react-native-maps", () => {
@@ -24,6 +26,8 @@ jest.mock("react-native-maps", () => {
       mockProps = props;
       React.useImperativeHandle(ref, () => ({
         animateCamera: mockAnimate,
+        setCamera: mockSet,
+        getCamera: mockCamera,
         fitToCoordinates: mockFit,
       }));
       React.useEffect(() => {
@@ -41,7 +45,12 @@ const a = { latitude: 59.9, longitude: 10.7 };
 const b = { latitude: 59.91, longitude: 10.71 };
 const c = { latitude: 60, longitude: 11 };
 const d = { latitude: 60.01, longitude: 11.01 };
-beforeEach(() => jest.clearAllMocks());
+beforeEach(() => {
+  jest.clearAllMocks();
+  mockCamera
+    .mockReset()
+    .mockResolvedValue({ center: a, pitch: 0, heading: 25, altitude: 1234 });
+});
 
 test("the iOS entry uses Apple with distinct modes and no automatic GPS collection or remount", async () => {
   await render(<AppleMap mapKind="standard" position={a} />);
@@ -95,7 +104,12 @@ test("panning stops camera follow until the user recenters, without snapping to 
   await render(<AppleMap follow position={a} route={route} onPan={onPan} />);
   expect(mockProps.initialRegion?.latitude).toBe(a.latitude);
   await act(async () => mockProps.onMapReady?.());
-  expect(mockAnimate).toHaveBeenCalledWith({ center: a, altitude: 700 });
+  expect(mockSet).toHaveBeenCalledWith({
+    center: a,
+    altitude: 700,
+    pitch: 0,
+    heading: 0,
+  });
   await act(async () => mockProps.onPanDrag?.({} as never));
   expect(onPan).toHaveBeenCalledTimes(1);
   mockAnimate.mockClear();
@@ -111,7 +125,9 @@ test("panning stops camera follow until the user recenters, without snapping to 
   await screen.rerender(
     <AppleMap follow position={b} recenter={1} route={route} />,
   );
-  expect(mockAnimate).toHaveBeenCalledWith({ center: b, altitude: 700 });
+  expect(mockAnimate).toHaveBeenCalledWith(
+    expect.objectContaining({ center: b, altitude: 700 }),
+  );
 });
 
 test("route fitting respects panel insets, while search, north and 3D controls move the camera", async () => {
@@ -127,9 +143,12 @@ test("route fitting respects panel insets, while search, north and 3D controls m
   expect(mockProps.legalLabelInsets?.bottom).toBe(268);
   expect(mockProps.appleLogoInsets?.bottom).toBe(268);
   await screen.rerender(<AppleMap target={c} threeD north={1} />);
-  expect(mockAnimate).toHaveBeenCalledWith({ center: c, altitude: 5000 });
-  expect(mockAnimate).toHaveBeenCalledWith({ pitch: 55 });
-  expect(mockAnimate).toHaveBeenCalledWith({ heading: 0 });
+  expect(mockSet).toHaveBeenCalledWith({
+    center: c,
+    altitude: 5000,
+    pitch: 55,
+    heading: 0,
+  });
   expect(mockProps.showsBuildings).toBe(true);
 });
 
@@ -141,16 +160,128 @@ test("first render frames the actual route rather than loading Oslo before jumpi
   expect(appleInitialRegion([a], null).latitudeDelta).toBeGreaterThan(0);
 });
 
+test.each(["standard", "satellite", "hybrid"] as const)(
+  "%s switches between 2D and 3D without fitting again or changing altitude/center/heading",
+  async (mapKind) => {
+    const padding = { top: 170, right: 68, bottom: 350, left: 35 };
+    const renderMap = (threeD: boolean) => (
+      <AppleMap
+        mapKind={mapKind}
+        threeD={threeD}
+        route={[[{ ...a }, { ...b }]]}
+        padding={{ ...padding }}
+      />
+    );
+    await render(renderMap(false));
+    await act(async () => mockProps.onMapReady?.());
+    mockFit.mockClear();
+    mockSet.mockClear();
+    mockAnimate.mockClear();
+    const camera = { center: c, altitude: 678, heading: 83, pitch: 0 };
+    mockCamera.mockResolvedValue(camera);
+    await screen.rerender(renderMap(true));
+    expect(mockProps.mapType).toBe(
+      mapKind === "standard" ? "standard" : `${mapKind}Flyover`,
+    );
+    expect(mockProps.pitchEnabled).toBe(true);
+    expect(mockSet).toHaveBeenLastCalledWith({ ...camera, pitch: 55 });
+    mockCamera.mockResolvedValue({ ...camera, pitch: 55 });
+    await screen.rerender(renderMap(false));
+    expect(mockProps.mapType).toBe(mapKind);
+    expect(mockProps.pitchEnabled).toBe(false);
+    expect(mockSet).toHaveBeenLastCalledWith(camera);
+    expect(mockFit).not.toHaveBeenCalled();
+    expect(mockAnimate).not.toHaveBeenCalled();
+    expect(mockMount).toHaveBeenCalledTimes(1);
+  },
+);
+
+test("a delayed 3D camera read cannot override a newer 2D selection, pan or unmount", async () => {
+  await render(<AppleMap />);
+  await act(async () => mockProps.onMapReady?.());
+  let finish!: (value: unknown) => void;
+  mockCamera.mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+  );
+  await screen.rerender(<AppleMap threeD />);
+  await screen.rerender(<AppleMap />);
+  mockSet.mockClear();
+  await act(async () =>
+    finish({ center: a, altitude: 1234, pitch: 55, heading: 25 }),
+  );
+  expect(mockSet).not.toHaveBeenCalled();
+  mockCamera.mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+  );
+  await screen.rerender(<AppleMap threeD />);
+  await act(async () => mockProps.onPanDrag?.({} as never));
+  await act(async () =>
+    finish({ center: a, altitude: 1234, pitch: 0, heading: 25 }),
+  );
+  expect(mockSet).not.toHaveBeenCalled();
+  mockCamera.mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+  );
+  await screen.rerender(<AppleMap />);
+  await screen.unmount();
+  await act(async () =>
+    finish({ center: a, altitude: 1234, pitch: 55, heading: 25 }),
+  );
+  expect(mockSet).not.toHaveBeenCalled();
+});
+
+test("following a GPS fix and fitting an expanded panel retain the selected 3D pitch", async () => {
+  await render(<AppleMap threeD follow position={a} />);
+  await act(async () => mockProps.onMapReady?.());
+  expect(mockSet).toHaveBeenLastCalledWith(
+    expect.objectContaining({ center: a, pitch: 55 }),
+  );
+  await screen.rerender(<AppleMap threeD follow position={b} />);
+  expect(mockAnimate).toHaveBeenLastCalledWith(
+    expect.objectContaining({ center: b, pitch: 55 }),
+  );
+  await screen.rerender(<AppleMap threeD route={[[a, b]]} />);
+  await screen.rerender(
+    <AppleMap
+      threeD
+      route={[[a, b]]}
+      padding={{ top: 170, left: 30, right: 60, bottom: 360 }}
+    />,
+  );
+  expect(mockFit).toHaveBeenLastCalledWith(
+    [a, b],
+    expect.objectContaining({
+      edgePadding: { top: 170, left: 30, right: 60, bottom: 360 },
+    }),
+  );
+  expect(mockSet).toHaveBeenLastCalledWith(
+    expect.objectContaining({ pitch: 55 }),
+  );
+});
+
 test("the first GPS fix zooms in and an embedded workout map keeps following after a drag", async () => {
   await render(<AppleMap follow />);
   await act(async () => mockProps.onMapReady?.());
   mockAnimate.mockClear();
   await screen.rerender(<AppleMap follow position={a} />);
-  expect(mockAnimate).toHaveBeenCalledWith({ center: a, altitude: 700 });
+  expect(mockAnimate).toHaveBeenCalledWith(
+    expect.objectContaining({ center: a, altitude: 700 }),
+  );
   await act(async () => mockProps.onPanDrag?.({} as never));
   mockAnimate.mockClear();
   await screen.rerender(<AppleMap follow position={b} />);
-  expect(mockAnimate).toHaveBeenCalledWith({ center: b });
+  expect(mockAnimate).toHaveBeenCalledWith(
+    expect.objectContaining({ center: b, altitude: 1234 }),
+  );
 });
 
 test("choosing another route or selecting the same search result again overrides a manual pan", async () => {
@@ -173,5 +304,7 @@ test("choosing another route or selecting the same search result again overrides
   await act(async () => mockProps.onPanDrag?.({} as never));
   mockAnimate.mockClear();
   await screen.rerender(<AppleMap target={{ ...a }} />);
-  expect(mockAnimate).toHaveBeenCalledWith({ center: a, altitude: 5000 });
+  expect(mockAnimate).toHaveBeenCalledWith(
+    expect.objectContaining({ center: a, altitude: 5000 }),
+  );
 });

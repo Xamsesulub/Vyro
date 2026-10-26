@@ -303,7 +303,7 @@ export const useAppStore = create<State>()(
           workouts: [
             {
               id,
-              title: title.trim() || `Min ${r.sport.toLowerCase()}`,
+              title: title.trim() || r.sport,
               notes: notes.trim(),
               sport: r.sport,
               distance: r.distance,

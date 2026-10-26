@@ -31,7 +31,7 @@ export default function Summary() {
   const c = useTheme();
   const r = s.recording;
   const userId = useAuthStore((s) => s.session?.user.id);
-  const [title, setTitle] = useState(`Min ${r.sport.toLowerCase()}`);
+  const [title, setTitle] = useState("");
   const [notes, setNotes] = useState("");
   const [discard, setDiscard] = useState(false);
   const input = {
@@ -99,6 +99,8 @@ export default function Summary() {
         maxLength={80}
         value={title}
         onChangeText={setTitle}
+        placeholder="Navn på økten (valgfritt)"
+        placeholderTextColor={c.muted}
         style={input}
       />
       <TextInput

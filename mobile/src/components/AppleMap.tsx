@@ -45,55 +45,112 @@ export default function AppleMap({
   );
   const overlayIds = overlays.map((overlay) => overlay.id).join("|");
   const focus = follow ? position : null;
+  const frame = appleInitialRegion(geometry.coordinates, null);
+  const frameKey = geometry.coordinates.length
+    ? `${frame.latitude}:${frame.longitude}:${frame.latitudeDelta}:${frame.longitudeDelta}`
+    : "";
+  const paddingKey = `${padding.top}:${padding.right}:${padding.bottom}:${padding.left}`;
+  const cameraRequest = useRef(0);
   const previous = useRef({
     follow,
     recenter,
     target,
     overlayIds,
-    focused: !!focus,
+    focus,
+    frameKey,
+    paddingKey,
+    threeD,
+    mapKind,
+    north,
     ready: false,
   });
 
   useEffect(() => {
-    if (!ready) return;
+    if (!ready || !map.current) return;
     const last = previous.current;
     const reset =
       !last.ready ||
       recenter !== last.recenter ||
       (follow && !last.follow) ||
-      (!!focus && !last.focused) ||
+      (!!focus && !last.focus) ||
       overlayIds !== last.overlayIds ||
       target !== last.target;
+    const orientationChanged =
+      !last.ready ||
+      threeD !== last.threeD ||
+      mapKind !== last.mapKind ||
+      north !== last.north;
+    const northChanged = !last.ready || north !== last.north;
+    const frameChanged =
+      frameKey !== last.frameKey || paddingKey !== last.paddingKey;
+    const moved =
+      focus?.latitude !== last.focus?.latitude ||
+      focus?.longitude !== last.focus?.longitude;
     previous.current = {
       follow,
       recenter,
       target,
       overlayIds,
-      focused: !!focus,
+      focus,
+      frameKey,
+      paddingKey,
+      threeD,
+      mapKind,
+      north,
       ready,
     };
     if (reset) panned.current = false;
-    // Dragging stops follow immediately, including fixes arriving before the
-    // parent processes onPan. Do not fit a growing route behind the user's back.
-    if (panned.current) return;
-    if (focus) {
-      map.current?.animateCamera({
-        center: focus,
-        ...(reset ? { altitude: 700 } : {}),
-      });
-    } else if (target) {
-      map.current?.animateCamera({ center: target, altitude: 5000 });
-    } else if (geometry.coordinates.length > 1) {
-      map.current?.fitToCoordinates(geometry.coordinates, {
-        edgePadding: padding,
-        animated: false,
-      });
-    } else if (geometry.coordinates[0]) {
-      map.current?.animateCamera({
-        center: geometry.coordinates[0],
-        altitude: 700,
-      });
+    // Camera orientation is independent of framing. Equivalent route/padding
+    // objects and changing 2D/3D must never fit the route again.
+    const reposition =
+      !panned.current && (reset || (focus ? moved : frameChanged));
+    if (!reposition && !orientationChanged) return;
+    const view = map.current;
+    const sequence = ++cameraRequest.current;
+    let center = undefined;
+    let altitude = undefined;
+    let fitted = false;
+    if (reposition) {
+      if (focus) {
+        center = focus;
+        if (reset) altitude = 700;
+      } else if (target) {
+        center = target;
+        if (reset) altitude = 5000;
+      } else if (geometry.coordinates.length > 1) {
+        view.fitToCoordinates(geometry.coordinates, {
+          edgePadding: padding,
+          animated: false,
+        });
+        fitted = true;
+      } else if (geometry.coordinates[0]) {
+        center = geometry.coordinates[0];
+        altitude = 700;
+      }
     }
+    // MapKit's pitch-only update can change altitude. Read the current view and
+    // explicitly retain it; apply heading + pitch together so they cannot cancel
+    // one another. Instant orientation changes avoid sampling an in-flight tilt
+    // when the user taps quickly. New requests/pans/unmount invalidate old reads.
+    const active = () => cameraRequest.current === sequence;
+    const changes = {
+      ...(center ? { center } : {}),
+      ...(altitude !== undefined ? { altitude } : {}),
+      pitch: threeD ? 55 : 0,
+      ...(northChanged ? { heading: 0 } : {}),
+    };
+    void view
+      .getCamera()
+      .then((camera) => {
+        if (!active()) return;
+        const next = { ...camera, ...changes };
+        if (orientationChanged || fitted) view.setCamera(next);
+        else view.animateCamera(next);
+      })
+      .catch(() => {
+        // Preserve native camera fields if a read fails, without a default zoom.
+        if (active()) view.setCamera(changes);
+      });
   }, [
     ready,
     focus,
@@ -101,16 +158,22 @@ export default function AppleMap({
     recenter,
     target,
     overlayIds,
+    frameKey,
+    paddingKey,
     geometry.coordinates,
     padding,
+    threeD,
+    mapKind,
+    north,
   ]);
 
-  useEffect(() => {
-    if (ready) map.current?.animateCamera({ pitch: threeD ? 55 : 0 });
-  }, [ready, threeD]);
-  useEffect(() => {
-    if (ready) map.current?.animateCamera({ heading: 0 });
-  }, [ready, north]);
+  useEffect(
+    () => () => {
+      cameraRequest.current++;
+      previous.current.ready = false;
+    },
+    [],
+  );
 
   return (
     <MapView
@@ -119,7 +182,8 @@ export default function AppleMap({
       accessibilityLabel="Apple-kart"
       style={{ height, width: "100%" }}
       provider={PROVIDER_DEFAULT}
-      mapType={mapKind}
+      mapType={threeD && mapKind !== "standard" ? `${mapKind}Flyover` : mapKind}
+      pitchEnabled={threeD}
       initialRegion={initialRegion}
       userInterfaceStyle="light"
       showsPointsOfInterests={mapKind !== "satellite" && poi}
@@ -149,6 +213,7 @@ export default function AppleMap({
       onPanDrag={() => {
         // Embedded workout maps keep following the next fix when they have
         // no external follow/recenter controls. Explorer lets the user pan.
+        cameraRequest.current++;
         panned.current = !follow || !!onPan;
         onPan?.();
       }}

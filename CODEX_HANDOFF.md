@@ -1,6 +1,12 @@
 # Til Codex på PC: fortsett herfra
 
-Oppdatert 26. oktober 2026 etter aktivering av ruteforslag og klargjøring av iPhone-testbygg. PC-push `b0039b1` («Google test bestått»), designrunden og forenklede soner er bevart. Fortsett fra denne statusen, ikke start implementasjonen på nytt.
+Oppdatert 26. oktober 2026 etter retting av 2D/3D og tomme navnefelt. PC-push `83cf15d` («koblet til mobilen»), aktiverte ruteforslag, signering, Google og soner er bevart. Fortsett fra denne statusen, ikke start implementasjonen på nytt.
+
+## Nyeste retting: kartvinkel og navnefelt
+
+Apple-kartet samler kamerakallene, beholder posisjon/høyde/retning ved 2D/3D, unngår ny rutetilpasning ved vinkelbytte og forkaster sene kameralesinger. Satellitt/Hybrid bruker Flyover i 3D. Øktnavnet er tomt med grå hjelpetekst; uten navn lagres «Løping»/aktuell idrett. Nye soner får også tomt navnefelt. Eldre lagrede navn er ikke endret. 340 tester, typecheck, lint og web/iOS-eksport består; fysisk MapKit/3D er ikke verifisert her.
+
+**På PC:** hent siste kode og kjør `npm run ios:preview` fra `mobile` for å oppdatere den installerte preview-appen, deretter installer den nye IPA-en. Ingen nye nøkler, pakker, migreringer eller native innstillinger kreves. Expo Go/Metro kan bruke Reload. Ingen EAS Update-kanal er konfigurert. Skymiljøet mangler Expo-innlogging og har ikke bygget ny IPA. Testplanen for 2D/3D, panel, GPS og navnefelt står øverst i [docs/testing.md](docs/testing.md). De eldre setningene nedenfor om at PC-endringene ikke er pushet er historiske: de kom med `83cf15d` og er hentet inn før denne rettingen.
 
 ## Siste arbeid: første signerte iPhone-preview er ferdig
 

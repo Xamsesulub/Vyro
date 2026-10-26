@@ -1,5 +1,11 @@
 # Leveranseplan
 
+## 2D/3D og tomme navnefelt, 26. oktober 2026
+
+Apple-kartet bruker nå én kamerastyring for retning, vinkel og utsnitt. 2D/3D beholder kameraets posisjon, retning og høyde uten ny tilpasning av hele løypa; like koordinater/padding i nye objekter utløser heller ikke en slik tilpasning. Sene kameralesinger forkastes ved nye valg, panorering og lukking. Satellitt/Hybrid velger Apples Flyover-modus i 3D, og 2D slår av vippebevegelser. Virkelig bygnings-/terrengdetalj avhenger av Apples dekning og må testes fysisk.
+
+Øktoppsummeringen starter med tomt navnefelt og grå «Navn på økten (valgfritt)». Uten eget navn lagres idretten, for eksempel «Løping». Ny sone starter også tom med eksisterende eksempeltekst; «Min løping» kopieres ikke inn fra eldre økter. Eldre lagrede navn endres ikke. PC-push `83cf15d`, signering og aktive ruteforslag er bevart. Ingen nye pakker, native innstillinger eller databaseendringer. Installert preview må oppdateres med et nytt EAS-bygg; Expo Go/Metro kan laste JavaScript-endringene med Reload. Se [teststatus](testing.md).
+
 ## Eget iPhone-testbygg klargjort, 26. oktober 2026
 
 Appen er koblet til EAS-prosjekt `@xamse10/vyro`. Intern `preview`-profil bruker eget miljø med eksisterende Supabase-kontoer, Google aktivert og Apple deaktivert. Apple-medlemskap, innlogging, Team ID `YACWFNB642` og iPhone-registrering er bekreftet. Den opprinnelige app-ID-en ble avvist som utilgjengelig; iOS bruker nå `app.vyro.xamse10` med oppdaterte widget-/Watch-ID-er og appgruppe. Typecheck, lint, Expo-introspeksjon og 16 relevante tester består etter endringen. **Første preview-bygg er ferdig med signert IPA** (`FINISHED`, versjon `0.1.0`, bygg 1). Ingen TestFlight-opplasting er startet. Neste steg er installasjon og fysisk Google-/bakgrunns-GPS-/Watch-test; se [byggeguiden](testflight.md).

@@ -1,5 +1,12 @@
 # Testing
 
+## 2D/3D og navn som hjelpetekst, 26. oktober 2026
+
+- **340 tester i 59 suiter**, typecheck og Expo lint består. Nye Apple-kartregresjoner dekker Standard/Satellitt/Hybrid, 2D → 3D → 2D, bevart sentrum/høyde/retning, ingen ekstra rutetilpasning eller remontering ved vinkelbytte, raske trykk med forsinket kamerasvar, panorering/lukking, GPS-følging og panelendring i 3D. Testene bruker MapView-mock, ikke en faktisk MapKit-renderer. Sonetestene legger nå inn navn eksplisitt og verifiserer at tomt felt ikke kan publiseres. Eksisterende webkarttester består.
+- Expo SDK 58 web- og iOS Hermes-eksport består i `.expo/map-title-validation` med oppdiktet offentlig Supabase-konfigurasjon. Versjonert Expo v58-dokumentasjon og react-native-maps v1.29.11-dokumentasjon/kilde er kontrollert for `getCamera`, `setCamera`, `pitchEnabled` og Flyover-modus. Ingen native kilde/pakke er endret; dette er ikke et nytt signert iPhone-bygg.
+- Chromium ved 390 × 844 og 320 × 844 bekrefter tomt navnefelt, grå hjelpetekst, lagring uten navn som «Løping», eget navn som beholdes, og gjenåpning etter kryptert lagring/reload. Ingen JavaScript-sidefeil. Testen bruker lokale simuleringer og oppretter ingen konto, innlegg eller sone. Skjermbildene `/tmp/vyro-title-placeholder-{390,320}.png` er visuelt kontrollert.
+- **Fysisk iPhone gjenstår:** prøv begge retninger mellom 2D og 3D flere ganger i Standard/Satellitt/Hybrid, etter egen zoom/panorering, med rutepanelet åpent/lukket og under GPS-opptak. Sentrum og zoom skal beholdes ved vinkelbytte; 2D skal bli flatt. 3D-bygninger/terreng avhenger av Apples dekning, særlig utenfor byene. Kontroller også tastaturet og hjelpeteksten i økt-/sonefeltet. Det installerte preview-bygget har innebygd JavaScript og ingen konfigurert EAS Update-kanal; hent siste kode på PC og kjør `npm run ios:preview` fra `mobile`, installer det nye bygget og test. Expo Go/Metro trenger Reload. Skymiljøet har ikke Expo-innlogging og har ikke startet et nytt signert bygg.
+
 ## iOS app-ID rettet ved første signering, 26. oktober 2026
 
 - Apple-innlogging lyktes, men `app.vyro.mobile` ble avvist som utilgjengelig for team `YACWFNB642`. iOS-ID er endret til `app.vyro.xamse10`, med `.widgets`, `.watchkitapp` og `group.app.vyro.xamse10`. Android-ID er uendret. Kontrollskriptet for genererte Watch-mål leser nå forventet hoved-ID fra appkonfigurasjonen.

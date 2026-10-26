@@ -4,6 +4,7 @@ import { useAuthStore } from "../stores/useAuthStore";
 import { RouteDiscover } from "../features/routes/RouteDiscover";
 import { RouteDetail } from "../features/routes/RouteDetail";
 import { RouteLibrary } from "../features/routes/RouteLibrary";
+import { RouteContribute } from "../features/routes/RouteContribute";
 export default function RoutesScreen() {
   const userId = useAuthStore((s) => s.session?.user.id);
   const { id, tab, lat, lon, name } = useLocalSearchParams<{
@@ -34,6 +35,8 @@ export default function RoutesScreen() {
             id={id}
             initialName={name?.slice(0, 120)}
           />
+        ) : tab === "contribute" ? (
+          <RouteContribute key={userId} userId={userId} />
         ) : tab === "saved" ? (
           <RouteLibrary key={userId} userId={userId} />
         ) : (

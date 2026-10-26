@@ -7,7 +7,13 @@ import WorkoutMap from "../../components/WorkoutMap";
 import { useRouteLibrary } from "../../stores/useRouteLibrary";
 import { useAppStore } from "../../stores/useAppStore";
 import { km } from "../activities/model";
-import { getRoute, routeIsSaved, saveRoute, unsaveRoute } from "./api";
+import {
+  getRoute,
+  routeIsSaved,
+  saveRoute,
+  unsaveRoute,
+  withdrawRoute,
+} from "./api";
 import { routeMessage, type SuggestedRoute } from "./model";
 export function RouteDetail({
   userId,
@@ -32,6 +38,7 @@ export function RouteDetail({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [confirmWithdraw, setConfirmWithdraw] = useState(false);
   const [reload, setReload] = useState(0);
   const request = useRef<AbortController | null>(null),
     lock = useRef(false);
@@ -59,7 +66,13 @@ export function RouteDetail({
           else useRouteLibrary.getState().forget(userId, id);
         })
         .catch((e) => {
-          if (!controller.signal.aborted) setError(routeMessage(e));
+          if (!controller.signal.aborted) {
+            if ((e as { code?: string }).code === "PGRST116") {
+              useRouteLibrary.getState().forget(userId, id);
+              setRoute(undefined);
+            }
+            setError(routeMessage(e));
+          }
         })
         .finally(() => {
           if (!controller.signal.aborted) setLoading(false);
@@ -99,6 +112,33 @@ export function RouteDetail({
       if (request.current === controller) {
         lock.current = false;
         if (!controller.signal.aborted) setBusy(false);
+      }
+    }
+  }
+  async function withdraw() {
+    const controller = request.current;
+    if (
+      lock.current ||
+      !controller ||
+      controller.signal.aborted ||
+      route?.contributor_id !== userId
+    )
+      return;
+    lock.current = true;
+    setBusy(true);
+    setError("");
+    try {
+      await withdrawRoute(userId, id, controller.signal);
+      if (!controller.signal.aborted) {
+        useRouteLibrary.getState().forget(userId, id);
+        router.replace({ pathname: "/routes", params: { tab: "contribute" } });
+      }
+    } catch (e) {
+      if (!controller.signal.aborted) setError(routeMessage(e));
+    } finally {
+      if (!controller.signal.aborted) {
+        lock.current = false;
+        setBusy(false);
       }
     }
   }
@@ -167,7 +207,10 @@ export function RouteDetail({
               {saved ? title || route.name : route.name}
             </Txt>
             <Txt muted size={14}>
-              {route.sport} · Beregnet rundtur
+              {route.sport} ·{" "}
+              {route.source === "community"
+                ? route.place
+                : "Tidligere lagret løype"}
             </Txt>
             <WorkoutMap points={route.route} height={270} />
             <Txt size={23} weight="700">
@@ -179,8 +222,9 @@ export function RouteDetail({
                 : `${route.ascent_m} meter stigning`}
             </Txt>
             <Txt>
-              Et ruteforslag fra kartlagte veier og stier. Kontroller adkomst,
-              underlag og lokale forhold før du starter.
+              {route.source === "community"
+                ? "Delt fra en gjennomført tur. Start og slutt er skjermet. Kontroller adkomst og forhold før du følger løypa."
+                : "Denne løypa ble lagret før ruteforslag gikk over til bidrag fra brukerne. Den vises bare i ditt bibliotek."}
             </Txt>
             <Txt muted size={14}>
               «Bruk løypa» åpner GPS-opptaket med løypa på kartet. Du starter
@@ -216,15 +260,48 @@ export function RouteDetail({
             <Txt muted size={11}>
               {route.attribution}
             </Txt>
-            <Button
-              title="Kartdata: OpenStreetMap"
-              secondary
-              onPress={() => {
-                void Linking.openURL(
-                  "https://www.openstreetmap.org/copyright",
-                ).catch(() => setError("Kunne ikke åpne lenken."));
-              }}
-            />
+            {route.source === "openrouteservice" && (
+              <Button
+                title="Kartdata: OpenStreetMap"
+                secondary
+                onPress={() => {
+                  void Linking.openURL(
+                    "https://www.openstreetmap.org/copyright",
+                  ).catch(() => setError("Kunne ikke åpne lenken."));
+                }}
+              />
+            )}
+            {route.contributor_id === userId &&
+              route.source === "community" && (
+                <>
+                  <Button
+                    title="Trekk tilbake deling"
+                    secondary
+                    disabled={busy || loading}
+                    onPress={() => setConfirmWithdraw(true)}
+                  />
+                  {confirmWithdraw && (
+                    <>
+                      <Txt>
+                        Løypa fjernes fra søk og lagrede nettlister. Din private
+                        GPS-tur beholdes. Nedlastede kopier hos andre kan ikke
+                        hentes tilbake.
+                      </Txt>
+                      <Button
+                        title="Ja, trekk tilbake løypa"
+                        disabled={busy}
+                        onPress={withdraw}
+                      />
+                      <Button
+                        title="Behold delingen"
+                        secondary
+                        disabled={busy}
+                        onPress={() => setConfirmWithdraw(false)}
+                      />
+                    </>
+                  )}
+                </>
+              )}
           </>
         )}
       </View>

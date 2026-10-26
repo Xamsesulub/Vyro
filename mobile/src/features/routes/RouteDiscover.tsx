@@ -34,10 +34,12 @@ export function RouteDiscover({
   const c = useTheme();
   const loc = useLiveLocation(true);
   const [place, setPlace] = useState<Place | undefined>(initial);
-  const [query, setQuery] = useState(initial?.name ?? "");
+  const [query, setQuery] = useState(
+    initial?.name === "Nær meg" ? "" : (initial?.name ?? ""),
+  );
   const [places, setPlaces] = useState<Place[]>([]);
   const [sport, setSport] = useState<RouteSport>("Løping");
-  const [length, setLength] = useState(5000);
+  const [length, setLength] = useState(0);
   const [routes, setRoutes] = useState<SuggestedRoute[]>([]);
   const [selected, setSelected] = useState(0);
   const [searched, setSearched] = useState(false);
@@ -155,7 +157,7 @@ export function RouteDiscover({
           longitude: point.longitude,
         };
         setPlace(next);
-        setQuery(next.name);
+        setQuery("");
       }
     } catch (e) {
       if (!controller.signal.aborted)
@@ -223,13 +225,14 @@ export function RouteDiscover({
           Finn din neste løype
         </Txt>
         <Txt muted size={14}>
-          Velg et sted i Norge og hvor langt du vil gå eller løpe.
+          Løyper delt av folk som har gått eller løpt dem. Finn en løype i ditt
+          område, eller bidra med din egen.
         </Txt>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
           <TextInput
-            accessibilityLabel="Søk etter sted i Norge"
+            accessibilityLabel="Søk etter sted"
             value={query}
-            placeholder="Sted, adresse eller område"
+            placeholder="Søk etter sted"
             placeholderTextColor={c.muted}
             onChangeText={(text) => {
               reset();
@@ -282,7 +285,7 @@ export function RouteDiscover({
         ))}
         {!!place && (
           <Txt muted size={13}>
-            Startområde: {place.name}
+            Område: {place.name}
           </Txt>
         )}
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
@@ -298,12 +301,12 @@ export function RouteDiscover({
             />
           ))}
         </View>
-        <Txt weight="700">Ønsket lengde · rundtur</Txt>
+        <Txt weight="700">Lengde</Txt>
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-          {routeLengths.map((value) => (
+          {[0, ...routeLengths].map((value) => (
             <Chip
               key={value}
-              title={`${value / 1000} km`}
+              title={value ? `${value / 1000} km` : "Alle lengder"}
               selected={value === length}
               onPress={() => {
                 reset();
@@ -318,17 +321,24 @@ export function RouteDiscover({
           onPress={findRoutes}
         />
         <Txt muted size={12}>
-          Søket bruker et omtrentlig startområde. Faktisk lengde kan avvike fra
-          ønsket lengde.
+          Viser inntil 20 delte løyper innen 15 km fra området du velger.
         </Txt>
+        <Button
+          title="Bidra med en løype"
+          secondary
+          onPress={() =>
+            router.push({ pathname: "/routes", params: { tab: "contribute" } })
+          }
+        />
         {!!busy && (
           <ActivityIndicator accessibilityLabel="Søker" color={c.accent} />
         )}
         {!!error && <Txt accessibilityRole="alert">{error}</Txt>}
         {searched && !routes.length && (
           <Txt>
-            Fant ingen passende rundtur her. Prøv en annen lengde eller flytt
-            startstedet nærmere en vei eller sti.
+            {length
+              ? "Ingen delte løyper passer søket her ennå. Prøv «Alle lengder», eller bidra med din egen tur."
+              : "Ingen delte løyper i dette området ennå. Bli den første til å dele en tur herfra."}
           </Txt>
         )}
         {!!route && (
@@ -340,7 +350,7 @@ export function RouteDiscover({
               {routes.map((r, i) => (
                 <Chip
                   key={r.id}
-                  title={`Forslag ${i + 1}`}
+                  title={r.name}
                   selected={i === selected}
                   onPress={() => setSelected(i)}
                 />
@@ -352,8 +362,7 @@ export function RouteDiscover({
               {route.ascent_m !== null ? ` · ${route.ascent_m} m stigning` : ""}
             </Txt>
             <Txt muted size={14}>
-              Beregnet ruteforslag. Kontroller underlag, adkomst og forhold før
-              turen.
+              {route.name} · {route.place}
             </Txt>
             <Button
               title="Se og lagre løypa"
@@ -362,10 +371,7 @@ export function RouteDiscover({
                   pathname: "/routes",
                   params: {
                     id: route.id,
-                    name: `${sport === "Løping" ? "Løperunde" : "Rundtur"} ved ${place?.name ?? "valgt sted"}`.slice(
-                      0,
-                      120,
-                    ),
+                    name: route.name,
                   },
                 })
               }

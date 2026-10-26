@@ -10,7 +10,9 @@ export const suggestedRoute: SuggestedRoute = {
   ],
   distance_m: 5000,
   ascent_m: 42,
-  source: "openrouteservice",
-  attribution: "© OpenStreetMap contributors · openrouteservice / HeiGIT",
+  source: "community",
+  place: "Bergen",
+  contributor_id: "contributor",
+  attribution: "Delt av VYRO-fellesskapet",
   created_at: "2026-10-26T10:00:00Z",
 };

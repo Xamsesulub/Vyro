@@ -1,5 +1,18 @@
 # Leveranseplan
 
+## Oppfølging etter iPhone-test: 2D og stedfelt, 26. oktober 2026
+
+Brukeren meldte at 2D zoomer ut. Kameraet leses nå **før** native karttype og `pitchEnabled` endres; utsnittet settes tilbake etter at disse egenskapene er oppdatert. Dette hindrer at en automatisk MapKit-endring blir tatt som brukerens valgte zoom. Samme styring brukes i Kart og under opptak. Senere kamerakall, panorering og lukking forkaster gamle svar som før.
+
+Ruteforslag viser et tomt søkefelt med grå «Søk etter sted» når området er «Nær meg». Området og den separate posisjonsknappen beholdes; søk etter et valgt sted beholder stedsnavnet. Se [teststatus](testing.md). Ingen push eller nytt signert bygg; endringene testes først med Expo Go.
+
+## Brukerdelte løyper erstatter API-forslag, 26. oktober 2026
+
+Ruteforslag er nå bygd om til frivillige bidrag fra egne gjennomførte GPS-turer. Tomme områder inviterer til å bidra. Forhåndsvisning skjuler 500 meter rundt start/slutt, navn/sted og uttrykkelig samtykke kreves, og delingen kan trekkes tilbake. Serveren beregner lengde og avviser like/nesten like løyper på tvers av kontoer og retning. Ingen treningsdata deles automatisk.
+
+Ny migrering `202610260002` er aktivert. Ekstern rutegenerator og ORS-innstillinger er fjernet fra drift; gammel Edge gir oppdateringsbeskjed. Historiske data er bevart, de to eksisterende bokmerkene forblir private og gamle forslag er tatt ut av søket. Vanlig kart/stedssøk beholdes. Se [flyt og begrensninger](route-suggestions.md) og [tester](testing.md). Et nytt signert iPhone-bygg og fysisk test gjenstår; ikke pushet i denne runden.
+
+
 ## 2D/3D og tomme navnefelt, 26. oktober 2026
 
 Apple-kartet bruker nå én kamerastyring for retning, vinkel og utsnitt. 2D/3D beholder kameraets posisjon, retning og høyde uten ny tilpasning av hele løypa; like koordinater/padding i nye objekter utløser heller ikke en slik tilpasning. Sene kameralesinger forkastes ved nye valg, panorering og lukking. Satellitt/Hybrid velger Apples Flyover-modus i 3D, og 2D slår av vippebevegelser. Virkelig bygnings-/terrengdetalj avhenger av Apples dekning og må testes fysisk.

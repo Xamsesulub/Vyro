@@ -1,5 +1,6 @@
 import { client } from "../social/api";
-import { timeoutFetch } from "../../lib/request";
+import type { Workout } from "../activities/model";
+import { contributionPreview } from "./contribution";
 import { useAuthStore } from "../../stores/useAuthStore";
 import {
   isRouteSummary,
@@ -11,7 +12,7 @@ import {
 export type SavedCursor = { created_at: string; route_id: string };
 export type SavedPage = { routes: RouteSummary[]; next: SavedCursor | null };
 const fields =
-  "id,name,sport,distance_m,ascent_m,source,attribution,created_at";
+  "id,name,sport,distance_m,ascent_m,source,attribution,created_at,place,contributor_id";
 function owner(userId: string, signal?: AbortSignal) {
   if (signal?.aborted || useAuthStore.getState().session?.user.id !== userId)
     throw new Error("AUTH_REQUIRED");
@@ -21,53 +22,87 @@ export async function searchRoutes(
   query: RouteSearch,
   signal: AbortSignal,
 ): Promise<SuggestedRoute[]> {
-  const { data, error } = await client().auth.getSession();
+  owner(userId, signal);
+  const { data, error } = await client()
+    .rpc("search_community_routes", {
+      p_latitude: Math.round(query.latitude * 500) / 500,
+      p_longitude: Math.round(query.longitude * 500) / 500,
+      p_sport: query.sport,
+      p_length: query.length,
+    })
+    .abortSignal(signal);
+  owner(userId, signal);
   if (error) throw error;
-  owner(userId, signal);
-  if (!data.session || data.session.user.id !== userId)
-    throw new Error("AUTH_REQUIRED");
-  const url = process.env.EXPO_PUBLIC_SUPABASE_URL ?? "";
-  const key =
-    process.env.EXPO_PUBLIC_SUPABASE_KEY ??
-    process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
-    "";
-  const res = await timeoutFetch(fetch, 30000)(
-    `${url}/functions/v1/route-suggestions`,
-    {
-      method: "POST",
-      signal,
-      headers: {
-        Authorization: `Bearer ${data.session.access_token}`,
-        apikey: key,
-        "Content-Type": "application/json",
-      },
-      // No address, user-supplied route, GPS trace, speed or timestamp is uploaded.
-      body: JSON.stringify({
-        latitude: Math.round(query.latitude * 500) / 500,
-        longitude: Math.round(query.longitude * 500) / 500,
-        sport: query.sport,
-        length: query.length,
-      }),
-    },
-  );
-  owner(userId, signal);
-  const payload = await res.json();
-  if (!res.ok)
-    throw {
-      code:
-        res.status === 404
-          ? "ROUTES_NOT_CONFIGURED"
-          : (payload.code ??
-            (res.status === 401 ? "AUTH_REQUIRED" : "SERVICE_UNAVAILABLE")),
-    };
   if (
-    !Array.isArray(payload.routes) ||
-    payload.routes.length > 3 ||
-    !payload.routes.every(isSuggestedRoute)
+    !Array.isArray(data) ||
+    data.length > 20 ||
+    !data.every((r) => isSuggestedRoute(r) && r.source === "community")
   )
     throw new Error("SERVICE_UNAVAILABLE");
-  return payload.routes;
+  return data;
 }
+export async function contributeRoute(
+  userId: string,
+  workout: Workout,
+  name: string,
+  place: string,
+  consent: boolean,
+  signal: AbortSignal,
+) {
+  owner(userId, signal);
+  if (!consent) throw new Error("ROUTE_CONSENT_REQUIRED");
+  const preview = contributionPreview(workout, userId);
+  if (!preview || !name.trim() || !place.trim())
+    throw new Error("ROUTE_INVALID");
+  const { data, error } = await client()
+    .rpc("contribute_route", {
+      p_local_id: workout.id,
+      p_name: name.trim(),
+      p_place: place.trim(),
+      p_sport: workout.sport,
+      p_route: preview.route,
+      p_source: workout.source,
+      p_consent: true,
+    })
+    .abortSignal(signal);
+  owner(userId, signal);
+  if (error) throw error;
+  if (typeof data !== "string" || !/^[a-f0-9]{64}$/.test(data))
+    throw new Error("SERVICE_UNAVAILABLE");
+  return data;
+}
+export async function withdrawRoute(
+  userId: string,
+  id: string,
+  signal: AbortSignal,
+) {
+  owner(userId, signal);
+  const { error } = await client()
+    .rpc("withdraw_route", { p_route_id: id })
+    .abortSignal(signal);
+  owner(userId, signal);
+  if (error) throw error;
+}
+export async function ownContributions(
+  userId: string,
+  signal: AbortSignal,
+): Promise<RouteSummary[]> {
+  owner(userId, signal);
+  const { data, error } = await client()
+    .from("route_suggestions")
+    .select(fields)
+    .eq("contributor_id", userId)
+    .eq("source", "community")
+    .order("created_at", { ascending: false })
+    .limit(100)
+    .abortSignal(signal);
+  owner(userId, signal);
+  if (error) throw error;
+  if (!Array.isArray(data) || !data.every(isRouteSummary))
+    throw new Error("SERVICE_UNAVAILABLE");
+  return data;
+}
+
 export async function getRoute(
   id: string,
   signal?: AbortSignal,

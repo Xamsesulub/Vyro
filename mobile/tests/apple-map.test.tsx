@@ -3,6 +3,7 @@ import type {
   MapViewProps,
   MapPolylineProps,
   MapMarkerProps,
+  Camera,
 } from "react-native-maps";
 import AppleMap from "../src/components/LiveMap.ios";
 import {
@@ -16,6 +17,7 @@ const mockSet = jest.fn();
 const mockCamera = jest.fn();
 const mockFit = jest.fn();
 const mockMount = jest.fn();
+let mockNativeModeChange: (() => void) | undefined;
 jest.mock("react-native-maps", () => {
   const React = require("react");
   const { View } = require("react-native");
@@ -24,6 +26,9 @@ jest.mock("react-native-maps", () => {
     PROVIDER_DEFAULT: undefined,
     default: React.forwardRef((props: MapViewProps, ref: unknown) => {
       mockProps = props;
+      React.useLayoutEffect(() => {
+        mockNativeModeChange?.();
+      }, [props.mapType, props.pitchEnabled]);
       React.useImperativeHandle(ref, () => ({
         animateCamera: mockAnimate,
         setCamera: mockSet,
@@ -47,6 +52,8 @@ const c = { latitude: 60, longitude: 11 };
 const d = { latitude: 60.01, longitude: 11.01 };
 beforeEach(() => {
   jest.clearAllMocks();
+  mockNativeModeChange = undefined;
+  mockSet.mockReset();
   mockCamera
     .mockReset()
     .mockResolvedValue({ center: a, pitch: 0, heading: 25, altitude: 1234 });
@@ -58,6 +65,7 @@ test("the iOS entry uses Apple with distinct modes and no automatic GPS collecti
   expect(mockProps.mapType).toBe("standard");
   expect(mockProps.showsUserLocation).toBe(false);
   expect(mockProps.showsMyLocationButton).toBe(false);
+  await act(async () => mockProps.onMapReady?.());
   await screen.rerender(<AppleMap mapKind="satellite" position={a} />);
   expect(mockProps.mapType).toBe("satellite");
   expect(mockProps.showsPointsOfInterests).toBe(false);
@@ -237,6 +245,68 @@ test("a delayed 3D camera read cannot override a newer 2D selection, pan or unmo
     finish({ center: a, altitude: 1234, pitch: 55, heading: 25 }),
   );
   expect(mockSet).not.toHaveBeenCalled();
+});
+
+test.each(["standard", "satellite", "hybrid"] as const)(
+  "%s captures the camera before native mode changes can reset zoom",
+  async (mapKind) => {
+    let camera = { center: c, altitude: 432, heading: 68, pitch: 0 };
+    mockCamera.mockImplementation(async () => ({ ...camera }));
+    mockSet.mockImplementation((next: Partial<Camera>) => {
+      camera = { ...camera, ...next };
+    });
+    await render(<AppleMap mapKind={mapKind} />);
+    await act(async () => mockProps.onMapReady?.());
+    // Simulate the user choosing their own zoom and heading after loading.
+    camera = { center: c, altitude: 432, heading: 68, pitch: 0 };
+    mockNativeModeChange = () => {
+      camera = { ...camera, altitude: camera.altitude * 3, pitch: 0 };
+    };
+    for (let i = 0; i < 3; i++) {
+      await screen.rerender(<AppleMap mapKind={mapKind} threeD />);
+      expect(camera).toEqual({
+        center: c,
+        altitude: 432,
+        heading: 68,
+        pitch: 55,
+      });
+      await screen.rerender(<AppleMap mapKind={mapKind} />);
+      expect(camera).toEqual({
+        center: c,
+        altitude: 432,
+        heading: 68,
+        pitch: 0,
+      });
+    }
+    expect(mockFit).not.toHaveBeenCalled();
+    expect(mockMount).toHaveBeenCalledTimes(1);
+  },
+);
+
+test("the native mode stays unchanged while its camera snapshot is pending", async () => {
+  await render(<AppleMap mapKind="satellite" threeD />);
+  await act(async () => mockProps.onMapReady?.());
+  let finish!: (value: unknown) => void;
+  mockCamera.mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+  );
+  await screen.rerender(<AppleMap mapKind="satellite" />);
+  expect(mockProps.mapType).toBe("satelliteFlyover");
+  expect(mockProps.pitchEnabled).toBe(true);
+  await act(async () =>
+    finish({ center: c, altitude: 380, heading: 42, pitch: 55 }),
+  );
+  expect(mockProps.mapType).toBe("satellite");
+  expect(mockProps.pitchEnabled).toBe(false);
+  expect(mockSet).toHaveBeenLastCalledWith({
+    center: c,
+    altitude: 380,
+    heading: 42,
+    pitch: 0,
+  });
 });
 
 test("following a GPS fix and fitting an expanded panel retain the selected 3D pitch", async () => {

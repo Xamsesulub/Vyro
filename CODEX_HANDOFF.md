@@ -1,5 +1,14 @@
 # Til Codex på PC: fortsett herfra
 
+## Pågående fysisk test — 26. oktober 2026
+
+Brukeren vil teste i Expo Go før push/nytt bygg. Etter rapport om 2D-utzooming fanger `AppleMap` nå kameraet før native karttype/pitch endres, og gjenoppretter det etterpå. «Nær meg» fylles ikke lenger inn som søketekst; feltet viser grå «Søk etter sted». Se nyeste [testing](docs/testing.md) for regresjonstest og utestet fysisk retest. Ingen push eller EAS-bygg er startet i denne runden.
+
+## Nyeste produktendring — brukerdelte løyper, 26. oktober 2026
+
+Denne seksjonen erstatter den eldre statusen om ORS lenger ned. Brukeren har valgt å avvikle eksternt genererte ruteforslag. Ny delings-/søke-/tilbaketrekkingsflyt og duplikatkontroll er implementert; migrering `202610260002_community_routes.sql` er aktivert i Supabase. Ingen eksisterende data ble slettet. Gamle data er skjult fra søk; 2 private bokmerker og 14 historiske forslag er bevart. ORS-miljøvariabler er fjernet fra server/lokal fil. Edge returnerer 410, og gammel Cron er deaktivert. Se [route-suggestions](docs/route-suggestions.md) for aktuell modell og [testing](docs/testing.md) for kontroller. Ingen ny signert preview eller push er gjort i denne runden. Den installerte previewen bruker fortsatt gammel JavaScript; bygg ny etter at endringene er lagret/pushet.
+
+
 Oppdatert 26. oktober 2026 etter retting av 2D/3D og tomme navnefelt. PC-push `83cf15d` («koblet til mobilen»), aktiverte ruteforslag, signering, Google og soner er bevart. Fortsett fra denne statusen, ikke start implementasjonen på nytt.
 
 ## Nyeste retting: kartvinkel og navnefelt

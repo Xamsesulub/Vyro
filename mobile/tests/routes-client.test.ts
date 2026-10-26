@@ -6,6 +6,7 @@ import {
   loadSavedRoutes,
   saveRoute,
   unsaveRoute,
+  contributeRoute,
 } from "../src/features/routes/api";
 import { useAuthStore } from "../src/stores/useAuthStore";
 import { useAppStore, appPersistence } from "../src/stores/useAppStore";
@@ -55,7 +56,7 @@ afterEach(async () => {
   global.fetch = originalFetch;
 });
 test("search sends a rounded area and selected filters, never the address or workout data", async () => {
-  response = { routes: [suggestedRoute] };
+  response = [suggestedRoute];
   const q = {
     latitude: 60.39123,
     longitude: 5.32123,
@@ -66,15 +67,17 @@ test("search sends a rounded area and selected filters, never the address or wor
     suggestedRoute,
   ]);
   expect(calls[0].body).toEqual({
-    latitude: 60.392,
-    longitude: 5.322,
-    sport: "Løping",
-    length: 5000,
+    p_latitude: 60.392,
+    p_longitude: 5.322,
+    p_sport: "Løping",
+    p_length: 5000,
   });
-  expect(calls[0].url.pathname).toBe("/functions/v1/route-suggestions");
+  expect(calls[0].url.pathname).toBe("/rest/v1/rpc/search_community_routes");
 });
 test("account changes prevent stale requests and reject responses for the previous account", async () => {
-  session = { ...session, user: { id: "other" } } as Session;
+  useAuthStore.setState({
+    session: { ...session, user: { id: "other" } } as Session,
+  });
   await expect(
     searchRoutes(
       "owner",
@@ -154,4 +157,58 @@ test("offline copies are bounded, remain owner-scoped and removal does not delet
       id: i.toString(16).padStart(64, "0"),
     });
   expect(useRouteLibrary.getState().entries).toHaveLength(20);
+});
+
+test("sharing uploads only the consented, trimmed geometry and no private workout details", async () => {
+  const { contributionWorkout } = require("./contribution-fixture");
+  const {
+    contributionPreview,
+  } = require("../src/features/routes/contribution");
+  response = suggestedRoute.id;
+  expect(
+    await contributeRoute(
+      "owner",
+      contributionWorkout,
+      " Elveløypa ",
+      " Oslo ",
+      true,
+      new AbortController().signal,
+    ),
+  ).toBe(suggestedRoute.id);
+  expect(calls[0].body).toEqual({
+    p_local_id: contributionWorkout.id,
+    p_name: "Elveløypa",
+    p_place: "Oslo",
+    p_sport: "Løping",
+    p_route: contributionPreview(contributionWorkout, "owner").route,
+    p_source: "gps",
+    p_consent: true,
+  });
+  expect(calls[0].body.p_route).not.toEqual(contributionWorkout.route);
+  expect(calls[0].body).not.toHaveProperty("notes");
+  expect(calls[0].body).not.toHaveProperty("date");
+});
+test("sharing without consent or from another account never reaches the server", async () => {
+  const { contributionWorkout } = require("./contribution-fixture");
+  await expect(
+    contributeRoute(
+      "owner",
+      contributionWorkout,
+      "Name",
+      "Place",
+      false,
+      new AbortController().signal,
+    ),
+  ).rejects.toThrow("ROUTE_CONSENT_REQUIRED");
+  await expect(
+    contributeRoute(
+      "owner",
+      { ...contributionWorkout, ownerId: "other" },
+      "Name",
+      "Place",
+      true,
+      new AbortController().signal,
+    ),
+  ).rejects.toThrow("ROUTE_INVALID");
+  expect(calls).toHaveLength(0);
 });

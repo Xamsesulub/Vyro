@@ -1,6 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { View } from "react-native";
-import MapView, { Marker, Polyline, PROVIDER_DEFAULT } from "react-native-maps";
+import MapView, {
+  Marker,
+  Polyline,
+  PROVIDER_DEFAULT,
+  type Camera,
+} from "react-native-maps";
 import {
   appleInitialRegion,
   appleMapGeometry,
@@ -51,6 +56,23 @@ export default function AppleMap({
     : "";
   const paddingKey = `${padding.top}:${padding.right}:${padding.bottom}:${padding.left}`;
   const cameraRequest = useRef(0);
+  // Keep native mode props unchanged until we have captured the old camera.
+  // Disabling pitch or leaving Flyover can itself change MapKit's altitude.
+  const [presentation, setPresentation] = useState<{
+    threeD: boolean;
+    mapKind: typeof mapKind;
+    camera?: Partial<Camera>;
+    sequence: number;
+  }>({ threeD, mapKind, sequence: 0 });
+  useLayoutEffect(() => {
+    if (
+      presentation.camera &&
+      cameraRequest.current === presentation.sequence
+    ) {
+      // Native props have now committed. Restore the captured view afterwards.
+      map.current?.setCamera(presentation.camera);
+    }
+  }, [presentation]);
   const previous = useRef({
     follow,
     recenter,
@@ -79,6 +101,8 @@ export default function AppleMap({
       !last.ready ||
       threeD !== last.threeD ||
       mapKind !== last.mapKind ||
+      threeD !== presentation.threeD ||
+      mapKind !== presentation.mapKind ||
       north !== last.north;
     const northChanged = !last.ready || north !== last.north;
     const frameChanged =
@@ -128,10 +152,9 @@ export default function AppleMap({
         altitude = 700;
       }
     }
-    // MapKit's pitch-only update can change altitude. Read the current view and
-    // explicitly retain it; apply heading + pitch together so they cannot cancel
-    // one another. Instant orientation changes avoid sampling an in-flight tilt
-    // when the user taps quickly. New requests/pans/unmount invalidate old reads.
+    // Capture before changing native map type/pitchEnabled, then restore after
+    // those props commit. Reading after that change captures MapKit's reset zoom.
+    // New requests/pans/unmount invalidate old reads.
     const active = () => cameraRequest.current === sequence;
     const changes = {
       ...(center ? { center } : {}),
@@ -139,17 +162,21 @@ export default function AppleMap({
       pitch: threeD ? 55 : 0,
       ...(northChanged ? { heading: 0 } : {}),
     };
+    const apply = (camera: Partial<Camera>) => {
+      if (!active()) return;
+      if (threeD !== presentation.threeD || mapKind !== presentation.mapKind) {
+        setPresentation({ threeD, mapKind, camera, sequence });
+      } else if (orientationChanged || fitted) view.setCamera(camera);
+      else view.animateCamera(camera);
+    };
     void view
       .getCamera()
       .then((camera) => {
-        if (!active()) return;
-        const next = { ...camera, ...changes };
-        if (orientationChanged || fitted) view.setCamera(next);
-        else view.animateCamera(next);
+        apply({ ...camera, ...changes });
       })
       .catch(() => {
         // Preserve native camera fields if a read fails, without a default zoom.
-        if (active()) view.setCamera(changes);
+        apply(changes);
       });
   }, [
     ready,
@@ -165,6 +192,7 @@ export default function AppleMap({
     threeD,
     mapKind,
     north,
+    presentation,
   ]);
 
   useEffect(
@@ -182,12 +210,16 @@ export default function AppleMap({
       accessibilityLabel="Apple-kart"
       style={{ height, width: "100%" }}
       provider={PROVIDER_DEFAULT}
-      mapType={threeD && mapKind !== "standard" ? `${mapKind}Flyover` : mapKind}
-      pitchEnabled={threeD}
+      mapType={
+        presentation.threeD && presentation.mapKind !== "standard"
+          ? `${presentation.mapKind}Flyover`
+          : presentation.mapKind
+      }
+      pitchEnabled={presentation.threeD}
       initialRegion={initialRegion}
       userInterfaceStyle="light"
-      showsPointsOfInterests={mapKind !== "satellite" && poi}
-      showsBuildings={threeD}
+      showsPointsOfInterests={presentation.mapKind !== "satellite" && poi}
+      showsBuildings={presentation.threeD}
       showsCompass={!explorer}
       showsScale={false}
       showsTraffic={false}

@@ -3,6 +3,7 @@ import { act, fireEvent, render, screen } from "@testing-library/react-native";
 import { router } from "expo-router";
 import Routes from "../src/app/routes";
 import { useAuthStore } from "../src/stores/useAuthStore";
+import { useLocationStore } from "../src/stores/useLocationStore";
 import {
   searchRoutes,
   loadSavedRoutes,
@@ -10,7 +11,11 @@ import {
   routeIsSaved,
   saveRoute,
   unsaveRoute,
+  contributeRoute,
+  ownContributions,
+  withdrawRoute,
 } from "../src/features/routes/api";
+import type { Workout } from "../src/features/activities/model";
 import { suggestedRoute } from "./routes-fixture";
 let mockParams: {
   tab?: string;
@@ -22,6 +27,8 @@ let mockParams: {
 const mockRemember = jest.fn(),
   mockForget = jest.fn(),
   mockPlan = jest.fn();
+const mockLocate = jest.fn();
+let mockWorkouts: Workout[] = [];
 jest.mock("expo-router", () => ({
   router: { push: jest.fn(), replace: jest.fn(), canGoBack: () => false },
   useLocalSearchParams: () => mockParams,
@@ -37,7 +44,7 @@ jest.mock("react-native-safe-area-context", () => ({
 }));
 jest.mock("../src/stores/useAppStore", () => ({
   useAppStore: Object.assign(
-    (select: (s: unknown) => unknown) => select({ workouts: [] }),
+    (select: (s: unknown) => unknown) => select({ workouts: mockWorkouts }),
     { getState: () => ({ planRoute: mockPlan }) },
   ),
 }));
@@ -48,7 +55,7 @@ jest.mock("../src/stores/useRouteLibrary", () => ({
   ),
 }));
 jest.mock("../src/features/tracking/useLiveLocation", () => ({
-  useLiveLocation: () => ({ request: jest.fn() }),
+  useLiveLocation: () => ({ request: mockLocate }),
 }));
 jest.mock("../src/components/WorkoutMap", () => ({
   __esModule: true,
@@ -61,6 +68,9 @@ jest.mock("../src/features/routes/api", () => ({
   routeIsSaved: jest.fn(),
   saveRoute: jest.fn(),
   unsaveRoute: jest.fn(),
+  contributeRoute: jest.fn(),
+  ownContributions: jest.fn(),
+  withdrawRoute: jest.fn(),
 }));
 jest.mock("../src/components/ui", () => {
   const React = jest.requireActual("react"),
@@ -108,6 +118,9 @@ const press = (name: string) =>
   fireEvent.press(screen.getByRole("button", { name }));
 beforeEach(() => {
   jest.clearAllMocks();
+  mockLocate.mockResolvedValue(true);
+  useLocationStore.setState({ position: null });
+  mockWorkouts = [];
   mockParams = { lat: "60.39", lon: "5.32", name: "Bergen" };
   useAuthStore.setState({
     ready: true,
@@ -119,6 +132,9 @@ beforeEach(() => {
   jest.mocked(routeIsSaved).mockResolvedValue(null);
   jest.mocked(saveRoute).mockResolvedValue(undefined);
   jest.mocked(unsaveRoute).mockResolvedValue(undefined);
+  jest.mocked(ownContributions).mockResolvedValue([]);
+  jest.mocked(contributeRoute).mockResolvedValue(suggestedRoute.id);
+  jest.mocked(withdrawRoute).mockResolvedValue(undefined);
   mockPlan.mockReturnValue(true);
 });
 test("discovery requires an explicit search and uses the selected place and length", async () => {
@@ -139,8 +155,43 @@ test("discovery requires an explicit search and uses the selected place and leng
   await press("Se og lagre løypa");
   expect(router.push).toHaveBeenCalledWith({
     pathname: "/routes",
-    params: { id: suggestedRoute.id, name: "Løperunde ved Bergen" },
+    params: { id: suggestedRoute.id, name: suggestedRoute.name },
   });
+});
+
+test("nearby is a selection, never prefilled search text", async () => {
+  mockParams = { lat: "60.39", lon: "5.32", name: "Nær meg" };
+  await render(<Routes />);
+  expect(screen.getByPlaceholderText("Søk etter sted")).toHaveProp("value", "");
+  expect(mockLocate).not.toHaveBeenCalled();
+  await press("Finn løyper");
+  expect(searchRoutes).toHaveBeenLastCalledWith(
+    "owner",
+    expect.objectContaining({ latitude: 60.39, longitude: 5.32 }),
+    expect.anything(),
+  );
+  await fireEvent.changeText(
+    screen.getByPlaceholderText("Søk etter sted"),
+    "Oslo",
+  );
+  expect(screen.getByRole("button", { name: "Finn løyper" })).toBeDisabled();
+  useLocationStore.setState({
+    position: {
+      latitude: 59.91,
+      longitude: 10.75,
+      timestamp: Date.now(),
+      accuracy: 10,
+    },
+  });
+  await press("Nær meg");
+  expect(screen.getByPlaceholderText("Søk etter sted")).toHaveProp("value", "");
+  expect(screen.getByText("Område: Nær meg")).toBeTruthy();
+  await press("Finn løyper");
+  expect(searchRoutes).toHaveBeenLastCalledWith(
+    "owner",
+    expect.objectContaining({ latitude: 59.91, longitude: 10.75 }),
+    expect.anything(),
+  );
 });
 test("missing provider configuration is actionable and never replaced with fake recommendations", async () => {
   jest
@@ -215,4 +266,116 @@ test("changing accounts cancels old search responses", async () => {
   expect(signal.aborted).toBe(true);
   await act(() => resolve([suggestedRoute]));
   expect(screen.queryByText("Løyper ved Bergen")).toBeNull();
+});
+
+test("an empty area is truthful and offers a contribution", async () => {
+  jest.mocked(searchRoutes).mockResolvedValue([]);
+  await render(<Routes />);
+  await press("Finn løyper");
+  expect(screen.getByText(/Ingen delte løyper i dette området/)).toBeTruthy();
+  await press("Bidra med en løype");
+  expect(router.push).toHaveBeenCalledWith({
+    pathname: "/routes",
+    params: { tab: "contribute" },
+  });
+});
+test("only own GPS workouts can be selected and explicit consent is required", async () => {
+  const { contributionWorkout } = require("./contribution-fixture");
+  mockParams = { tab: "contribute" };
+  mockWorkouts = [
+    contributionWorkout,
+    {
+      ...contributionWorkout,
+      id: "simulation",
+      title: "Simulering",
+      source: "simulation",
+    },
+    {
+      ...contributionWorkout,
+      id: "other",
+      title: "Annen persons tur",
+      ownerId: "other",
+    },
+  ];
+  await render(<Routes />);
+  expect(
+    screen.queryByRole("button", { name: "Velg tur: Simulering" }),
+  ).toBeNull();
+  expect(
+    screen.queryByRole("button", { name: "Velg tur: Annen persons tur" }),
+  ).toBeNull();
+  await press("Velg tur: Min private tur");
+  expect(contributeRoute).not.toHaveBeenCalled();
+  await fireEvent.changeText(
+    screen.getByLabelText("Navn på delt løype"),
+    "Elveløypa",
+  );
+  await fireEvent.changeText(screen.getByLabelText("Sted eller by"), "Oslo");
+  expect(
+    screen.getByRole("button", { name: "Del løypa med alle" }),
+  ).toBeDisabled();
+  await fireEvent(
+    screen.getByLabelText("Jeg vil dele denne løypa med alle i VYRO"),
+    "valueChange",
+    true,
+  );
+  await press("Del løypa med alle");
+  expect(contributeRoute).toHaveBeenCalledWith(
+    "owner",
+    contributionWorkout,
+    "Elveløypa",
+    "Oslo",
+    true,
+    expect.anything(),
+  );
+  expect(router.replace).toHaveBeenCalledWith({
+    pathname: "/routes",
+    params: { id: suggestedRoute.id },
+  });
+});
+test("duplicate rejection stays in preview without claiming success", async () => {
+  const { contributionWorkout } = require("./contribution-fixture");
+  mockParams = { tab: "contribute" };
+  mockWorkouts = [contributionWorkout];
+  jest
+    .mocked(contributeRoute)
+    .mockRejectedValue({ message: "ROUTE_DUPLICATE" });
+  await render(<Routes />);
+  await press("Velg tur: Min private tur");
+  await fireEvent.changeText(
+    screen.getByLabelText("Navn på delt løype"),
+    "Elveløypa",
+  );
+  await fireEvent.changeText(screen.getByLabelText("Sted eller by"), "Oslo");
+  await fireEvent(
+    screen.getByLabelText("Jeg vil dele denne løypa med alle i VYRO"),
+    "valueChange",
+    true,
+  );
+  await press("Del løypa med alle");
+  expect(screen.getByRole("alert")).toHaveTextContent(/allerede delt/);
+  expect(router.replace).not.toHaveBeenCalled();
+});
+test("withdrawing needs confirmation and preserves sharing if the server fails", async () => {
+  mockParams = { id: suggestedRoute.id };
+  jest
+    .mocked(getRoute)
+    .mockResolvedValue({ ...suggestedRoute, contributor_id: "owner" });
+  jest.mocked(withdrawRoute).mockRejectedValueOnce(new Error("offline"));
+  await render(<Routes />);
+  await press("Trekk tilbake deling");
+  expect(withdrawRoute).not.toHaveBeenCalled();
+  await press("Ja, trekk tilbake løypa");
+  expect(router.replace).not.toHaveBeenCalled();
+  expect(screen.getByRole("alert")).toHaveTextContent(/forbindelsen/);
+  await press("Ja, trekk tilbake løypa");
+  expect(withdrawRoute).toHaveBeenCalledWith(
+    "owner",
+    suggestedRoute.id,
+    expect.anything(),
+  );
+  expect(router.replace).toHaveBeenCalledWith({
+    pathname: "/routes",
+    params: { tab: "contribute" },
+  });
 });

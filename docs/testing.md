@@ -1,5 +1,24 @@
 # Testing
 
+## 2D-zoom og diskret stedfelt, 26. oktober 2026
+
+- Typecheck og Expo lint består. **16 karttester og 10 ruteflyttester** består. Første skjermtest overskred standardgrensen på 5 sekunder i to kjøringer; en diagnostisk kjøring med 30 sekunder per test bestod alle 10 uten kodeendring. Ingen test er hoppet over eller forventning svekket. `git diff --check` består. Eksisterende Expo Go-tunnel på port 8082 svarer med VYROs iOS-manifest.
+- Brukerens fysiske test rapporterte uønsket utzooming ved 2D. Det tidligere kameraoppsettet leste etter native modusbytte. Ny rekkefølge leser før byttet og gjenoppretter sentrum/høyde/retning etter at egenskapene er oppdatert.
+- Regresjonstestene simulerer at MapKit endrer høyden når karttype/vipping endres. De dekker tre bytter frem og tilbake i Standard/Satellitt/Hybrid og at native modus venter på kameraavlesningen. Eksisterende tester for sene svar, panorering, GPS-følging og paneltilpasning beholdes.
+- Stedtesten dekker tomt felt for initialt «Nær meg», endring til skrevet sted, ny posisjonsforespørsel og søk med riktig koordinat uten å fylle hjelpeteksten inn som verdi.
+- **Fysisk retest gjenstår:** last inn siste kode i Expo Go; zoom/panorer, bytt 3D → 2D gjentatte ganger i alle tre karttypene, og prøv under opptak. 2D skal bli flatt uten et nytt stort utsnitt. Test også «Nær meg» → skriv sted → velg sted → «Nær meg». Windows-testene simulerer native kamera og beviser ikke faktisk MapKit-rendering.
+
+## Brukerdelte løyper, 26. oktober 2026
+
+- Full Jest-kjøring: **332 tester i 60 suiter** bestod etter omleggingen. Etter siste tekst-/valideringsjustering og to ekstra personverntester bestod **22 rutetester i 4 suiter**. Typecheck og Expo lint består uten advarsler. Gamle leverandørtester er erstattet med tester for avviklet endepunkt og bidrag.
+- Hele isolerte databasesuiten består: **354 kontroller**, inkludert **36 nye rutekontroller** mot de faktiske migreringene i PGlite. Dekker autentisering, RLS, skjulte lokale øktreferanser, kilde/samtykke, ugyldig/kort/brutt geometri, idempotens, lik/motsatt/sparsom/jitter-rute, flyttet start på rundtur, andre løyper i samme område, by-/lengdefiltrering, private gamle bokmerker og tilbaketrekking på tvers av kontoer. Transaksjonslåsen er implementert; samtidig skriving fra to separate produksjonsforbindelser er ikke lasttestet.
+- UI-/API-tester bekrefter at bare egne GPS-turer tilbys, ingen deling skjer før samtykke, bare den skjermede geometrien sendes, private notater/tid blir igjen, duplikatfeil ikke utgir seg for suksess og tilbaketrekking bekreftes av serveren.
+- iOS Hermes-eksport består i ignorert `mobile/.expo/community-validation`. Første forsøk ble stoppet av skrivetilgang til Expos midlertidige mappe; samme eksport bestod med nødvendig lokal tilgang. Ingen nye avhengigheter eller native innstillinger. Dette er **ikke** et nytt signert IPA-bygg eller fysisk iPhone-test.
+- Migrering `202610260002_community_routes.sql` er aktivert med `db query --file` i eksisterende prosjekt. Automatisk godkjenning avviste først en destruktiv utgave; den ble ikke kjørt. Den reviderte utgaven bevarer eksisterende data. Serverkontroll bekrefter **0 community-ruter, alle 14 gamle ruter og 2 private bokmerker bevart**. Gamle forslag er skjult fra fellesskapssøk; genererings-RPC-er avviser kall, Edge returnerer 410, tre ORS-innstillinger er fjernet og gammel Cron er deaktivert.
+- Innlogget localhost-kontroll i den smale appnettleseren viser riktig norsk stedssøk/tomtilstand for Oslo og bidragsside uten falske GPS-turer. Eksisterende privat bokmerke er fortsatt synlig. Ingen privat GPS-rute eller syntetisk bidrag er publisert til produksjon.
+- **Fysisk iPhone og annen konto gjenstår:** gjennomført GPS-tur → forhåndsvisning/500 m skjerming → samtykke → del → søk fra annen konto → avvis samme/nesten samme rute → trekk tilbake. Kontroller kartgap, tastatur, store tekststørrelser, VoiceOver og originalens private status. Installer ny preview før testing: Git-push oppdaterer ikke den allerede installerte appen. Se [gjeldende flyt og avgrensninger](route-suggestions.md).
+
+
 ## 2D/3D og navn som hjelpetekst, 26. oktober 2026
 
 - **340 tester i 59 suiter**, typecheck og Expo lint består. Nye Apple-kartregresjoner dekker Standard/Satellitt/Hybrid, 2D → 3D → 2D, bevart sentrum/høyde/retning, ingen ekstra rutetilpasning eller remontering ved vinkelbytte, raske trykk med forsinket kamerasvar, panorering/lukking, GPS-følging og panelendring i 3D. Testene bruker MapView-mock, ikke en faktisk MapKit-renderer. Sonetestene legger nå inn navn eksplisitt og verifiserer at tomt felt ikke kan publiseres. Eksisterende webkarttester består.

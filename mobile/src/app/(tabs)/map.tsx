@@ -49,7 +49,6 @@ function MapText({ style, muted, ...props }: ComponentProps<typeof Txt>) {
 export default function Maps() {
   const saved = useSavedRoutes();
   const workouts = useVisibleWorkouts();
-  const [savedOnly, setSavedOnly] = useState(false);
   const [length, setLength] = useState(0);
   const [sheet, setSheet] = useState<"layers" | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -108,15 +107,14 @@ export default function Maps() {
       : [];
     return [...own, ...demo].filter(
       (t) =>
-        (!savedOnly || saved.ids.includes(t.id)) &&
-        (!length ||
-          (length === 1
-            ? t.distance < 3
-            : length === 2
-              ? t.distance >= 3 && t.distance <= 10
-              : t.distance > 10)),
+        !length ||
+        (length === 1
+          ? t.distance < 3
+          : length === 2
+            ? t.distance >= 3 && t.distance <= 10
+            : t.distance > 10),
     );
-  }, [workouts, examples, filter, following, savedOnly, saved.ids, length]);
+  }, [workouts, examples, filter, following, length]);
   const turf = turfs[index % Math.max(1, turfs.length)];
   const owner =
     turf?.ownerId === "self"
@@ -356,9 +354,8 @@ export default function Maps() {
               </>
             ) : (
               <MapText muted size={14}>
-                {savedOnly
-                  ? "Trykk på stjernen på en rute for å finne den her."
-                  : "Ingen ruter passer filteret. Lagre en GPS-økt, eller velg eksempler i innstillingene."}
+                Ingen ruter passer filteret. Finn en ny løype under Ruteforslag,
+                eller lagre din egen GPS-økt.
               </MapText>
             )}
             {expanded && (
@@ -390,13 +387,10 @@ export default function Maps() {
           <MapSearch
             active={searchOpen}
             onActiveChange={setSearchOpen}
-            savedOnly={savedOnly}
-            onToggleSaved={() => {
-              setSavedOnly(!savedOnly);
-              setIndex(0);
-              setTarget(null);
-              setFollow(false);
-            }}
+            savedOnly={false}
+            onToggleSaved={() =>
+              router.push({ pathname: "/routes", params: { tab: "saved" } })
+            }
             onSelect={(place) => {
               setTarget(place);
               setFollow(false);
@@ -418,6 +412,28 @@ export default function Maps() {
               >
                 <MapText size={13} weight="700">
                   Soner ↗
+                </MapText>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Finn ruteforslag"
+                style={s.chip}
+                onPress={() => {
+                  const area = target ?? position;
+                  router.push({
+                    pathname: "/routes",
+                    params: area
+                      ? {
+                          lat: String(area.latitude),
+                          lon: String(area.longitude),
+                          name: target?.name ?? "Nær meg",
+                        }
+                      : {},
+                  });
+                }}
+              >
+                <MapText size={13} weight="700">
+                  Ruteforslag ↗
                 </MapText>
               </Pressable>
               {["Følger", "Alle eksempler"].map((t) => (

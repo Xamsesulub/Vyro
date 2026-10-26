@@ -1,5 +1,6 @@
 import { act, fireEvent, render, screen } from "@testing-library/react-native";
 import { Keyboard } from "react-native";
+import { router } from "expo-router";
 import Maps from "../src/app/(tabs)/map";
 import { searchPlaces, type Place } from "../src/features/maps/search";
 
@@ -137,10 +138,10 @@ test("cancelling an active search restores map controls and ignores late results
     screen.getByRole("button", { name: "Vis lagrede ruter" }),
   ).toBeTruthy();
   await tap("Vis lagrede ruter");
-  expect(
-    screen.getByRole("button", { name: "Vis lagrede ruter" }).props
-      .accessibilityState,
-  ).toEqual({ selected: true });
+  expect(router.push).toHaveBeenCalledWith({
+    pathname: "/routes",
+    params: { tab: "saved" },
+  });
 });
 
 test("empty queries do not search; failed and empty results allow another search", async () => {

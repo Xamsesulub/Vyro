@@ -1,5 +1,11 @@
 # Leveranseplan
 
+## Ruteforslag i hele Norge, 26. oktober 2026
+
+Kart har nå «Ruteforslag» og en kontobundet liste med lagrede løyper. Sted/«Nær meg», aktivitet og omtrent 3/5/10/15 km gir inntil tre beregnede rundturer via en ny Supabase Edge Function og openrouteservice. Forslag kan forhåndsvises, navngis privat, lagres i skyen med full geometri og brukes som veiledning under ekte GPS-opptak. Ingen forslag registreres som gjennomført trening eller publiseres automatisk. En avgrenset kryptert cache støtter åpning av lagrede linjer uten nett; bakgrunnskartet kan kreve nett.
+
+Løsningen bruker landsdekkende geografiske områder, ikke en håndplukket byliste. Faktisk løypedekning følger kartdataene. Bruker-/felleskvoter, cache, servervalidering og RLS er implementert og testet lokalt. **Aktivering gjenstår:** ny migrering `202610260001`, ORS-nøkkel og utrulling av Edge Function i eksisterende Supabase. Ingen administratortilgang eller leverandørnøkkel er tilgjengelig i skymiljøet. Kuratert Geonorge-import og varmekart er utsatt; appen påstår ikke at forslagene er kvalitetsgodkjente eller populære. Se [oppsett og avgrensning](route-suggestions.md).
+
 ## Enklere soner og synlig publisering, 26. oktober 2026
 
 Soner åpner nå egne og venners løypesoner med en tydelig «Legg ut sone»-knapp. Valg av løpetur og forhåndsvisning er egne trinn; navnet foreslås fra turen, detaljreglene kan utvides, og publisering/feil ligger fast nederst. Serverbekreftelse åpner den faktisk lagrede sonen. Tidligere forsøk gjenfinnes uten duplikater, og korte/skjermede eller gamle opptak forklares før innsending.

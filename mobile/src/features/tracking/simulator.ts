@@ -5,7 +5,11 @@ export type RecordingMode = "gps" | "simulation";
 export type RecordingChallenge = { id: string; name: string; route: Coord[] };
 export type Recording = {
   challenge?: RecordingChallenge;
-  guide?: { name: string; route: import("./gps").RoutePoint[] };
+  guide?: {
+    name: string;
+    route: import("./gps").RoutePoint[];
+    attribution?: string;
+  };
   segmentStartedAt?: number;
   segmentSeconds?: number;
   lastDistanceSeconds?: number;

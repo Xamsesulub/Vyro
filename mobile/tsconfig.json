@@ -3,6 +3,7 @@
   "exclude": ["node_modules", "dist", "coverage", "android", "ios"],
   "compilerOptions": {
     "strict": true,
-    "types": ["jest", "react", "react-native"]
+    "types": ["jest", "react", "react-native"],
+    "allowImportingTsExtensions": true
   }
 }

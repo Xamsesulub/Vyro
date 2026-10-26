@@ -1,6 +1,14 @@
 # Til Codex på PC: fortsett herfra
 
-Oppdatert 26. oktober 2026 etter forenkling av soner og retting av Google-valgets tilgjengelighet. PC-push `b0039b1` («Google test bestått») og designrunden er bevart. Fortsett fra denne statusen, ikke start implementasjonen på nytt.
+Oppdatert 26. oktober 2026 etter implementering av ruteforslag for Norge. PC-push `b0039b1` («Google test bestått»), designrunden og forenklede soner er bevart. Fortsett fra denne statusen, ikke start implementasjonen på nytt.
+
+## Siste arbeid: aktiver ruteforslag
+
+**Kart → Ruteforslag** er implementert: sted/«Nær meg», aktivitet, lengde, inntil tre beregnede rundturer, kart, privat navn, kontobundet lagring og bruk som løypeveiledning under GPS-opptak. **Kart → Lagret** henter skylagrede bokmerker, også på en ny telefon. Full geometri ligger i skyen, med en kryptert lokal cache på inntil 20 ruter. Ingen falske treningstall, automatiske innlegg eller soneforsøk.
+
+**Backend er ikke aktivert.** Skymiljøet har verken ORS-nøkkel eller Supabase-administratortilgang. Appen viser derfor en tydelig beskjed hvis tjenesten ikke er satt opp. På PC: følg [docs/route-suggestions.md](docs/route-suggestions.md), kontroller eksisterende prosjekt/migreringshistorikk, bruk bare ny migrering `202610260001_route_suggestions.sql`, legg ORS-nøkkelen i serverens secrets og deploy `route-suggestions`. Ikke legg nøkler i appen eller lag ny database. Legg også inn daglig oppryddingsjobb. Hele oppsettet, kvoter, cache og akseptanse er dokumentert der.
+
+Dette er beregnede OSM/openrouteservice-forslag, ikke en importert liste med godkjente norske løyper. Ingen Geonorge-import eller Strava-varmekart er lagt til. Faktiske leverandørsvar, produksjonsaktivering og fysisk iPhone-kart/GPS må kontrolleres etter oppsett. Lokale tester bruker faktisk serverkode/PostgreSQL med simulerte leverandørsvar. Se øverste avsnitt i [docs/testing.md](docs/testing.md). Ingen nye appavhengigheter eller native konfigurasjon.
 
 ## Siste arbeid: enklere soner
 

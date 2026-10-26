@@ -11,7 +11,7 @@ async function main() {
   const a = "11111111-1111-4111-8111-111111111111",
     b = "22222222-2222-4222-8222-222222222222",
     c = "33333333-3333-4333-8333-333333333333";
-  await db.exec(`create role anon; create role authenticated; create schema auth;
+  await db.exec(`create role anon; create role authenticated; create role service_role; create schema auth;
  create table auth.users(id uuid primary key,raw_user_meta_data jsonb default '{}');
  create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
  grant usage on schema auth,public to anon,authenticated;

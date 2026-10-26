@@ -180,17 +180,29 @@ export default function RecordingMap({
           <Txt size={11} style={{ color: "#4F3593" }}>
             Lilla: valgt løype · grønn: ditt spor
           </Txt>
+          {!!r.guide?.attribution && (
+            <Txt size={10} style={{ color: "#4F3593" }}>
+              {r.guide.attribution}
+            </Txt>
+          )}
         </View>
       )}
       {!expanded && (
         <View
           style={[
             s.controls,
-            { top: insets.top + (r.challenge || r.guide ? 132 : 76) },
+            {
+              top:
+                insets.top +
+                (r.challenge || r.guide ? 132 : 76) +
+                (r.guide?.attribution ? 16 : 0),
+            },
           ]}
         >
           {height - panelHeight >
-            insets.top + (r.challenge || r.guide ? 350 : 294) && (
+            insets.top +
+              (r.challenge || r.guide ? 350 : 294) +
+              (r.guide?.attribution ? 16 : 0) && (
             <>
               {control(
                 "Nord opp",

@@ -67,7 +67,7 @@
     "lint": "expo lint",
     "test": "jest --runInBand",
     "export:web": "expo export --platform web",
-    "test:database": "node scripts/test-database.cjs && node scripts/test-turf-database.cjs && node scripts/test-feed-database.cjs && node scripts/test-backup-database.cjs && node scripts/test-clubs-places-database.cjs",
+    "test:database": "node scripts/test-database.cjs && node scripts/test-turf-database.cjs && node scripts/test-feed-database.cjs && node scripts/test-backup-database.cjs && node scripts/test-clubs-places-database.cjs && node scripts/test-routes-database.cjs",
     "export:native": "expo export --platform ios --output-dir .expo/native-export",
     "release:check": "node scripts/check-release-env.cjs",
     "eas-build-pre-install": "node scripts/check-release-env.cjs",

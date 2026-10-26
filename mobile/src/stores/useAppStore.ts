@@ -1,3 +1,4 @@
+import { isSuggestedRoute } from "../features/routes/model";
 import { workoutStorage } from "../lib/workoutStorage";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -75,6 +76,10 @@ type State = {
   mode: (mode: RecordingMode) => void;
   repeatRoute: (workout: Workout) => boolean;
   selectTurf: (challenge?: RecordingChallenge) => boolean;
+  planRoute: (
+    route: import("../features/routes/model").SuggestedRoute,
+    ownerId: string,
+  ) => boolean;
   gpsFix: (fix: GpsFix) => void;
   event: (event: Parameters<typeof transition>[1]) => void;
   tick: () => void;
@@ -214,6 +219,27 @@ export const useAppStore = create<State>()(
             guide: {
               name: workout.title,
               route: workout.route.map((p) => ({ ...p })),
+            },
+          },
+        });
+        return true;
+      },
+      planRoute: (route, ownerId) => {
+        if (
+          get().recording.status !== "idle" ||
+          ownerId !== useAuthStore.getState().session?.user.id ||
+          !isSuggestedRoute(route)
+        )
+          return false;
+        set({
+          recording: {
+            ...initialRecording,
+            sport: route.sport,
+            ownerId,
+            guide: {
+              name: route.name,
+              route: route.route.map((p) => ({ ...p })),
+              attribution: route.attribution,
             },
           },
         });

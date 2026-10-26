@@ -1,0 +1,5 @@
+project_id = "vyro"
+
+# Keep the gateway JWT check as well as the handler's Auth /user verification.
+[functions.route-suggestions]
+verify_jwt = true

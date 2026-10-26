@@ -236,9 +236,14 @@ export default function Track() {
             <View style={{ gap: 8 }}>
               <Txt weight="700">Følg ruten: {r.guide.name}</Txt>
               <Txt muted size={12}>
-                Lilla viser den gamle ruten. Grønt viser ditt nye spor. Ingen
+                Lilla viser den valgte løypa. Grønt viser ditt nye spor. Ingen
                 svingvarsler.
               </Txt>
+              {!!r.guide.attribution && (
+                <Txt muted size={11}>
+                  {r.guide.attribution}
+                </Txt>
+              )}
               <Button
                 title="Fjern rute"
                 secondary

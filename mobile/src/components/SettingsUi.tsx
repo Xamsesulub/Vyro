@@ -18,12 +18,18 @@ export function Page({
   fallback = "/settings",
   plain = false,
   backDisabled = false,
+  onBack,
+  footer,
+  scroll = true,
 }: PropsWithChildren<{
   title: string;
   right?: ReactNode;
   fallback?: Href;
   plain?: boolean;
   backDisabled?: boolean;
+  onBack?: () => void;
+  footer?: ReactNode;
+  scroll?: boolean;
 }>) {
   const c = useTheme();
   return (
@@ -51,8 +57,10 @@ export function Page({
             label="Tilbake"
             variant="elevated"
             disabled={backDisabled}
-            onPress={() =>
-              router.canGoBack() ? router.back() : router.replace(fallback)
+            onPress={
+              onBack ??
+              (() =>
+                router.canGoBack() ? router.back() : router.replace(fallback))
             }
           />
           <Txt
@@ -70,18 +78,43 @@ export function Page({
         style={{ flex: 1, backgroundColor: plain ? c.bg : c.raised }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        <ScrollView
-          keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="on-drag"
-          contentContainerStyle={{
-            width: "100%",
-            maxWidth: 680,
-            alignSelf: "center",
-            paddingBottom: 36,
-          }}
-        >
-          {children}
-        </ScrollView>
+        {scroll ? (
+          <ScrollView
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+            contentContainerStyle={{
+              width: "100%",
+              maxWidth: 680,
+              alignSelf: "center",
+              paddingBottom: 36,
+            }}
+          >
+            {children}
+          </ScrollView>
+        ) : (
+          children
+        )}
+        {footer && (
+          <View
+            style={{
+              borderTopWidth: 1,
+              borderColor: c.border,
+              backgroundColor: c.surface,
+            }}
+          >
+            <View
+              style={{
+                width: "100%",
+                maxWidth: 680,
+                alignSelf: "center",
+                padding: 16,
+                gap: 10,
+              }}
+            >
+              {footer}
+            </View>
+          </View>
+        )}
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

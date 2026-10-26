@@ -121,7 +121,7 @@ export default function Activity() {
           <ExportWorkout key={w.id} workout={w} />
           {w.source === "gps" && w.sport === "Løping" && (
             <Button
-              title="Bruk økten i en sone"
+              title={w.turfId ? "Send soneforsøk" : "Legg ut som sone"}
               icon="trophy"
               onPress={() =>
                 router.push({

@@ -17,15 +17,17 @@ Etter lagring kan løperen velge:
 
 Eksempel: Henos eier 3 km på 18 minutter. Xamse passerer samme løype på 17 minutter og løper 2 km videre. Ved eksplisitt utvidelse blir hele 5 km-løypa Xamses sone. Den nye rekorden er Xamses totaltid på alle 5 km. Neste utfordrer må løpe hele den nye løypa. Den gamle løypa beholdes som uendret prefiks; dette er løypesoner, ikke eierskap til geografiske flater.
 
-## Brukerflyt
+## Brukerflyt (forenklet 26. oktober 2026)
 
-- Kart → **Soner**: egne soner og soner fra faktiske følgerforhold, eller alle soner. Listen viser inntil 100 nylig oppdaterte soner.
-- Hver sone viser kart, eier og gjeldende lengde/tid. «Løp denne løypa» åpner eksisterende opptaker. Etter lagring: **Bruk økten i en sone**, velg sone og lagret GPS-løpetur.
-- Alternativt opprett en ny sone fra egen lagret løpetur.
-- Kartforhåndsvisning, valgfri utvidelse og avkrysning for deling kreves før innsending. Ingen automatisk opplasting.
-- Hjem viser de tre siste sonehendelsene fra deg og dem du følger, f.eks. «Xamse har tatt over sonen til Henos. Utvidet til 5 km.» Dette er feedinnhold, ikke pushvarsler.
-- Nåværende eier kan trekke tilbake sonen med bekreftelse. Sonehendelser og forsøk fjernes sammen med sonen.
-- Private ruter og eksempel-turfs i det tidligere kartpanelet er fortsatt separat merket. Simuleringer blir aldri konkurranseforsøk.
+- Kart → **Soner** åpner **Mine og venner**, med egne/opprinnelig opprettede soner og soner eid av løpere du følger. **Mine** beholder også soner du har laget og senere mistet. **Alle** viser øvrige publiserte soner.
+- **Legg ut sone → velg lagret løpetur → se over kart/navn → Legg ut sone.** Publiseringsknappen er fast nederst på forhåndsvisningen. Knappen og teksten rett over den gir eksplisitt deling med innloggede løpere; separat delingsbryter er erstattet av denne handlingen. Valg av tur sender ingen GPS-data.
+- Publisering viser en serverbekreftelse med **Se sonen** og **Til sonene**. Feil står ved publiseringsknappen, og tur/navn beholdes for nytt forsøk. Et tidligere lagret forsøk gjenfinnes fra serverkvitteringen; samme økt lager ikke en ekstra sone.
+- Listen er sideinndelt (20 om gangen), filtrert på serveren før grensen anvendes. Ingen full rutegeometri hentes til lister. Detaljer hentes direkte via sone-ID, også for gamle soner fra Hjem-lenker. Nye/endrede soner hentes ved retur til listen.
+- Hver sone viser kart, eier og gjeldende lengde/tid. **Løp denne løypa** åpner opptakeren. **Bruk en lagret løpetur** åpner forsøk; valgfri utvidelse og hele løypas konkurranseregler beholdes. Aktivitetssiden åpner riktig forhåndsvisning direkte med **Legg ut som sone** eller **Send soneforsøk**.
+- Korte/skjermede, gamle, ufullstendige eller upresise spor får forklaring på forhåndsvisningen. Nye GPS-spor må fortsatt være fra siste 7 dager, med minst 200 m sammenhengende løype utenfor de skjermede områdene. Detaljer ligger under **Slik fungerer soner**.
+- Hjem viser fortsatt de tre siste sonehendelsene fra deg og dem du følger. En sone er en egen konkurranseløype, ikke et automatisk vanlig øktinnlegg eller pushvarsel.
+- Nåværende eier kan trekke tilbake sonen med bekreftelse. Sonehendelser og forsøk fjernes sammen med sonen; privat økt beholdes.
+- Private ruter og eksempel-turfs i det tidligere kartpanelet er separat merket. Simuleringer blir aldri konkurranseforsøk.
 
 ## Server og personvern
 

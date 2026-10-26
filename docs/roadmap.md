@@ -1,5 +1,11 @@
 # Leveranseplan
 
+## Enklere soner og synlig publisering, 26. oktober 2026
+
+Soner åpner nå egne og venners løypesoner med en tydelig «Legg ut sone»-knapp. Valg av løpetur og forhåndsvisning er egne trinn; navnet foreslås fra turen, detaljreglene kan utvides, og publisering/feil ligger fast nederst. Serverbekreftelse åpner den faktisk lagrede sonen. Tidligere forsøk gjenfinnes uten duplikater, og korte/skjermede eller gamle opptak forklares før innsending.
+
+Den tidligere globale 100-grensen skjulte eldre egne/venners soner. Den er erstattet av filtrering i databasen før sideinndeling, med små listefelt og direkte henting av detaljkart. «Mine» inkluderer soner opprettet av deg selv etter at andre har overtatt. Overtakelse, utvidelse, tilbaketrekking, GPS-krav og skjerming av start/slutt er bevart. Ingen nye pakker, migreringer eller produksjonsdata er nødvendige/endret. Se [flyten](social-and-turf.md) og [verifikasjon](testing.md).
+
 ## Google-valget i nye bygg, 26. oktober 2026
 
 Google-innlogging/-registrering er nå aktivert som standard i den delte appkoden og `.env.example`, med mulighet for eksplisitt avvalg. Den tidligere aktiveringen på PC lå i en ignorert lokal miljøfil. Apple-oppsett/tilgjengelighet skjuler ikke lenger Google på iPhone. Begge kontoskjermene bruker samme PKCE-flyt uten krav om eget VYRO-passord; teksten forklarer nye kontra eksisterende brukere. Expo Go forklarer plattformbegrensningen og beholder e-post. Eksisterende Supabase/Google-oppsett og den bekreftede PC-testen beholdes. Native Google-test krever egen VYRO-installasjon; ingen nye leverandørhemmeligheter, migreringer eller produksjonsdata er endret. Se [innlogging](social-login.md) og [tester](testing.md).

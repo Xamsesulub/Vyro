@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Text,
   TextStyle,
+  type TextProps,
   View,
   ViewStyle,
   useColorScheme,
@@ -35,17 +36,20 @@ export function Txt({
   weight = "400",
   style,
   numberOfLines,
+  accessibilityRole,
 }: PropsWithChildren<{
   size?: number;
   muted?: boolean;
   weight?: TextStyle["fontWeight"];
   style?: TextStyle;
   numberOfLines?: number;
+  accessibilityRole?: TextProps["accessibilityRole"];
 }>) {
   const c = useTheme();
   return (
     <Text
       numberOfLines={numberOfLines}
+      accessibilityRole={accessibilityRole}
       style={[
         {
           color: muted ? c.muted : c.text,
@@ -61,6 +65,7 @@ export function Txt({
   );
 }
 const paths = {
+  refresh: "M20 7v5h-5M4 17v-5h5M6 6a8 8 0 0 1 14 6M18 18A8 8 0 0 1 4 12",
   more: "M4 6h16M4 12h16M4 18h16",
   chevronRight: "m9 5 7 7-7 7",
   close: "m6 6 12 12M18 6 6 18",

@@ -1,6 +1,12 @@
 # Til Codex på PC: fortsett herfra
 
-Oppdatert 26. oktober 2026 etter retting av Google-valgets tilgjengelighet. PC-push `b0039b1` («Google test bestått») og designrunden er bevart. Fortsett fra denne statusen, ikke start implementasjonen på nytt.
+Oppdatert 26. oktober 2026 etter forenkling av soner og retting av Google-valgets tilgjengelighet. PC-push `b0039b1` («Google test bestått») og designrunden er bevart. Fortsett fra denne statusen, ikke start implementasjonen på nytt.
+
+## Siste arbeid: enklere soner
+
+**Kart → Soner** åpner nå egne og venners soner med «Legg ut sone». Kort flyt: velg tur → se kart/navn → eksplisitt publiser. Fast knapp og feilmeldinger, serverbekreftelse og gjenfinning av eksisterende forsøk. «Mine» inkluderer også soner du opprettet før andre overtok dem. Serverfiltrering før sidegrensen erstatter den feilaktige globale 100-grensen; detaljer hentes direkte etter ID. Aktivitetssiden har «Legg ut som sone» / «Send soneforsøk».
+
+Ingen endring av GPS-/personvernkrav, konkurranseregler, Google-oppsett eller database. Ingen nye migreringer/pakker/native konfigurasjon. **307 tester / 56 suiter**, typecheck, lint, 35 sonekontroller i PGlite og iOS/web-eksport består. Mobil nettlesertest bruker lokal PostgreSQL og oppdiktede data; fysisk iPhone/ekte Supabase skal fortsatt kontrolleres. Brukerens tre historiske forsøk er ikke lest eller endret. Se nyeste [testavsnitt](docs/testing.md) og [soneflyt](docs/social-and-turf.md).
 
 ## Siste retting: Google ved registrering og innlogging
 

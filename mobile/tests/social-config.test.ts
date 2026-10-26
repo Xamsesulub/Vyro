@@ -18,9 +18,12 @@ afterEach(() => {
 });
 
 test.each([
-  ["ios", "standalone", undefined, undefined, false, false],
+  ["ios", "standalone", undefined, undefined, true, false],
+  ["web", "standalone", undefined, undefined, true, false],
+  ["ios", "standalone", "false", "true", false, true],
   ["ios", "standalone", "true", "true", true, true],
-  ["ios", "standalone", "true", "false", false, false],
+  ["ios", "standalone", "true", "false", true, false],
+  ["ios", "storeClient", undefined, undefined, false, false],
   ["ios", "storeClient", "true", "true", false, false],
   ["web", "storeClient", "true", "false", true, false],
   ["web", "standalone", "false", "true", false, true],
@@ -44,3 +47,36 @@ test.each([
     });
   },
 );
+
+test("Google remains available when Apple availability fails", () => {
+  jest.resetModules();
+  require("react-native").Platform.OS = "ios";
+  require("expo-constants").default.executionEnvironment = "standalone";
+  delete process.env.EXPO_PUBLIC_GOOGLE_AUTH_ENABLED;
+  process.env.EXPO_PUBLIC_APPLE_AUTH_ENABLED = "true";
+  const {
+    visibleSocialProviders,
+  } = require("../src/features/auth/socialConfig");
+  expect(visibleSocialProviders(false)).toEqual({ google: true, apple: false });
+});
+
+test("Expo Go explains the missing Google option; a configured web/native app does not", () => {
+  jest.resetModules();
+  require("react-native").Platform.OS = "ios";
+  require("expo-constants").default.executionEnvironment = "storeClient";
+  delete process.env.EXPO_PUBLIC_GOOGLE_AUTH_ENABLED;
+  expect(require("../src/features/auth/socialConfig").googleNeedsOwnBuild).toBe(
+    true,
+  );
+});
+
+test("missing Supabase configuration still prevents an unusable Google button", () => {
+  jest.resetModules();
+  require("react-native").Platform.OS = "web";
+  require("../src/lib/supabase").supabaseConfigured = false;
+  delete process.env.EXPO_PUBLIC_GOOGLE_AUTH_ENABLED;
+  const {
+    visibleSocialProviders,
+  } = require("../src/features/auth/socialConfig");
+  expect(visibleSocialProviders(true)).toEqual({ google: false, apple: false });
+});

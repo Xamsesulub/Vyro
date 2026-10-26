@@ -4,6 +4,7 @@ import Svg, { Path } from "react-native-svg";
 import { appleSignInAvailable } from "../features/auth/apple";
 import {
   socialConfig,
+  googleNeedsOwnBuild,
   type SocialProvider,
   visibleSocialProviders,
 } from "../features/auth/socialConfig";
@@ -33,7 +34,14 @@ export function SocialSignIn({
     };
   }, []);
   const providers = visibleSocialProviders(available);
-  if (!providers.google && !providers.apple) return null;
+  if (!providers.google && !providers.apple)
+    return googleNeedsOwnBuild ? (
+      <Txt muted size={13}>
+        Google-innlogging og registrering fungerer i nettleseren og i VYROs egen
+        installasjon. Expo Go støtter ikke denne innloggingen. Her kan du bruke
+        e-post.
+      </Txt>
+    ) : null;
   return (
     <View style={{ gap: 12 }}>
       {providers.apple && (
@@ -87,7 +95,8 @@ export function SocialSignIn({
         </Pressable>
       )}
       <Txt muted size={13} style={{ textAlign: "center" }}>
-        Logg inn eller opprett konto. Velg visningsnavn i Innstillinger.
+        Ny i VYRO? Kontoen opprettes når du fortsetter. Har du konto fra før,
+        blir du logget inn. Du trenger ikke et eget VYRO-passord.
       </Txt>
       <Txt muted size={13} style={{ textAlign: "center", marginVertical: 4 }}>
         eller bruk e-post

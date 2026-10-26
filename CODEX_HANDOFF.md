@@ -1,6 +1,12 @@
 # Til Codex på PC: fortsett herfra
 
-Oppdatert 25. oktober 2026 etter ny designrunde i skyen, basert på PC-push `b0039b1` («Google test bestått»). Fortsett fra denne statusen, ikke start implementasjonen på nytt.
+Oppdatert 26. oktober 2026 etter retting av Google-valgets tilgjengelighet. PC-push `b0039b1` («Google test bestått») og designrunden er bevart. Fortsett fra denne statusen, ikke start implementasjonen på nytt.
+
+## Siste retting: Google ved registrering og innlogging
+
+Google er aktivert som standard i den versjonerte koden når Supabase finnes. Aktiveringen lå tidligere bare i PC-ens ignorerte `.env.local`, og en ekstra iPhone-regel skjulte Google når Apple ikke var klar. Den avhengigheten er fjernet. Apple er fortsatt av som standard. `.env.example` bruker nå Google=true; et uttrykkelig Google=false i eldre lokal-/EAS-miljø overstyrer fortsatt standarden og må fjernes/endres hvis Google ønskes.
+
+Både «Opprett konto» og «Logg inn» tilbyr «Fortsett med Google» uten at VYROs navne-/e-post-/passordfelt må fylles ut. Supabase oppretter nye Google-brukere eller gjenbruker eksisterende konto via samme PKCE-flyt. Ingen nye Google-/Supabase-kontoer, nøkler eller serverendringer. Expo Go får en forklaring og e-postalternativ; faktisk Google på iPhone krever VYROs egen installasjon. **291 tester / 54 suiter**, typecheck, lint og iOS/web-eksport uten Google-/Apple-flagg består. Nettlesertesten verifiserer begge Google-valg og PKCE-retur til Hjem med mockbackend, også etter reload/utlogging. Les nyeste verifikasjon i `docs/testing.md` og oppdatert oppsett i `docs/social-login.md`.
 
 ## Nyeste arbeid: Hjem, Du og innstillinger
 
@@ -26,7 +32,7 @@ Les [docs/social-login.md](docs/social-login.md) for konkret oppsett, callback-a
 - Etternavn lagres privat i Auth-metadata (`last_name`), separat fra offentlig visningsnavn. Det kan endres eller fjernes under **Du → Rediger profil** (og den eldre Konto-siden). Ingen ny SQL-migrering trengs.
 - Google via Supabase PKCE og systemets innloggingsnettleser på iPhone; samme fane på web.
 - Apple via den native Apple-knappen, ID-token og nonce på iPhone; Supabase OAuth på web. Apple «Skjul e-postadressen min» er håndtert i koden, men ikke testet med en ekte konto.
-- E-postinnlogging beholdes. `EXPO_PUBLIC_GOOGLE_AUTH_ENABLED` og `EXPO_PUBLIC_APPLE_AUTH_ENABLED` er **av som standard**. Knappene er skjult før oppsettet er klart. På iPhone krever Google-knappen også at Apple er aktivert og tilgjengelig.
+- E-postinnlogging beholdes. Google er **på som standard** med konfigurert Supabase på web/egen iPhone-installasjon. Apple er av som standard og uavhengig av Google. Se rettingen øverst.
 - SDK-kompatible `expo-apple-authentication` og `expo-web-browser` er installert, og `app.json` har Apple Sign in-konfigurasjonen. Behold bundle ID **`app.vyro.mobile`**.
 - Appen slår ikke sammen kontoer basert på navn eller ubekreftet e-post. Faktisk kontokobling mellom eksisterende e-postkonto og Google/Apple må testes i Supabase.
 
@@ -40,14 +46,14 @@ Relevante filer: `mobile/src/app/account.tsx`, `mobile/src/features/auth/`, `mob
 4. Følg [innloggingsoppsettet](docs/social-login.md). Google trenger en **Web application** OAuth-klient fordi Supabase håndterer leverandørens callback. Skill `https://<prosjekt>.supabase.co/auth/v1/callback` fra appens returadresse `vyro://auth/callback`.
 5. Sett opp riktig Apple-team, EAS-prosjekt og signering for en egen VYRO-installasjon. Skymiljøet var ikke logget inn i Expo, og ekte Team ID/EAS-prosjekt er ikke lagt inn i appkonfigurasjonen. Ikke finn på verdier.
 6. Test leverandørflaggene i en separat testkonfigurasjon. **Dagens `preview`-profil arver EAS-miljøet `production`**; opprett/velg et eget testmiljø hvis produksjonsverdiene skal holdes uendret. Aktiver produksjonsvalgene etter ekte innloggingstest.
-7. Bygg og installer VYRO på fysisk iPhone. Expo Go viser ikke disse innloggingsvalgene. Et nytt QR-bilde eller vanlig Reload erstatter ikke et nytt native bygg/signering.
+7. Bygg og installer VYRO på fysisk iPhone. Expo Go forklarer at Google krever egen installasjon eller web, og bruker e-post som alternativ. Et nytt QR-bilde eller vanlig Reload erstatter ikke et nytt native bygg/signering.
 8. Test ny/eksisterende konto, avbrudd, skjult Apple-e-post, retur til appen, appstart, utlogging og etternavn. Bekreft at Hjem, Du og Innstillinger viser samme kontostatus. Følg hele akseptanselisten i `docs/social-login.md`.
 
 ## Verifisert og utestet
 
 Siste designrunde består **280 tester i 53 suiter**, TypeScript-kontroll og lint uten varsler. iOS Hermes- og webeksport består. Nettleserkontroll ved 390 og 320 piksler består for gjest/innlogget Hjem, profilfaner/redigering, følgelister, innstillingsvalg, kryptert lagring/omstart, nettfeil/nytt forsøk og utlogging. Dette bruker oppdiktede testdata og mockbackend; ingen ekte konto-/e-postendringer er utført. Tidligere Expo-introspeksjon bekreftet Apple Sign in-entitlement og lokalisert knapp. Se nyeste avsnitt i `docs/testing.md` for fysisk akseptanseliste.
 
-**Google-innlogging på lokal web er bekreftet av brukeren.** En lesende kontroll av Supabases Auth-innstillinger ga HTTP 200 med Google aktivert og Apple deaktivert. Apple-innlogging, faktisk kontokobling, full akseptansetest, signering, fysisk iPhone og ny Xcode-kompilering av disse endringene gjenstår. Ingen TestFlight-versjon eller produksjonsflagg er publisert fra dette oppsettet. Se [docs/testing.md](docs/testing.md) for evidens og begrensninger. Midlertidige eksportfiler/skjermbilder i skymiljøets `.expo` og `/tmp` følger ikke med Git.
+**Google-innlogging på lokal web er bekreftet av brukeren.** En lesende kontroll av Supabases Auth-innstillinger ga HTTP 200 med Google aktivert og Apple deaktivert. Apple-innlogging, faktisk kontokobling, full akseptansetest, signering, fysisk iPhone og ny Xcode-kompilering av disse endringene gjenstår. Ingen TestFlight-versjon er publisert og ingen EAS-/servermiljøverdier er endret. Googles klientstandard er nå aktivert i koden, som beskrevet øverst. Se [docs/testing.md](docs/testing.md) for evidens og begrensninger. Midlertidige eksportfiler/skjermbilder i skymiljøets `.expo` og `/tmp` følger ikke med Git.
 
 Ved kodeendringer: kjør `npm run typecheck`, `npm run lint` og relevante tester fra `mobile`. `npm test` kjører hele Jest-pakken. En push kan starte Apple-bygget i GitHub Actions; sjekk den konkrete nye kjøringen før du sier at siste native bygg består.
 

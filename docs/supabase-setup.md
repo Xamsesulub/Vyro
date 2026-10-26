@@ -1,6 +1,6 @@
 # Supabase-tilkobling
 
-Google-/Apple-innlogging og valgfritt etternavn er forberedt i appen, men leverandørene er ikke aktivert. Se [oppsett og gjenstående kontosteg](social-login.md). Etternavn bruker privat Auth-metadata og krever ingen ny SQL-migrering.
+Google er konfigurert i eksisterende Supabase og på som standard i appen fra 26. oktober. Apple er forberedt, men er ennå ikke aktivert. Se [oppsett og gjenstående kontosteg](social-login.md). Etternavn bruker privat Auth-metadata og krever ingen ny SQL-migrering.
 
 VYRO bruker det eksisterende Supabase-prosjektet i skyen. Databasen og kontoene er ikke bundet til én PC. De fire migreringene i `supabase/migrations` ble tidligere rullet ut gjennom SQL Editor. Ikke kjør dem på nytt bare fordi dashboardets migreringshistorikk er tom.
 

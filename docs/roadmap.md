@@ -1,5 +1,9 @@
 # Leveranseplan
 
+## Google-valget i nye bygg, 26. oktober 2026
+
+Google-innlogging/-registrering er nå aktivert som standard i den delte appkoden og `.env.example`, med mulighet for eksplisitt avvalg. Den tidligere aktiveringen på PC lå i en ignorert lokal miljøfil. Apple-oppsett/tilgjengelighet skjuler ikke lenger Google på iPhone. Begge kontoskjermene bruker samme PKCE-flyt uten krav om eget VYRO-passord; teksten forklarer nye kontra eksisterende brukere. Expo Go forklarer plattformbegrensningen og beholder e-post. Eksisterende Supabase/Google-oppsett og den bekreftede PC-testen beholdes. Native Google-test krever egen VYRO-installasjon; ingen nye leverandørhemmeligheter, migreringer eller produksjonsdata er endret. Se [innlogging](social-login.md) og [tester](testing.md).
+
 ## Hjem, profil og innstillinger, 25. oktober 2026
 
 Strava-inspirert omarbeiding av brukerens skjermbilder er implementert i VYROs egne farger og grafikk. Gjester får tre sveipbare introduksjonskort med separate valg for registrering og innlogging. En gjenopprettet sesjon går direkte til Hjem også når introduksjonen ikke er fullført på enheten. Hjem viser uketall, aktivitetsstrøm, innleggsdeling og privat GPS-logg, med bevarte innlegg under oppdatering og nytt forsøk ved nettfeil.
@@ -12,7 +16,7 @@ Ingen abonnementer, betalingsflyt, falske varsler, nye helsetillatelser eller uf
 
 ## Google, Apple og etternavn, 25. oktober 2026
 
-Valgfritt etternavn ved e-postregistrering og redigering/fjerning i konto er implementert. Etternavn holdes utenfor den delte profiltabellen; visningsnavnet velges separat. Ingen telefoninnsamling. Google bruker Supabase PKCE via systemnettleser; Apple er forberedt med native ID-token/nonce på iPhone og OAuth på web. Google Cloud-prosjekt og OAuth-klient er nå opprettet, Google er aktivert i eksisterende Supabase, og eieren bekreftet vellykket innlogging på localhost 25. oktober 2026. Det lokale Google-flagget er aktivert; produksjonsflagg er ikke endret. Apple-oppsett, signering, fysisk ende-til-ende-test og produksjonsaktivering gjenstår. Google på iPhone krever fortsatt at Apple også er tilgjengelig. Se [social-login.md](social-login.md).
+Valgfritt etternavn ved e-postregistrering og redigering/fjerning i konto er implementert. Etternavn holdes utenfor den delte profiltabellen; visningsnavnet velges separat. Ingen telefoninnsamling. Google bruker Supabase PKCE via systemnettleser; Apple er forberedt med native ID-token/nonce på iPhone og OAuth på web. Google Cloud-prosjekt og OAuth-klient er nå opprettet, Google er aktivert i eksisterende Supabase, og eieren bekreftet vellykket innlogging på localhost 25. oktober 2026. Det lokale Google-flagget er aktivert; produksjonsflagg er ikke endret. Apple-oppsett, signering, fysisk ende-til-ende-test og produksjonsaktivering gjenstår. Google-knappens tidligere avhengighet av Apple er fjernet 26. oktober; se nyeste status over. Se [social-login.md](social-login.md).
 
 ## Opptak med låst skjerm og appbytte, 25. oktober 2026
 

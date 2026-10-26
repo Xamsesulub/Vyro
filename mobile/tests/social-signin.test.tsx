@@ -37,6 +37,7 @@ jest.mock("../src/components/ui", () => ({
 const originalOS = Platform.OS;
 beforeEach(() => {
   jest.clearAllMocks();
+  require("../src/features/auth/socialConfig").googleNeedsOwnBuild = false;
   Platform.OS = "ios";
   socialConfig.google = true;
   socialConfig.apple = true;
@@ -73,7 +74,7 @@ test("unconfigured providers do not show dead buttons", async () => {
   expect(appleSignInAvailable).not.toHaveBeenCalled();
 });
 
-test("iPhone waits for Apple availability before offering third-party sign-in", async () => {
+test("Google is usable on iPhone while Apple availability is pending or unavailable", async () => {
   let finish!: (value: boolean) => void;
   (appleSignInAvailable as jest.Mock).mockImplementation(
     () =>
@@ -82,7 +83,40 @@ test("iPhone waits for Apple availability before offering third-party sign-in", 
       }),
   );
   await render(<SocialSignIn disabled={false} onPress={jest.fn()} />);
-  expect(screen.queryAllByRole("button")).toHaveLength(0);
+  expect(
+    screen.getByRole("button", { name: "Fortsett med Google" }),
+  ).toBeEnabled();
+  expect(
+    screen.queryByRole("button", { name: "Fortsett med Apple" }),
+  ).toBeNull();
   await act(() => finish(false));
+  expect(
+    screen.getByRole("button", { name: "Fortsett med Google" }),
+  ).toBeEnabled();
+  expect(
+    screen.queryByRole("button", { name: "Fortsett med Apple" }),
+  ).toBeNull();
+});
+
+test("Google works independently when Apple has not been configured", async () => {
+  socialConfig.apple = false;
+  const onPress = jest.fn();
+  await render(<SocialSignIn disabled={false} onPress={onPress} />);
+  await fireEvent.press(
+    screen.getByRole("button", { name: "Fortsett med Google" }),
+  );
+  expect(onPress).toHaveBeenCalledWith("google");
+  expect(appleSignInAvailable).not.toHaveBeenCalled();
+  expect(screen.getByText(/Kontoen opprettes/)).toBeTruthy();
+});
+
+test("Expo Go explains the platform limitation without offering a broken OAuth button", async () => {
+  socialConfig.google = false;
+  socialConfig.apple = false;
+  require("../src/features/auth/socialConfig").googleNeedsOwnBuild = true;
+  await render(<SocialSignIn disabled={false} onPress={jest.fn()} />);
   expect(screen.queryAllByRole("button")).toHaveLength(0);
+  expect(
+    screen.getByText(/Expo Go støtter ikke denne innloggingen/),
+  ).toBeTruthy();
 });

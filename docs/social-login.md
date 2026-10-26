@@ -1,19 +1,23 @@
 # Google, Apple og valgfritt etternavn
 
-## Status, 25. oktober 2026
+## Status, 26. oktober 2026
 
 Appdelen er implementert. Google Cloud-prosjektet `vyro-512719` og en Web application OAuth-klient er opprettet. Google er aktivert i eksisterende Supabase, bekreftet med en lesende kontroll av Auth-innstillingene. Eieren bekreftet vellykket Google-innlogging på `http://localhost:8081` 25. oktober 2026. Google er aktivert i PC-ens ignorerte `.env.local`, mens Apple fortsatt er deaktivert. Apple-oppsett, signering og fysisk iPhone-test gjenstår. E-postinnlogging beholdes. Telefonnummer samles ikke inn.
 
 Lokal Google-test er ikke en full akseptansetest eller produksjonsaktivering. Den gamle Google-klienthemmeligheten skal deaktiveres etter rotasjonen; dette er ennå ikke bekreftet. Ingen hemmeligheter lagres i denne dokumentasjonen.
 
-`EXPO_PUBLIC_GOOGLE_AUTH_ENABLED` og `EXPO_PUBLIC_APPLE_AUTH_ENABLED` er offentlige byggeflagg som er av som standard. Sett dem bare til `true` i en testinstallasjon etter oppsettet under; aktiver dem i produksjon etter godkjente innloggingstester. På iPhone vises Google først når Apple også er konfigurert og tilgjengelig. Expo Go viser ingen av knappene: identiteten og returadressen er ikke den samme som i VYROs egen installasjon.
+Google er nå **på som standard i Git-versjonen** når Supabase er konfigurert, både på web og i VYROs egen iPhone-installasjon. Den tidligere aktiveringen lå bare i PC-ens ignorerte `.env.local`; derfor kunne knappen mangle i andre bygg. Google var dessuten feilaktig avhengig av at Apple var klar på iPhone. Begge forhold er rettet. «Fortsett med Google» er tilgjengelig ved både registrering og innlogging: samme Supabase OAuth-flyt oppretter en ny bruker eller returnerer den eksisterende Google-kontoen uten eget VYRO-passord.
+
+`EXPO_PUBLIC_GOOGLE_AUTH_ENABLED=false` kan fremdeles deaktivere Google eksplisitt i et annet miljø uten leverandøroppsett. `.env.example` bruker nå `true`; hvis en eldre lokal-/EAS-miljøfil uttrykkelig har `false`, endre eller fjern det overstyret og start Metro på nytt / lag en ny eksport eller et nytt bygg. `EXPO_PUBLIC_APPLE_AUTH_ENABLED` er fortsatt av som standard og må settes til `true` først etter Apple-oppsett. Knappene har uavhengig tilgjengelighet. Ingen OAuth-hemmeligheter eller Supabase-nøkler er lagt i Git.
+
+Expo Go støtter ikke denne OAuth-returadressen. Appen forklarer dette ved innlogging/registrering i Expo Go og beholder e-postalternativet. Bruk web eller en egen VYRO-installasjon for Google; Expo anbefaler development build for native OAuth-test. Apple-oppsett og App Store-krav må fortsatt fullføres før butikkinnsending, men de blokkerer ikke Google-testing i en egen installasjon.
 
 ## Etternavn og offentlig navn
 
 - Registrering med e-post har et valgfritt etternavnsfelt, maks 50 tegn. Visningsnavnet beholdes som et separat felt.
 - Etternavnet lagres som `last_name` i brukerens Supabase Auth-metadata, ikke i den delte `public.profiles`-tabellen. Ingen databasemigrering trengs. Metadata er kontoinformasjon, aldri en kilde til tilgangsrettigheter.
-- Innloggede brukere kan legge til, endre eller fjerne etternavnet under **Innstillinger → Konto og utlogging**. Det gjelder også Google-/Apple-brukere.
-- Profilnavn endres under **Du → Innstillinger → Visningsnavn på kontoen**. Navn fra Google kopieres ikke automatisk til den offentlige profilen; eksisterende database-trigger gir nye sosiale kontoer navnet «Løper». Apple ber bare om e-post, ikke fullt navn. Brukeren velger selv sitt offentlige navn.
+- Innloggede brukere kan legge til, endre eller fjerne etternavnet under **Du → Rediger profil**. Det gjelder også Google-/Apple-brukere.
+- Profilnavn endres under **Du → Rediger profil → Visningsnavn**. Navn fra Google kopieres ikke automatisk til den offentlige profilen; eksisterende database-trigger gir nye sosiale kontoer navnet «Løper». Apple ber bare om e-post, ikke fullt navn. Brukeren velger selv sitt offentlige navn.
 - Apple «Skjul e-postadressen min» støttes: innlogging avhenger av det bekreftede Apple-tokenet, ikke en bestemt e-postadresse.
 
 ## Det eieren må opprette
@@ -31,7 +35,7 @@ Del bare prosjektidentifikatorer og ikke-hemmelige oppsettverdier ved behov. Pas
 3. Legg inn **Supabases OAuth callback URL**, nøyaktig slik den vises i Authentication → Sign In / Providers → Google: `https://<prosjektreferanse>.supabase.co/auth/v1/callback`. Dette er en annen adresse enn appens returadresse.
 4. Legg klient-ID og client secret inn i Google-leverandøren i Supabase og aktiver den. Behold standard innloggingsscope; VYRO trenger ikke Google-kontakter, kalender eller Drive.
 5. Legg `vyro://auth/callback` og hver faktisk webadresse `https://<domene>/auth/callback` inn i Supabase → Authentication → URL Configuration. Bruk eksakte adresser; ingen brede wildcard-domener i produksjon. Web må bruke samme nettleser og opprinnelse før og etter innlogging for PKCE.
-6. Sett Google-flagget i EAS/testmiljøet. iPhone krever at Apple-oppsettet også er klart før knappen vises.
+6. Bruk standarden (Google på), eller sett Google-flagget eksplisitt til `true` i EAS/testmiljøet. Apple-oppsett er uavhengig. Ikke behold et gammelt `false`-overstyr hvis Google skal brukes.
 
 Google går gjennom systemets autentiseringsnettleser på iPhone. Web bruker samme fane, slik at innlogging ikke avhenger av at en mobilnettleser tillater sprettoppvinduer. Supabase bruker PKCE og beholder/verifiserer engangskoden før appen slipper brukeren inn.
 
@@ -65,7 +69,7 @@ Hvis e-post skal sendes til Apples relay-adresser, må avsenderdomene/SMTP også
 - Eksisterende e-postkonto og Google med samme bekreftede adresse: kontokoblingen må verifiseres i det faktiske Supabase-oppsettet. Appen slår ikke sammen kontoer på egen hånd. En Apple-relay-adresse kan gi en annen konto; ingen sammenslåing basert på navn.
 - Etternavn skal kunne utelates, lagres, endres og fjernes. Det skal ikke dukke opp i personsøk, innlegg eller kommentarer uten at brukeren selv skriver det inn i visningsnavnet.
 
-Enhetstester bruker simulerte leverandørsvar og er ikke bevis på at Google-/Apple-kontoer eller signering er ferdig konfigurert. Produksjonsaktivering og en fysisk test gjenstår.
+Enhetstester bruker simulerte leverandørsvar og er ikke bevis på at Google-/Apple-kontoer eller signering er ferdig konfigurert. En ny ekte Google-flyt på hvert faktisk webdomene og fysisk iPhone-test gjenstår; den lokale webtesten fra 25. oktober er bekreftet av brukeren.
 
 ## Referanser
 

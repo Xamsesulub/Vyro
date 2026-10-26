@@ -131,7 +131,7 @@ export function createRouteHandler(
       const attempts = await Promise.allSettled(
         [1, 11, 23].map(async (seed) => {
           const res = await request(
-            `https://api.openrouteservice.org/v2/directions/${profile}/geojson`,
+            `https://api.heigit.org/openrouteservice/v2/directions/${profile}/geojson`,
             {
               method: "POST",
               headers: {

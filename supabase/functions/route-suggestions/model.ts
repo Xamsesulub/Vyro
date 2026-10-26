@@ -163,7 +163,8 @@ export async function parseProvider(
         ? Math.round(ascent)
         : null,
     source: "openrouteservice",
-    attribution: "© OpenStreetMap contributors · openrouteservice / HeiGIT",
+    attribution:
+      "© openrouteservice by HeiGIT · © OpenStreetMap contributors · CC BY-SA 4.0: https://creativecommons.org/licenses/by-sa/4.0/",
     created_at: now.toISOString(),
   };
 }

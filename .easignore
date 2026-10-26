@@ -1,6 +1,6 @@
 # EAS uploads from the Git root. This replaces all .gitignore rules for uploads.
 node_modules/
-.git/
+.git
 .env
 .env.*
 .expo/
@@ -29,6 +29,7 @@ mobile/.hosting-artifacts/
 mobile/.openai/
 mobile/ios/
 mobile/android/
+supabase/.temp/
 
 # Keep presentation material in the repository; it is not needed by EAS.
 /docs/

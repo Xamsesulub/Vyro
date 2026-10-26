@@ -78,7 +78,8 @@ const fetcher = (async (input, init) => {
     return response({ state: "generate", lease: "lease-token" });
   if (url.endsWith("vyro_finish_route_search"))
     return response(body.p_routes ?? []);
-  if (url.includes("openrouteservice.org")) return response(loop());
+  if (url.startsWith("https://api.heigit.org/openrouteservice/v2/directions/"))
+    return response(loop());
   throw new Error("Unexpected URL");
 }) as typeof fetch;
 test.each([
@@ -154,7 +155,9 @@ test("only validated auth identity can claim work; user credentials never reach 
   expect(
     calls.find((c) => c.url.endsWith("vyro_claim_route_search"))?.body.p_owner,
   ).toBe("authenticated-owner");
-  const provider = calls.filter((c) => c.url.includes("openrouteservice.org"));
+  const provider = calls.filter((c) =>
+    c.url.startsWith("https://api.heigit.org/openrouteservice/v2/directions/"),
+  );
   expect(provider).toHaveLength(3);
   provider.forEach((c) => {
     expect(c.headers.get("Authorization")).toBe(env.orsKey);
@@ -181,7 +184,13 @@ test("unauthenticated calls, missing configuration and invalid inputs do not spe
     (await createRouteHandler(env, fetcher)(request({ ...center, length: -1 })))
       .status,
   ).toBe(400);
-  expect(calls.some((c) => c.url.includes("openrouteservice.org"))).toBe(false);
+  expect(
+    calls.some((c) =>
+      c.url.startsWith(
+        "https://api.heigit.org/openrouteservice/v2/directions/",
+      ),
+    ),
+  ).toBe(false);
 });
 test.each(["ready", "pending"])(
   "a %s cache avoids duplicate provider calls",
@@ -192,9 +201,13 @@ test.each(["ready", "pending"])(
         : undefined;
     const res = await createRouteHandler(env, fetcher)(request());
     expect(res.status).toBe(state === "ready" ? 200 : 409);
-    expect(calls.some((c) => c.url.includes("openrouteservice.org"))).toBe(
-      false,
-    );
+    expect(
+      calls.some((c) =>
+        c.url.startsWith(
+          "https://api.heigit.org/openrouteservice/v2/directions/",
+        ),
+      ),
+    ).toBe(false);
   },
 );
 test("database rate limits stop generation and provider failures release the lease without caching false results", async () => {
@@ -203,10 +216,16 @@ test("database rate limits stop generation and provider failures release the lea
       ? response({ message: "ROUTE_RATE_LIMIT" }, 400)
       : undefined;
   expect((await createRouteHandler(env, fetcher)(request())).status).toBe(429);
-  expect(calls.some((c) => c.url.includes("openrouteservice.org"))).toBe(false);
+  expect(
+    calls.some((c) =>
+      c.url.startsWith(
+        "https://api.heigit.org/openrouteservice/v2/directions/",
+      ),
+    ),
+  ).toBe(false);
   calls = [];
   custom = (url) =>
-    url.includes("openrouteservice.org")
+    url.startsWith("https://api.heigit.org/openrouteservice/v2/directions/")
       ? response({ message: "quota" }, 429)
       : undefined;
   const res = await createRouteHandler(env, fetcher)(request());
@@ -219,7 +238,7 @@ test("database rate limits stop generation and provider failures release the lea
 });
 test("no routable start is an honest empty result, and CORS preflight makes no auth/provider request", async () => {
   custom = (url) =>
-    url.includes("openrouteservice.org")
+    url.startsWith("https://api.heigit.org/openrouteservice/v2/directions/")
       ? response({ error: { code: 2010 } }, 404)
       : undefined;
   const handler = createRouteHandler(env, fetcher);

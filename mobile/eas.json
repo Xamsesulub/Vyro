@@ -19,6 +19,7 @@
     },
     "preview": {
       "extends": "production",
+      "environment": "preview",
       "distribution": "internal",
       "ios": {
         "simulator": false

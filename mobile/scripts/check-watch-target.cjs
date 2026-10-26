@@ -4,6 +4,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const xcode = require("xcode");
 const plist = require("@expo/plist").default;
+const appConfig = require("../app.json").expo;
 const file = path.resolve(
   process.argv[2] || "ios/VYRO.xcodeproj/project.pbxproj",
 );
@@ -31,15 +32,15 @@ for (const { value } of configIds) {
   assert.equal(clean(settings.WATCHOS_DEPLOYMENT_TARGET), "10.0");
   assert.equal(
     clean(settings.PRODUCT_BUNDLE_IDENTIFIER),
-    "app.vyro.mobile.watchkitapp",
+    `${appConfig.ios.bundleIdentifier}.watchkitapp`,
   );
   assert.equal(
     clean(settings.INFOPLIST_KEY_WKCompanionAppBundleIdentifier),
-    "app.vyro.mobile",
+    appConfig.ios.bundleIdentifier,
   );
   assert.equal(
     clean(settings.MARKETING_VERSION),
-    require("../app.json").expo.version,
+    appConfig.version,
   );
   const entitlements = plist.parse(
     fs.readFileSync(

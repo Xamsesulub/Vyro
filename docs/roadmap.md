@@ -1,10 +1,14 @@
 # Leveranseplan
 
+## Eget iPhone-testbygg klargjort, 26. oktober 2026
+
+Appen er koblet til EAS-prosjekt `@xamse10/vyro`. Intern `preview`-profil bruker eget miljø med eksisterende Supabase-kontoer, Google aktivert og Apple deaktivert. Apple-medlemskap, innlogging, Team ID `YACWFNB642` og iPhone-registrering er bekreftet. Den opprinnelige app-ID-en ble avvist som utilgjengelig; iOS bruker nå `app.vyro.xamse10` med oppdaterte widget-/Watch-ID-er og appgruppe. Typecheck, lint, Expo-introspeksjon og 16 relevante tester består etter endringen. **Første preview-bygg er ferdig med signert IPA** (`FINISHED`, versjon `0.1.0`, bygg 1). Ingen TestFlight-opplasting er startet. Neste steg er installasjon og fysisk Google-/bakgrunns-GPS-/Watch-test; se [byggeguiden](testflight.md).
+
 ## Ruteforslag i hele Norge, 26. oktober 2026
 
 Kart har nå «Ruteforslag» og en kontobundet liste med lagrede løyper. Sted/«Nær meg», aktivitet og omtrent 3/5/10/15 km gir inntil tre beregnede rundturer via en ny Supabase Edge Function og openrouteservice. Forslag kan forhåndsvises, navngis privat, lagres i skyen med full geometri og brukes som veiledning under ekte GPS-opptak. Ingen forslag registreres som gjennomført trening eller publiseres automatisk. En avgrenset kryptert cache støtter åpning av lagrede linjer uten nett; bakgrunnskartet kan kreve nett.
 
-Løsningen bruker landsdekkende geografiske områder, ikke en håndplukket byliste. Faktisk løypedekning følger kartdataene. Bruker-/felleskvoter, cache, servervalidering og RLS er implementert og testet lokalt. **Aktivering gjenstår:** ny migrering `202610260001`, ORS-nøkkel og utrulling av Edge Function i eksisterende Supabase. Ingen administratortilgang eller leverandørnøkkel er tilgjengelig i skymiljøet. Kuratert Geonorge-import og varmekart er utsatt; appen påstår ikke at forslagene er kvalitetsgodkjente eller populære. Se [oppsett og avgrensning](route-suggestions.md).
+Løsningen bruker landsdekkende geografiske områder, ikke en håndplukket byliste. Faktisk løypedekning følger kartdataene. **Aktivert på PC 26. oktober:** bare ny migrering `202610260001` er kjørt i eksisterende Supabase, servernøkkel/kvoter er satt og Edge-funksjonen er aktiv med innloggingskontroll. Daglig opprydding er planlagt kl. 03:20 UTC. HeiGITs nye API-adresse brukes. Ekte appkall ga tre Oslo-forslag; en privat testløype ble lagret og gjenfunnet etter reload med synlig kartlinje. Typecheck, lint, 28 rutetester og 30 isolerte databasekontroller består. Fysisk iPhone, annen enhet/konto og den bredere akseptanselisten gjenstår. Kuratert Geonorge-import og varmekart er utsatt; appen påstår ikke at forslagene er kvalitetsgodkjente eller populære. Se [oppsett og avgrensning](route-suggestions.md).
 
 ## Enklere soner og synlig publisering, 26. oktober 2026
 

@@ -2,41 +2,43 @@
 
 ## Status
 
-TestFlight-oppsettet er klargjort lokalt. Ingen signert IPA er bygget, ingen Apple-opplasting er utført, og ingen TestFlight-invitasjon finnes fra denne økten. Ved siste kontokontroll meldte EAS CLI «Not logged in» og byggforsøket stoppet med «An Expo user account is required to proceed». Expo-prosjekt-ID, Apple-signering/App Store Connect-tilgang og offentlige Supabase-innstillinger må kobles til i skymiljøet. iOS bruker nå Apple Maps uten Mapbox-nøkkel. Oppdaterte testresultater og iOS JavaScript-eksport står i `testing.md`; det erstatter ikke et signert bygg.
+Kontrollert på PC 26. oktober 2026: EAS er innlogget som `xamse10`, og appen er koblet til [@xamse10/vyro](https://expo.dev/accounts/xamse10/projects/vyro), prosjekt-ID `a7a8d578-5dbe-4bae-8835-b54a0a5469c5`. EAS-miljøet `preview` har eksisterende Supabase-adresse og offentlig klientnøkkel, Google=true og Apple=false. Apple-medlemskap, innlogging og Team ID `YACWFNB642` er bekreftet. Apple har registrert de nye iOS-ID-ene og appgruppen; EAS har aktive ad hoc-profiler for hovedapp, widget og Watch med den registrerte iPhonen. **[Preview-bygg 1](https://expo.dev/accounts/xamse10/projects/vyro/builds/ece64080-7b92-44cc-94c2-6ec168efc98d) er ferdig** (`FINISHED`, `0.1.0`, signert IPA, Xcode `ARCHIVE SUCCEEDED`). Åpne lenken i Safari på den registrerte iPhonen for installasjon. Fysisk funksjon er fortsatt utestet; ingen TestFlight-innsending er startet.
 
 `mobile/eas.json` bruker butikkdistribusjon også for TestFlight, EAS-miljøet `production`, automatisk byggnummer fra EAS og fysisk iPhone som mål. Innsendingen velger riktig Apple-app interaktivt første gang. Ingen oppdiktet Expo-ID, Apple-ID eller demokonto er satt inn.
 
-Ved et tidligere oppsett manglet Expo-konto og Apple Developer-medlemskap. Ved ny kontroll 25. oktober svarer skymiljøet fortsatt «Not logged in»; faktisk EAS-prosjekt og Apple-signering må kobles til før et installerbart bygg kan lages. Ingen ny offentlig web-publisering eller databaseendring er gjort i denne leveransen.
+Den interne `preview`-profilen bruker nå sitt eget EAS-miljø `preview`; den arver ikke lenger produksjonsvariablene. Produksjonsmiljøet er ikke konfigurert i denne runden. Google på fysisk iPhone er fortsatt utestet. iOS bruker Apple Maps uten Mapbox-nøkkel.
 
 For å teste låst skjerm og appbytte uten å gå via TestFlight først, finnes nå en intern `preview`-profil. Etter samme konto-/signeringsoppsett registreres iPhonen med `npx eas-cli@latest device:create`, og `npm run ios:preview` lager et eget installasjonsbygg uten Metro-server. Expo Go støtter ikke denne funksjonen på iPhone. Se [bakgrunnsopptak og fysisk testplan](background-recording.md).
 
 ## Koble kontoene én gang
 
-Et aktivt [Apple Developer-medlemskap](https://developer.apple.com/account/) og en [Expo-konto](https://expo.dev/signup) trengs. Bruk eksisterende VYRO-prosjekt og Apple-team hvis disse allerede finnes. Kjør fra `mobile` i en terminal du kontrollerer:
+Et aktivt [Apple Developer-medlemskap](https://developer.apple.com/programs/enroll/) trengs for fysisk iPhone-distribusjon via EAS. Expo-prosjektet er allerede koblet til. På en ny maskin logger du inn i den eksisterende Expo-kontoen; ikke opprett et nytt prosjekt:
 
 ```sh
 npx eas-cli@latest login
 npx eas-cli@latest whoami
-npx eas-cli@latest init
+npx eas-cli@latest project:info
 ```
 
-`init` kobler appen til Expo og lagrer `extra.eas.projectId` i `app.json`. Velg riktig eier/prosjekt. Behold `app.vyro.mobile` som bundle identifier hvis dette er registrert på ditt Apple-team. Ikke endre identiteten til en eksisterende Apple-app. Første bygg leder deg gjennom Apple-innlogging, tofaktor og signering. Passord, tofaktorkoder, signeringsfiler og API-nøkler skal ikke inn i chat eller Git.
+`app.json` inneholder allerede riktig eier og `extra.eas.projectId`. iOS bruker nå `app.vyro.xamse10` som bundle identifier: Apple avviste den tidligere `app.vyro.mobile` som utilgjengelig for teamet ved første signering 26. oktober 2026. Widget-/Watch-ID og appgruppe følger samme nye prefiks. Android-ID er uendret. Første bygg leder deg gjennom Apple-innlogging, tofaktor og signering. Eieren fullfører medlemskap, avtaler og eventuell betaling selv. Passord, tofaktorkoder, signeringsfiler og API-nøkler skal ikke inn i chat eller Git.
 
 ## Innlogging og kart i selve appen
 
-I Expo-prosjektets **Environment variables**, legg inn disse variablene for **production** med synlighet **Sensitive** eller **Plain text**:
+I Expo-prosjektets **Environment variables** er disse satt for **preview** med synlighet **Sensitive**. Kontroller og sett produksjonsverdier separat før TestFlight:
 
 | Variabel | Verdi |
 | --- | --- |
 | `EXPO_PUBLIC_SUPABASE_URL` | HTTPS-adressen til det eksisterende Supabase-prosjektet som har VYRO-kontoene |
 | `EXPO_PUBLIC_SUPABASE_KEY` | Prosjektets offentlige `sb_publishable_`-nøkkel |
+| `EXPO_PUBLIC_GOOGLE_AUTH_ENABLED` | `true` i preview |
+| `EXPO_PUBLIC_APPLE_AUTH_ENABLED` | `false` inntil Apple-oppsett og testing er fullført |
 
 Disse verdiene bygges inn i appen. Synlighet «Sensitive» skjuler dem i byggelogger, men gjør dem ikke hemmelige i appen. Bruk aldri Supabase service-role/`sb_secret_` eller andre serverhemmeligheter i `EXPO_PUBLIC_`. Apple MapKit på iOS trenger verken karttoken eller MapKit JS-oppsett. Mapbox er bare beholdt i web-forhåndsvisningen.
 
 Kontroller innstillingene uten å starte et skybygg:
 
 ```sh
-npx eas-cli@latest env:exec --environment production "npm run release:check"
+npx eas-cli@latest env:exec preview "npm run release:check"
 ```
 
 Kontrollen kjøres også automatisk før EAS installerer avhengighetene. Den avviser manglende/feilformatert konfigurasjon og kjente servernøkler i offentlige variabler, uten å skrive verdiene til loggen. Den beviser ikke at nøklene har tilgang eller at en ekte bruker kan logge inn. Lokale `.env.local`-filer lastes ikke opp; EAS må ha egne verdier. Vanlig lokal utvikling og frakoblet eksport krever ikke denne utgivelseskontrollen.
@@ -47,7 +49,9 @@ Bekreftelses- og gjenopprettingslenker må åpnes på telefonen som startet fore
 
 ## Bygg og last opp
 
-Appen har nå også et Apple Watch-mål. Før signert bygg må det faktiske Apple-teamets Team ID settes som `expo.ios.appleTeamId` i `mobile/app.json`, og EAS må signere både `app.vyro.mobile.watchkitapp` og det eksisterende widget-målet. Se [Apple Watch-oppsettet](apple-watch.md) for byggekontroll, installasjon og fysisk akseptansetest. Klokkestøtten er ikke prøvd i et signert bygg her.
+For første interne iPhone-test: fullfør medlemskap/Team ID og signering nedenfor, registrer telefonen med `npx eas-cli@latest device:create`, og kjør `npm run ios:preview`. Installer via lenken fra et vellykket bygg. Dette bygger inn JavaScript og trenger ikke Metro. TestFlight er et separat distribusjonssteg; det er ikke startet automatisk.
+
+Appen har nå også et Apple Watch-mål. Faktisk Team ID `YACWFNB642` er satt som `expo.ios.appleTeamId` i `mobile/app.json`, og EAS må signere både `app.vyro.xamse10.watchkitapp` og det eksisterende widget-målet. Se [Apple Watch-oppsettet](apple-watch.md) for byggekontroll, installasjon og fysisk akseptansetest. Klokkestøtten er ikke prøvd i et signert bygg her.
 
 Etter at kontoer og miljøvariabler er koblet, kjør fra `mobile`:
 
@@ -62,7 +66,7 @@ Siste kommando kjører `eas build --platform ios --profile testflight --auto-sub
 
 `submit.testflight.ios` er tom med hensikt inntil riktig Apple-app velges. Etter første oppsett kan appens numeriske `ascAppId` fra **App Store Connect → App Information → Apple ID** lagres der. Automatisert innsending uten terminaldialog krever også konfigurert App Store Connect API-nøkkel i EAS. Ikke bruk bundle identifier som `ascAppId`.
 
-Apple kan be om informasjon om kryptering. Appen bruker HTTPS, Keychain og AES-GCM via Expo Crypto. Avklar svarene mot faktisk implementasjon; `usesNonExemptEncryption` er ikke fylt inn automatisk bare for å slippe dialogen.
+Apple kan be om informasjon om kryptering. Kontroll 26. oktober 2026 bekreftet at AES-GCM i installert Expo Crypto bruker Apples CryptoKit på iOS, i tillegg til HTTPS og Keychain. Eieren svarte ja på EAS-spørsmålet om standard/unntatt kryptering; EAS satte `ITSAppUsesNonExemptEncryption=false` i `ios.infoPlist`. Vurder på nytt hvis krypteringsimplementasjonen endres.
 
 ## Installer og logg inn på iPhone
 

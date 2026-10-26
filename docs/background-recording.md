@@ -18,9 +18,9 @@ Telefonen må være slått på. Låst skjerm og vanlig appbytte støttes av nati
 
 ## Installerbar testversjon
 
-`mobile/eas.json` har nå profilen `preview`: intern distribusjon til fysisk iPhone, med JavaScript innebygd i appen. Den trenger ingen kjørende Expo-/Metro-server. Den arver eksisterende produksjonsmiljø og bruker samme VYRO-kontooppsett. Dette er ikke en ny konto eller en publisering til App Store.
+`mobile/eas.json` har profilen `preview`: intern distribusjon til fysisk iPhone, med JavaScript innebygd i appen. Den trenger ingen kjørende Expo-/Metro-server. Fra 26. oktober bruker den eget EAS-miljø `preview`, med samme Supabase-prosjekt som appen ellers. Dette er ikke en ny VYRO-konto eller en publisering til App Store.
 
-Ved kontroll i dette skymiljøet svarer Expo CLI **Not logged in**. EAS-prosjekt og Apple-team/signering er ikke konfigurert, og ingen installasjonslenke eller signert IPA er laget. Koble faktiske kontoer og offentlige Supabase-innstillinger etter [TestFlight-guiden](testflight.md). Apple Watch- og widget-målene trenger også riktige profiler.
+Kontrollert på PC 26. oktober: Expo-konto `xamse10`, prosjekt `@xamse10/vyro` og preview-miljø er koblet til. Apple-medlemskap, innlogging og faktisk Team ID `YACWFNB642` er bekreftet. Den første app-ID-en ble avvist; `app.vyro.xamse10`, Watch og widget har nå registrerte Apple-ID-er og aktive ad hoc-profiler med iPhonen. Første skybygg er **ferdig med signert IPA**. Installasjon og fysisk bakgrunns-GPS er fortsatt utestet. Følg [byggeguiden og installasjonslenken](testflight.md).
 
 Etter kontooppsett, fra `mobile`:
 

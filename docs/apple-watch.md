@@ -36,9 +36,9 @@ EAS-konfigurasjonen inkluderer følgende mål:
 
 | Mål | Bundle identifier | Bruk |
 | --- | --- | --- |
-| VYRO | `app.vyro.mobile` | iPhone |
-| ExpoWidgetsTarget | `app.vyro.mobile.widgets` | Eksisterende Live Activity |
-| VyroWatch | `app.vyro.mobile.watchkitapp` | Apple Watch, HealthKit |
+| VYRO | `app.vyro.xamse10` | iPhone |
+| ExpoWidgetsTarget | `app.vyro.xamse10.widgets` | Eksisterende Live Activity |
+| VyroWatch | `app.vyro.xamse10.watchkitapp` | Apple Watch, HealthKit |
 
 EAS må opprette/benytte signeringsprofiler for alle målene. Watch-target har HealthKit-rettighet, beskrivende tillatelsestekster og `workout-processing` i bakgrunnsmodus. Appversjon og byggnummer hentes fra iPhone-målet. Hent faktiske Supabase-innstillinger etter TestFlight-guiden før testing av konto/import.
 

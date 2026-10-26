@@ -1,14 +1,20 @@
 # Til Codex på PC: fortsett herfra
 
-Oppdatert 26. oktober 2026 etter implementering av ruteforslag for Norge. PC-push `b0039b1` («Google test bestått»), designrunden og forenklede soner er bevart. Fortsett fra denne statusen, ikke start implementasjonen på nytt.
+Oppdatert 26. oktober 2026 etter aktivering av ruteforslag og klargjøring av iPhone-testbygg. PC-push `b0039b1` («Google test bestått»), designrunden og forenklede soner er bevart. Fortsett fra denne statusen, ikke start implementasjonen på nytt.
 
-## Siste arbeid: aktiver ruteforslag
+## Siste arbeid: første signerte iPhone-preview er ferdig
+
+EAS-kontoen er verifisert som `xamse10`. Appen er koblet til [@xamse10/vyro](https://expo.dev/accounts/xamse10/projects/vyro), ID `a7a8d578-5dbe-4bae-8835-b54a0a5469c5`, i `mobile/app.json`. `preview` bruker nå eget EAS-miljø med eksisterende Supabase-adresse/offentlig klientnøkkel, Google=true og Apple=false. Ingen serverhemmeligheter er lagt i Expo. Produksjonsmiljøet er ikke endret. Typecheck, lint, 24 relevante tester og kontroll av de faktiske preview-miljøvariablene består.
+
+**Første signerte iPhone-preview er ferdig:** [EAS-bygg 1](https://expo.dev/accounts/xamse10/projects/vyro/builds/ece64080-7b92-44cc-94c2-6ec168efc98d), versjon `0.1.0`, status `FINISHED` 26. oktober 2026 kl. 16:56 UTC, med IPA og `ARCHIVE SUCCEEDED` i Xcode-loggen. Apple-team `YACWFNB642` har registrerte ID-er og aktive ad hoc-profiler for app, widget og Watch med brukerens registrerte iPhone. Første forsøk avviste `app.vyro.mobile` som utilgjengelig; iOS bruker nå `app.vyro.xamse10`, med tilsvarende widget-/Watch-ID og appgruppe. Android-ID er uendret. Typecheck, lint, Expo-introspeksjon og 16 relevante tester består. Lokal iOS-generering støttes ikke på Windows; selve Xcode-bygget er verifisert i EAS. **Fysisk installasjon, Google, appretur, lagret innlogging, Watch og bakgrunns-GPS er fortsatt utestet.** Åpne byggelenken i Safari på den registrerte iPhonen og installer før disse testene. Ingen TestFlight-innsending er startet. Ikke be om passord eller koder i chatten. Se [byggeoppsett](docs/testflight.md) og [teststatus](docs/testing.md). Endringene er ikke committet eller pushet.
+
+## Siste arbeid: ruteforslag aktivert
 
 **Kart → Ruteforslag** er implementert: sted/«Nær meg», aktivitet, lengde, inntil tre beregnede rundturer, kart, privat navn, kontobundet lagring og bruk som løypeveiledning under GPS-opptak. **Kart → Lagret** henter skylagrede bokmerker, også på en ny telefon. Full geometri ligger i skyen, med en kryptert lokal cache på inntil 20 ruter. Ingen falske treningstall, automatiske innlegg eller soneforsøk.
 
-**Backend er ikke aktivert.** Skymiljøet har verken ORS-nøkkel eller Supabase-administratortilgang. Appen viser derfor en tydelig beskjed hvis tjenesten ikke er satt opp. På PC: følg [docs/route-suggestions.md](docs/route-suggestions.md), kontroller eksisterende prosjekt/migreringshistorikk, bruk bare ny migrering `202610260001_route_suggestions.sql`, legg ORS-nøkkelen i serverens secrets og deploy `route-suggestions`. Ikke legg nøkler i appen eller lag ny database. Legg også inn daglig oppryddingsjobb. Hele oppsettet, kvoter, cache og akseptanse er dokumentert der.
+**Backend er aktivert på PC 26. oktober 2026** i eksisterende `diviitenhbidwrcpmkxr`: ny migrering `202610260001_route_suggestions.sql`, ORS-serverhemmelighet, grenser 30/minutt og 600/døgn, Edge `route-suggestions` versjon 1 med `verify_jwt = true`, daglig Cron-jobb `vyro-route-suggestions-prune` kl. 03:20 UTC. Databasen manglet CLI-migreringshistorikk; bare den nye filen ble kjørt med `db query`. Ikke kjør gamle migreringer eller den nye filen på nytt uten avstemming. Koden bruker nå HeiGITs nye API-adresse og kilde-/lisensmerking. Lokal servernøkkel og CLI-metadata er ignorert av Git. Brukeren delte nøkkelen i en kommentar og er bedt om å rotere den; ny nøkkel må da settes både lokalt og i Supabase. Ikke kopier noen nøkkel hit.
 
-Dette er beregnede OSM/openrouteservice-forslag, ikke en importert liste med godkjente norske løyper. Ingen Geonorge-import eller Strava-varmekart er lagt til. Faktiske leverandørsvar, produksjonsaktivering og fysisk iPhone-kart/GPS må kontrolleres etter oppsett. Lokale tester bruker faktisk serverkode/PostgreSQL med simulerte leverandørsvar. Se øverste avsnitt i [docs/testing.md](docs/testing.md). Ingen nye appavhengigheter eller native konfigurasjon.
+Dette er beregnede OSM/openrouteservice-forslag, ikke en importert liste med godkjente norske løyper. Ingen Geonorge-import eller Strava-varmekart er lagt til. Ekte innlogget localhost-test ga tre Oslo-ruter; privat «Testløype · Oslo» på 2,84 km ble lagret og gjenfunnet etter reload, med fungerende kartlinje/fliser. Ingen treningsøkt/innlegg/sone ble publisert. Typecheck, lint, 28 relevante tester og 30 isolerte rutekontroller består. **Neste kontroll er fysisk iPhone og annen enhet/konto**, samt resten av [akseptanselisten](docs/route-suggestions.md). Første automatiske Cron-kjøring er ikke observert. Se [docs/testing.md](docs/testing.md). Ingen nye appavhengigheter eller native konfigurasjon. Endringene fra denne PC-runden er ikke committet/pushet; brukeren har tidligere valgt å pushe selv.
 
 ## Siste arbeid: enklere soner
 
@@ -36,7 +42,7 @@ Brukeren ba om Strava-inspirert design på referansebildenes sider, særlig Inns
 
 Google Cloud-prosjektet `vyro-512719` og en Web application OAuth-klient er opprettet. Google er aktivert i **eksisterende Supabase-prosjekt**, og brukeren bekreftet vellykket Google-innlogging på `http://localhost:8081` 25. oktober 2026. Google-flagget er aktivert i PC-ens ignorerte `mobile/.env.local`; Apple er fortsatt av. Hemmeligheter skal ikke kopieres hit.
 
-Neste oppgave er Apple-oppsett, EAS-prosjekt og signering for en egen VYRO-installasjon, deretter fysisk iPhone-test av begge innloggingsvalgene. Sjekk nåværende Apple-/Expo-kontostatus før oppsett. En gammel Google-klienthemmelighet ble erstattet under oppsettet; deaktivering av den gamle er ennå ikke bekreftet.
+Neste oppgave er å installere det ferdige preview-bygget og teste Google fysisk. Apple-medlemskap, signering, iPhone-registrering og første skybygg er bekreftet. Apple-innlogging aktiveres først når dens separate oppsett er klart, med `app.vyro.xamse10` som native audience i Supabase. En gammel Google-klienthemmelighet ble erstattet under oppsettet; deaktivering av den gamle er ennå ikke bekreftet.
 
 Les [docs/social-login.md](docs/social-login.md) for konkret oppsett, callback-adresser, krav og akseptansetest. Eieren fullfører selv kontoinnlogging, medlemskap, avtaler og betaling. Ikke be om passord/private nøkler i chatten. Legg leverandørhemmeligheter direkte i Supabase-dashboardet, aldri i Git eller `EXPO_PUBLIC_*`.
 
@@ -47,7 +53,7 @@ Les [docs/social-login.md](docs/social-login.md) for konkret oppsett, callback-a
 - Google via Supabase PKCE og systemets innloggingsnettleser på iPhone; samme fane på web.
 - Apple via den native Apple-knappen, ID-token og nonce på iPhone; Supabase OAuth på web. Apple «Skjul e-postadressen min» er håndtert i koden, men ikke testet med en ekte konto.
 - E-postinnlogging beholdes. Google er **på som standard** med konfigurert Supabase på web/egen iPhone-installasjon. Apple er av som standard og uavhengig av Google. Se rettingen øverst.
-- SDK-kompatible `expo-apple-authentication` og `expo-web-browser` er installert, og `app.json` har Apple Sign in-konfigurasjonen. Behold bundle ID **`app.vyro.mobile`**.
+- SDK-kompatible `expo-apple-authentication` og `expo-web-browser` er installert, og `app.json` har Apple Sign in-konfigurasjonen. iOS bundle ID er nå **`app.vyro.xamse10`** etter at Apple avviste `app.vyro.mobile` som utilgjengelig ved første signering 26. oktober. Widget, appgruppe og Watch følger den nye ID-en. Android-ID er uendret.
 - Appen slår ikke sammen kontoer basert på navn eller ubekreftet e-post. Faktisk kontokobling mellom eksisterende e-postkonto og Google/Apple må testes i Supabase.
 
 Relevante filer: `mobile/src/app/account.tsx`, `mobile/src/features/auth/`, `mobile/src/components/SocialSignIn.tsx`, `mobile/src/components/AccountLastName.tsx`, `mobile/app.json` og `mobile/.env.example`.
@@ -58,8 +64,8 @@ Relevante filer: `mobile/src/app/account.tsx`, `mobile/src/features/auth/`, `mob
 2. Arbeid i `mobile`, med Node 24.19.0 som i EAS-oppsettet. Kjør `npm ci` etter oppdatering av pakkene.
 3. Bruk eksisterende Supabase-prosjekt og lokale offentlige miljøverdier. `mobile/.env.local` skal være ignorert av Git. Ikke opprett ny database eller kjør gamle migreringer på nytt bare fordi denne PC-en er ny.
 4. Følg [innloggingsoppsettet](docs/social-login.md). Google trenger en **Web application** OAuth-klient fordi Supabase håndterer leverandørens callback. Skill `https://<prosjekt>.supabase.co/auth/v1/callback` fra appens returadresse `vyro://auth/callback`.
-5. Sett opp riktig Apple-team, EAS-prosjekt og signering for en egen VYRO-installasjon. Skymiljøet var ikke logget inn i Expo, og ekte Team ID/EAS-prosjekt er ikke lagt inn i appkonfigurasjonen. Ikke finn på verdier.
-6. Test leverandørflaggene i en separat testkonfigurasjon. **Dagens `preview`-profil arver EAS-miljøet `production`**; opprett/velg et eget testmiljø hvis produksjonsverdiene skal holdes uendret. Aktiver produksjonsvalgene etter ekte innloggingstest.
+5. Behold tilkoblet Expo-prosjekt, Apple Team ID `YACWFNB642` og iOS-ID `app.vyro.xamse10`. Eksisterende ad hoc-signering er satt opp i EAS. Ikke gjenskap profiler uten behov.
+6. `preview` bruker sitt eget EAS-miljø med Google aktivert og Apple deaktivert. Kontroller med `npx eas-cli@latest env:exec preview "npm run release:check"`. Aktiver produksjonsvalgene separat etter ekte innloggingstest.
 7. Bygg og installer VYRO på fysisk iPhone. Expo Go forklarer at Google krever egen installasjon eller web, og bruker e-post som alternativ. Et nytt QR-bilde eller vanlig Reload erstatter ikke et nytt native bygg/signering.
 8. Test ny/eksisterende konto, avbrudd, skjult Apple-e-post, retur til appen, appstart, utlogging og etternavn. Bekreft at Hjem, Du og Innstillinger viser samme kontostatus. Følg hele akseptanselisten i `docs/social-login.md`.
 
@@ -67,7 +73,7 @@ Relevante filer: `mobile/src/app/account.tsx`, `mobile/src/features/auth/`, `mob
 
 Siste designrunde består **280 tester i 53 suiter**, TypeScript-kontroll og lint uten varsler. iOS Hermes- og webeksport består. Nettleserkontroll ved 390 og 320 piksler består for gjest/innlogget Hjem, profilfaner/redigering, følgelister, innstillingsvalg, kryptert lagring/omstart, nettfeil/nytt forsøk og utlogging. Dette bruker oppdiktede testdata og mockbackend; ingen ekte konto-/e-postendringer er utført. Tidligere Expo-introspeksjon bekreftet Apple Sign in-entitlement og lokalisert knapp. Se nyeste avsnitt i `docs/testing.md` for fysisk akseptanseliste.
 
-**Google-innlogging på lokal web er bekreftet av brukeren.** En lesende kontroll av Supabases Auth-innstillinger ga HTTP 200 med Google aktivert og Apple deaktivert. Apple-innlogging, faktisk kontokobling, full akseptansetest, signering, fysisk iPhone og ny Xcode-kompilering av disse endringene gjenstår. Ingen TestFlight-versjon er publisert og ingen EAS-/servermiljøverdier er endret. Googles klientstandard er nå aktivert i koden, som beskrevet øverst. Se [docs/testing.md](docs/testing.md) for evidens og begrensninger. Midlertidige eksportfiler/skjermbilder i skymiljøets `.expo` og `/tmp` følger ikke med Git.
+**Google-innlogging på lokal web er bekreftet av brukeren.** En lesende kontroll av Supabases Auth-innstillinger ga HTTP 200 med Google aktivert og Apple deaktivert. Signert Xcode/IPA-bygg er nå verifisert i EAS som beskrevet øverst. Apple-innlogging, faktisk kontokobling, full akseptansetest og fysisk iPhone gjenstår. Ingen TestFlight-versjon er publisert. EAS-previewvariabler er satt som beskrevet øverst; Googles klientstandard er også aktivert i koden. Se [docs/testing.md](docs/testing.md) for evidens og begrensninger. Midlertidige eksportfiler/skjermbilder i `.expo` og `/tmp` følger ikke med Git.
 
 Ved kodeendringer: kjør `npm run typecheck`, `npm run lint` og relevante tester fra `mobile`. `npm test` kjører hele Jest-pakken. En push kan starte Apple-bygget i GitHub Actions; sjekk den konkrete nye kjøringen før du sier at siste native bygg består.
 

@@ -1,6 +1,8 @@
 # Ruteforslag i Norge
 
-Status 26. oktober 2026: app, serverfunksjon, datamodell og lokale tester er implementert. **Tjenesten er ikke aktivert i produksjon.** Skymiljøet mangler ORS-nøkkel og Supabase-administratortilgang. Ingen nye produksjonstabeller, leverandørkontoer eller ekte ruter er opprettet i denne runden.
+Status 26. oktober 2026: **aktivert i eksisterende Supabase-prosjekt `diviitenhbidwrcpmkxr`**. Den nye migreringen er kjørt, serverhemmeligheter er satt, og `route-suggestions` versjon 1 er aktiv med `verify_jwt = true`. Ekte søk fra localhost ga tre rundturer i Oslo; en privat «Testløype · Oslo» på 2,84 km ble lagret og gjenfunnet etter reload, med kartlinje og bakgrunnskart. Dette er ikke en gjennomført treningsøkt. Fysisk iPhone og resten av akseptanselisten gjenstår.
+
+Databasen hadde ingen CLI-migreringshistorikk. Bare `202610260001_route_suggestions.sql` ble kjørt via `supabase db query --linked --project-ref … --file …`; eldre migreringer ble ikke kjørt. De fem rutetabellene finnes nå. **Ikke kjør filen på nytt eller bruk ukontrollert `db push`**; historikken må først avstemmes mot det eksisterende skjemaet. Supabase Cron-jobben `vyro-route-suggestions-prune` kjører som `postgres` kl. 03:20 UTC daglig. Planleggingen er kontrollert, men første automatiske kjøring er ikke observert.
 
 ## Brukerflyt
 
@@ -20,14 +22,14 @@ Eksisterende stedssøk brukes: Apple-geokoding på iPhone og Mapbox på web. And
 - `route_suggestions` inneholder beregnede kartlinjer med generiske navn, uten eier/søkerkobling. Innloggede kan lese dem. `saved_route_suggestions` kobler rute og privat navn til kontoen, med RLS. Brukernavn og søkestreng blir aldri offentlige rutenavn.
 - Full geometri for bokmerkede ruter bevares i skyen; det lagres ikke bare en flyktig leverandør-ID. Kontobundne bokmerker er begrenset til 500, listen hentes 20 om gangen uten full geometri. Kontosletting kaskadesletter bokmerkene.
 - Inntil 20 sist åpnede/lagrede, serverbekreftede ruter ligger i en kryptert lokal cache, filtrert på konto. Cachen er best effort og erstatter ikke skylagring. Bakgrunnskartets fliser lastes ikke ned for offlinebruk. Gamle bokmerker av egne GPS-turer beholdes som en separat lokal liste.
-- Kildekreditering: `© OpenStreetMap contributors · openrouteservice / HeiGIT`, også når en valgt løype vises under opptak. Leverandørens gjeldende bruks-/lagringsvilkår må kontrolleres ved aktivering.
+- Kildekreditering følger løypa, også under opptak: openrouteservice by HeiGIT, OpenStreetMap og CC BY-SA 4.0 med lisenslenke. [Vilkårene](https://account.heigit.org/info/tos) ble kontrollert 26. oktober: ORS-resultater er under CC BY-SA 4.0. Ingen særskilt lagringsgrense er oppgitt der; kilde-/lisensmerking beholdes med lagret geometri. Dette er ikke en generell lisensvurdering av fremtidig eksport eller andre datakilder.
 
 Stravas blå/lilla linjer viser aktivitetsintensitet fra deres brukere. VYRO har ikke disse dataene. Ingen Strava-fliser, kopiert rutekatalog eller kunstig popularitet er lagt inn. Eget varmekart utsettes til det finnes tilstrekkelige frivillig delte, aggregerte data og en personvernmodell. Kartverket/Geonorge/andre kuraterte rutekilder kan supplere senere; ingen slik import er gjort uten avklart tilgang, egnethet og lisens.
 
 ## Aktiver på PC i eksisterende Supabase-prosjekt
 
 1. Hent siste `main`. Bruk samme prosjekt som dagens innlogging og soner. **Ikke opprett en ny database eller kjør gamle migreringer på nytt.** Kontroller migreringshistorikken først. Den nye filen er `supabase/migrations/202610260001_route_suggestions.sql`. Den forutsetter eksisterende `valid_vyro_route` og `limit_vyro_write`. Bruk SQL Editor til akkurat denne nye filen, eller verifiser `supabase db push --dry-run` før en CLI-utrulling dersom historikken er korrekt koblet.
-2. Opprett/bruk en konto hos [openrouteservice](https://openrouteservice.org/) og legg til en Directions API-nøkkel. Kontroller gjeldende plan, tillatt kommersiell bruk, lagring, kreditering og kvoter. Test gjeldende `/v2/directions/foot-walking/geojson`-endepunkt. Denne koden bruker `https://api.openrouteservice.org`; et ekte leverandørkall er ikke utført i skymiljøet.
+2. Opprett/bruk en konto hos [HeiGIT](https://account.heigit.org/) og bruk API-nøkkelen med Directions-tilgang. Kontroller gjeldende plan, lagring, kreditering og kvoter. [Standard-planen](https://account.heigit.org/info/plans) var gratis for alle med Directions V2 2000/døgn og 40/minutt ved kontroll 26. oktober. VYRO bruker lavere grenser: 600/døgn og 30/minutt. Koden bruker `https://api.heigit.org/openrouteservice/v2/directions/foot-walking/geojson` (eller `foot-hiking`). Den eldre adressen `api.openrouteservice.org` avvikles, se [leverandørens kunngjøring](https://ask.openrouteservice.org/t/deprecating-api-openrouteservice-org-in-favour-of-api-heigit-org/7912). Både et direkte leverandørkall og et innlogget appkall gjennom Edge er verifisert.
 3. Kopier `supabase/functions/.env.example` til `supabase/functions/.env.local` og fyll inn nøkkelen lokalt. Filen er ignorert av Git. Ikke legg hemmeligheter i chat, appkode eller `EXPO_PUBLIC_*`. Tilpass kvotegrensene til leverandørplanen.
 4. Logg inn med prosjektets autoriserte Supabase-konto og kjør fra repo-roten, med den faktiske prosjekt-ID-en i stedet for plassholderen:
 
@@ -38,7 +40,7 @@ Stravas blå/lilla linjer viser aktivitetsintensitet fra deres brukere. VYRO har
    ```
 
    Supabase setter `SUPABASE_URL`, `SUPABASE_ANON_KEY` og `SUPABASE_SERVICE_ROLE_KEY` i Edge-miljøet. `verify_jwt = true` i `supabase/config.toml` beholdes; funksjonen kontrollerer i tillegg tokenet mot Auth og bruker kun den verifiserte bruker-ID-en. Kontroller gateway/JWT-kompatibilitet mot prosjektets faktiske signeringsoppsett ved første test. Ikke slå av all autentisering for å omgå en feil.
-5. Legg inn en daglig jobb som kjører `select public.vyro_prune_route_suggestions();` med server-/databaseautoritet. Supabase Cron kan brukes hvis det er aktivert. Migreringen krever ikke at `pg_cron` er installert. Oppryddingen fjerner gamle tellere, utløpt søkecache og ubrukte rutemaler eldre enn 30 dager; bokmerkede ruter beholdes.
+5. Legg inn en daglig jobb som kjører `select public.vyro_prune_route_suggestions();` med server-/databaseautoritet. Dette er allerede satt opp i VYRO: `pg_cron` 1.6.4, jobb `vyro-route-suggestions-prune`, tidsplan `20 3 * * *` (UTC), bruker `postgres`. Kontroller eksisterende jobb før endringer. Migreringen krever ikke at `pg_cron` er installert. Oppryddingen fjerner gamle tellere, utløpt søkecache og ubrukte rutemaler eldre enn 30 dager; bokmerkede ruter beholdes. [Supabase Cron](https://supabase.com/docs/guides/cron/quickstart).
 6. Test med en vanlig innlogget bruker før lansering, se listen under. Ingen nye native moduler er lagt til; dette krever oppdatert appkode og backendaktivering, ikke et nytt native bygg på grunn av rutefunksjonen alene.
 
 ## Drift og grenser
@@ -58,4 +60,4 @@ Manglende utrulling/nøkkel gir «Ruteforslag er ikke aktivert ennå». Lagret k
 5. Åpne en lagret løype før nett frakobles. Kontroller lokal kopi og beskjed om bakgrunnskart. «Bruk løypa» skal vise den lilla linjen og null tid/distanse før GPS-start. Løp en kort fysisk test og kontroller pause/gjenoppretting; bare det faktiske sporet skal lagres som aktivitet.
 6. Kontroller liten skjerm, tastatur, stor tekst og VoiceOver på iPhone. Bekreft fysisk posisjonstillatelse og at søk på et valgt sted ikke starter treningsopptak.
 
-Lokale tester bruker faktisk Edge-handler og PostgreSQL-migrering, men simulerte ORS-svar. De bekrefter ikke at leverandørkonto, produksjonsutrulling eller faktiske ruter virker. Se [testing.md](testing.md) for utført verifikasjon.
+Lokale tester bruker faktisk Edge-handler og PostgreSQL-migrering, men simulerte ORS-svar. De suppleres nå av den ekte Oslo-testen beskrevet øverst. Dette bekrefter ikke fysisk iPhone, annen enhet/konto eller alle steder/lengder. Se [testing.md](testing.md) for utført verifikasjon.

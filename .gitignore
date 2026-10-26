@@ -13,3 +13,4 @@ mobile/.hosting-artifacts/
 docs/design-references/strava/*.png
 docs/design-references/strava-references.zip
 .claude/
+supabase/.temp/

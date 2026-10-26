@@ -41,8 +41,8 @@ Google går gjennom systemets autentiseringsnettleser på iPhone. Web bruker sam
 
 ## Apple på iPhone
 
-1. Registrer/behold app-ID **`app.vyro.mobile`** i riktig Apple-team og aktiver **Sign in with Apple**. Sett riktig Team ID og EAS-prosjekt i byggeoppsettet; ikke endre bundle ID for å omgå signering.
-2. Aktiver Apple i Supabase Authentication → Sign In / Providers. Konfigurer `app.vyro.mobile` som tillatt klient-ID/audience for native Apple-token.
+1. Registrer/behold app-ID **`app.vyro.xamse10`** i Apple-team `YACWFNB642` og aktiver **Sign in with Apple**. Den tidligere ID-en `app.vyro.mobile` ble avvist som utilgjengelig av Apple 26. oktober 2026; dette er første signering, ikke en endring av en publisert app. Behold den nye ID-en ved senere oppdateringer.
+2. Aktiver Apple i Supabase Authentication → Sign In / Providers. Konfigurer `app.vyro.xamse10` som tillatt klient-ID/audience for native Apple-token.
 3. Bygg en ny VYRO-installasjon. `ios.usesAppleSignIn` og `expo-apple-authentication`-pluginen legger inn `com.apple.developer.applesignin = [Default]`. Signering/provisioning må inkludere rettigheten.
 4. Sett Apple-flagget i testmiljøet og bygg på nytt. Test på fysisk iPhone med Apple-konto, både vanlig og skjult e-postadresse.
 

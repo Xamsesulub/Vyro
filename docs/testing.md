@@ -1,5 +1,12 @@
 # Testing
 
+## 2D/3D uten rutetilpasning som ekstra trinn, 27. oktober 2026
+
+- En ny regresjon modellerer at MapKit nullstiller kameraet **etter** Reacts layout-effekt, fremfor under mockens render slik den tidligere testen gjorde. Den gamle implementasjonen i `eada135` feiler alle seks tilfeller (begge retninger i Standard/Satellitt/Hybrid); rettingen består dem. Kameratesten leser simulert faktisk sentrum, høyde, retning og vinkel, og krever ingen `fitToCoordinates` eller remontering. Den dekker både native regionhendelse og manglende hendelse.
+- Alle **23 Apple-karttester** består. Ekstra kontroller bekrefter at nyere valg vinner, kontrollen stopper ved berøring/pinch/panorering/lukking og utløper etter 2,5 sekunder. Ingen sen kameralesing får flytte kartet etter at testen har lukket det. Kontrollene bruker en MapView-dobbel, **ikke** fysisk MapKit eller ekte kartfliser.
+- Hele Jest-suiten består: **346 tester i 60 suiter**. Expo lint, TypeScript og Expo-eksport for iOS (Hermes) og web består. Eksporten brukte offentlige testverdier for Supabase; ingen faktisk innlogging eller serverendring ble utført. Ingen fysisk iPhone-test eller signert EAS-bygg er utført her.
+- **Fysisk retest:** åpne siste kode i Expo Go, zoom inn manuelt og trykk én gang på «3D», deretter én gang på «2D», uten å trykke «Vis hele ruten» imellom. Prøv alle tre karttypene, åpnet/lukket rutepanel, raske bytter og panorering rett etter byttet. Gjenta under en GPS-økt. Hver knapp skal alene gi riktig visning og bevare utsnittet. Nytt signert preview-bygg trengs bare for den installerte preview-appen; Expo Go/Metro bruker Reload. Denne runden starter ikke et EAS-bygg eller endrer native oppsett, nøkler eller database.
+
 ## 2D-zoom og diskret stedfelt, 26. oktober 2026
 
 - Typecheck og Expo lint består. **16 karttester og 10 ruteflyttester** består. Første skjermtest overskred standardgrensen på 5 sekunder i to kjøringer; en diagnostisk kjøring med 30 sekunder per test bestod alle 10 uten kodeendring. Ingen test er hoppet over eller forventning svekket. `git diff --check` består. Eksisterende Expo Go-tunnel på port 8082 svarer med VYROs iOS-manifest.

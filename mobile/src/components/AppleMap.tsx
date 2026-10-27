@@ -10,6 +10,7 @@ import {
   appleInitialRegion,
   appleMapGeometry,
 } from "../features/maps/appleGeometry";
+import { beginAppleCameraTransition } from "../features/maps/appleCameraTransition";
 import {
   emptyOverlays,
   emptyRoute,
@@ -56,6 +57,9 @@ export default function AppleMap({
     : "";
   const paddingKey = `${padding.top}:${padding.right}:${padding.bottom}:${padding.left}`;
   const cameraRequest = useRef(0);
+  const transition = useRef<ReturnType<
+    typeof beginAppleCameraTransition
+  > | null>(null);
   // Keep native mode props unchanged until we have captured the old camera.
   // Disabling pitch or leaving Flyover can itself change MapKit's altitude.
   const [presentation, setPresentation] = useState<{
@@ -69,9 +73,20 @@ export default function AppleMap({
       presentation.camera &&
       cameraRequest.current === presentation.sequence
     ) {
-      // Native props have now committed. Restore the captured view afterwards.
-      map.current?.setCamera(presentation.camera);
+      // A React commit can precede MapKit applying the new props. Keep the
+      // captured view until native feedback confirms the requested camera.
+      transition.current?.cancel();
+      const view = map.current;
+      if (view)
+        transition.current = beginAppleCameraTransition(
+          view,
+          presentation.camera,
+          () => cameraRequest.current === presentation.sequence,
+        );
     }
+    return () => {
+      transition.current?.cancel();
+    };
   }, [presentation]);
   const previous = useRef({
     follow,
@@ -130,6 +145,8 @@ export default function AppleMap({
       !panned.current && (reset || (focus ? moved : frameChanged));
     if (!reposition && !orientationChanged) return;
     const view = map.current;
+    transition.current?.cancel();
+    transition.current = null;
     const sequence = ++cameraRequest.current;
     let center = undefined;
     let altitude = undefined;
@@ -198,6 +215,7 @@ export default function AppleMap({
   useEffect(
     () => () => {
       cameraRequest.current++;
+      transition.current?.cancel();
       previous.current.ready = false;
     },
     [],
@@ -242,10 +260,19 @@ export default function AppleMap({
       }}
       cameraZoomRange={{ minCenterCoordinateDistance: 100 }}
       onMapReady={() => setReady(true)}
+      onRegionChangeComplete={() => {
+        void transition.current?.check();
+      }}
+      onTouchStart={() => {
+        // A pinch/rotate gesture does not necessarily emit onPanDrag on iOS.
+        cameraRequest.current++;
+        transition.current?.cancel();
+      }}
       onPanDrag={() => {
         // Embedded workout maps keep following the next fix when they have
         // no external follow/recenter controls. Explorer lets the user pan.
         cameraRequest.current++;
+        transition.current?.cancel();
         panned.current = !follow || !!onPan;
         onPan?.();
       }}

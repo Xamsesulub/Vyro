@@ -1,5 +1,11 @@
 # Til Codex på PC: fortsett herfra
 
+## Nyeste oppfølging — 27. oktober 2026
+
+`eada135` («Fikset layout») er hentet inn før rettingen; omleggingen til brukerdelte løyper, navnefelt og det nye stedfeltet er beholdt. Brukeren rapporterer at 2D/3D først slår inn etter «Vis hele ruten». Reacts layout-effekt er ikke en bekreftelse på at MapKit har avsluttet karttypebyttet. Kartet kontrollerer nå faktisk kamera etter native regionhendelser og kortvarig i bakgrunnen, og korrigerer bare avvik fra ønsket visning uten å tilpasse hele ruten. Berøring/pinch/panorering, nyere kamerakall og lukking avbryter kontrollen; den varer maksimalt 2,5 sekunder.
+
+Den gamle koden feiler seks tester med en simulert native nullstilling etter layout; rettingen består alle seks og resten av de 23 Apple-karttestene. Dette er ikke fysisk bekreftet. På PC/Expo Go: hent rettingen, Reload og test 3D → 2D uten den ekstra kartknappen, også etter manuell zoom og under opptak. Ingen nye pakker, native endringer, serveroppsett eller EAS-bygg er laget. Installert preview må fortsatt få et nytt bygg for å motta endret JavaScript. Se nyeste [teststatus](docs/testing.md).
+
 ## Pågående fysisk test — 26. oktober 2026
 
 Brukeren vil teste i Expo Go før push/nytt bygg. Etter rapport om 2D-utzooming fanger `AppleMap` nå kameraet før native karttype/pitch endres, og gjenoppretter det etterpå. «Nær meg» fylles ikke lenger inn som søketekst; feltet viser grå «Søk etter sted». Se nyeste [testing](docs/testing.md) for regresjonstest og utestet fysisk retest. Ingen push eller EAS-bygg er startet i denne runden.

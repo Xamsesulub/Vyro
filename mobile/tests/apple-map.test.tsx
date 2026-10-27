@@ -59,6 +59,110 @@ beforeEach(() => {
     .mockResolvedValue({ center: a, pitch: 0, heading: 25, altitude: 1234 });
 });
 
+afterEach(() => jest.useRealTimers());
+
+test.each([
+  ["standard", true],
+  ["standard", false],
+  ["satellite", true],
+  ["satellite", false],
+  ["hybrid", true],
+  ["hybrid", false],
+] as const)(
+  "%s reaches %s 3D after a delayed native reset without the fit-route button",
+  async (mapKind, threeD) => {
+    jest.useFakeTimers();
+    let native = {
+      center: c,
+      altitude: 432,
+      heading: 68,
+      pitch: threeD ? 0 : 55,
+    };
+    mockCamera.mockImplementation(async () => native);
+    mockSet.mockImplementation((camera) => {
+      native = { ...native, ...camera };
+    });
+    await render(
+      <AppleMap mapKind={mapKind} threeD={!threeD} route={[[a, b]]} />,
+    );
+    await act(async () => mockProps.onMapReady?.());
+    native = { ...native, heading: 68 };
+    mockFit.mockClear();
+    await screen.rerender(
+      <AppleMap mapKind={mapKind} threeD={threeD} route={[[a, b]]} />,
+    );
+    // Model MapKit completing a style/pitchEnabled update AFTER React's layout
+    // effect/setCamera. Previous tests only reset it synchronously during render.
+    native = { center: d, altitude: 8000, heading: 0, pitch: threeD ? 0 : 55 };
+    await act(async () => mockProps.onRegionChangeComplete?.({} as never, {}));
+    expect(native).toEqual({
+      center: c,
+      altitude: 432,
+      heading: 68,
+      pitch: threeD ? 55 : 0,
+    });
+    // Some native mode resets do not emit region callbacks. It still converges.
+    native = { ...native, altitude: 8000, pitch: threeD ? 0 : 55 };
+    await act(async () => {
+      await jest.advanceTimersByTimeAsync(180);
+    });
+    expect(native).toEqual({
+      center: c,
+      altitude: 432,
+      heading: 68,
+      pitch: threeD ? 55 : 0,
+    });
+    expect(mockFit).not.toHaveBeenCalled();
+    expect(mockMount).toHaveBeenCalledTimes(1);
+    await screen.unmount();
+    const reads = mockCamera.mock.calls.length;
+    await act(async () => {
+      await jest.advanceTimersByTimeAsync(3000);
+    });
+    expect(mockCamera).toHaveBeenCalledTimes(reads);
+  },
+);
+
+test("camera reconciliation stops for a new selection, pinch/touch, unmount and after its time limit", async () => {
+  jest.useFakeTimers();
+  let native = { center: c, altitude: 432, heading: 68, pitch: 0 };
+  mockCamera.mockImplementation(async () => native);
+  mockSet.mockImplementation((camera) => {
+    native = { ...native, ...camera };
+  });
+  await render(<AppleMap mapKind="hybrid" />);
+  await act(async () => mockProps.onMapReady?.());
+  await screen.rerender(<AppleMap mapKind="hybrid" threeD />);
+  await screen.rerender(<AppleMap mapKind="hybrid" />);
+  await act(async () => {
+    await jest.advanceTimersByTimeAsync(180);
+  });
+  expect(native.pitch).toBe(0);
+  await screen.rerender(<AppleMap mapKind="hybrid" threeD />);
+  await act(async () => mockProps.onTouchStart?.({} as never));
+  mockSet.mockClear();
+  native = { ...native, altitude: 2000, heading: 140, pitch: 30 };
+  await act(async () => {
+    await jest.advanceTimersByTimeAsync(3000);
+  });
+  expect(mockSet).not.toHaveBeenCalled();
+  await screen.rerender(<AppleMap mapKind="hybrid" />);
+  await act(async () => {
+    await jest.advanceTimersByTimeAsync(3000);
+  });
+  mockSet.mockClear();
+  native = { ...native, altitude: 4000 };
+  await act(async () => mockProps.onRegionChangeComplete?.({} as never, {}));
+  expect(mockSet).not.toHaveBeenCalled();
+  await screen.rerender(<AppleMap mapKind="hybrid" threeD />);
+  await screen.unmount();
+  mockSet.mockClear();
+  await act(async () => {
+    await jest.advanceTimersByTimeAsync(3000);
+  });
+  expect(mockSet).not.toHaveBeenCalled();
+});
+
 test("the iOS entry uses Apple with distinct modes and no automatic GPS collection or remount", async () => {
   await render(<AppleMap mapKind="standard" position={a} />);
   expect(mockProps.provider).toBeUndefined();

@@ -1,5 +1,9 @@
 # Leveranseplan
 
+## 2D/3D uten ekstra trykk på «Vis hele ruten», 27. oktober 2026
+
+Brukeren rapporterte at 2D/3D først ble synlig etter trykk på rutetilpasning. Reacts ferdige oppdatering var behandlet som om også MapKit var ferdig med karttype-/pitch-bytte. Den innhentede kameravinkelen kan da bli overstyrt av en senere native oppdatering. Nå leses faktisk kamera etter native regionhendelser og i en kort, avgrenset kontrollperiode. Bare avvik korrigeres, med bevart posisjon/høyde/retning og uten ny rutetilpasning. Et nytt kameravalg, berøring/zoom, panorering eller lukking avbryter kontrollen, som uansett stopper etter 2,5 sekunder. PC-endringene i `eada135` og brukerdelte løyper er bevart. Se [testing](testing.md) for modellert regresjon og fysisk retest som fortsatt gjenstår.
+
 ## Oppfølging etter iPhone-test: 2D og stedfelt, 26. oktober 2026
 
 Brukeren meldte at 2D zoomer ut. Kameraet leses nå **før** native karttype og `pitchEnabled` endres; utsnittet settes tilbake etter at disse egenskapene er oppdatert. Dette hindrer at en automatisk MapKit-endring blir tatt som brukerens valgte zoom. Samme styring brukes i Kart og under opptak. Senere kamerakall, panorering og lukking forkaster gamle svar som før.

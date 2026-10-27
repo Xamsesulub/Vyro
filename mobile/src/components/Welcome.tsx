@@ -223,25 +223,6 @@ export function Welcome({ standalone = false }: { standalone?: boolean }) {
               Utforsk kartet
             </Txt>
           </Pressable>
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => {
-              useAppStore.getState().preferences({ onboarded: true });
-              useAppStore.getState().mode("simulation");
-              router.push("/track");
-            }}
-            style={{
-              minHeight: 40,
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 7,
-            }}
-          >
-            <Icon name="play" size={16} color={c.muted} />
-            <Txt muted size={12}>
-              Prøv uten GPS
-            </Txt>
-          </Pressable>
         </View>
       </View>
     </SafeAreaView>

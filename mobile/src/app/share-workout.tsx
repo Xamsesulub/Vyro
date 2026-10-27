@@ -1,18 +1,17 @@
 import { useState } from "react";
-import { View } from "react-native";
+import { Switch, View } from "react-native";
 import { router } from "expo-router";
 import { Screen, Txt, Button } from "../components/ui";
 import WorkoutMap from "../components/WorkoutMap";
+import FootballMap from "../components/FootballMap";
+import { publicationRoute } from "../features/football/sharing";
 import { useAppStore } from "../stores/useAppStore";
 import { shareable } from "../stores/useSocialStore";
 import { useAuthStore } from "../stores/useAuthStore";
 import { publish, socialError } from "../features/social/api";
 import { AccountGate } from "../components/AccountGate";
 import { km, duration } from "../features/activities/model";
-import {
-  sharedRoute,
-  hasVisibleSegment,
-} from "../features/social/routePrivacy";
+import { hasVisibleSegment } from "../features/social/routePrivacy";
 export default function ShareWorkout() {
   const id = useAuthStore((s) => s.session?.user.id);
   return <AccountGate>{id && <ShareForm key={id} userId={id} />}</AccountGate>;
@@ -22,13 +21,15 @@ function ShareForm({ userId }: { userId: string }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [selected, setSelected] = useState<string | null>(null);
+  const [wholeRouteFor, setWholeRouteFor] = useState<string | null>(null);
   const [audience, setAudience] = useState<"followers" | "everyone">(
     () =>
       useAppStore.getState().sharingAudienceByOwner?.[userId] ?? "followers",
   );
   const eligible = workouts.filter((w) => shareable(w) && w.ownerId === userId);
   const workout = eligible.find((w) => w.id === selected);
-  const route = sharedRoute(workout?.route);
+  const wholeRoute = !!workout && wholeRouteFor === workout.id;
+  const route = publicationRoute(workout, wholeRoute);
   const canShare = hasVisibleSegment(route);
   return (
     <Screen>
@@ -61,13 +62,17 @@ function ShareForm({ userId }: { userId: string }) {
           key={w.id}
           title={w.title}
           secondary
-          onPress={() => setSelected(w.id)}
+          disabled={busy}
+          onPress={() => {
+            setSelected(w.id);
+            setWholeRouteFor(null);
+            setError("");
+          }}
         />
       ))}
       {!eligible.length && (
         <Txt>
-          Ingen delbare GPS-økter. Simuleringer og økter uten rute kan ikke
-          deles.
+          Ingen delbare økter ennå. Fullfør og lagre en GPS-økt med rute først.
         </Txt>
       )}
       {!!error && <Txt>{error}</Txt>}
@@ -77,11 +82,55 @@ function ShareForm({ userId }: { userId: string }) {
           <Txt>
             {km(workout.distance)} km · {duration(workout.seconds)}
           </Txt>
-          <WorkoutMap points={route} height={220} />
+          {workout.sport === "Fotball" && (
+            <>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 16,
+                }}
+              >
+                <Txt weight="700" style={{ flex: 1 }}>
+                  Del hele fotballruten
+                </Txt>
+                <Switch
+                  accessibilityLabel="Del hele fotballruten"
+                  value={wholeRoute}
+                  disabled={busy}
+                  onValueChange={(value) =>
+                    setWholeRouteFor(value ? workout.id : null)
+                  }
+                />
+              </View>
+              <Txt muted size={13}>
+                En bane ligger ofte innenfor skjermingen på 500 meter. Slår du
+                på dette, deles hele ruten, også start, slutt og eventuell vei
+                til og fra banen.
+              </Txt>
+            </>
+          )}
+          {workout.sport === "Fotball" ? (
+            <FootballMap
+              key={`${workout.id}:${wholeRoute}`}
+              points={route}
+              height={250}
+            />
+          ) : (
+            <WorkoutMap points={route} height={220} />
+          )}
           <Txt muted size={13}>
-            Kartet skjuler punkter innen 500 meter fra start og slutt, også når
-            du passerer dem senere. Distanse og tid gjelder hele økten.
-            Kontroller kartet: andre detaljer kan fortsatt avsløre hvor du bor.
+            {wholeRoute ? (
+              "Hele ruten i forhåndsvisningen blir delt med valgt publikum. Start og slutt er synlige. "
+            ) : (
+              <>
+                Kartet skjuler punkter innen 500 meter fra start og slutt, også
+                når du passerer dem senere. Distanse og tid gjelder hele økten.
+                Kontroller kartet: andre detaljer kan fortsatt avsløre hvor du
+                bor.{" "}
+              </>
+            )}
             Deling på nytt oppdaterer kart og publikum på det eksisterende
             innlegget.
           </Txt>
@@ -96,7 +145,7 @@ function ShareForm({ userId }: { userId: string }) {
               setBusy(true);
               setError("");
               try {
-                await publish(workout, userId, audience);
+                await publish(workout, userId, audience, wholeRoute);
                 router.replace("/(tabs)");
               } catch (e) {
                 setError(socialError(e));

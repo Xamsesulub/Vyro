@@ -190,6 +190,27 @@ test("a map timeout can retry without requiring the user to move", async () => {
   await flush();
   expect(port.renderMap).toHaveBeenCalledTimes(2);
 });
+
+test("rapid off/on while the old display is ending creates exactly one replacement", async () => {
+  await flush();
+  let ended!: () => void;
+  jest.mocked(activity.end).mockImplementationOnce(async () => {
+    await new Promise<void>((resolve) => {
+      ended = resolve;
+    });
+    instances = [];
+  });
+  state.enabled = false;
+  const disabling = controller.request();
+  state.enabled = true;
+  void controller.request();
+  ended();
+  await disabling;
+  await flush();
+  expect(port.start).toHaveBeenCalledTimes(2);
+  expect(instances).toHaveLength(1);
+  expect(state.recording.status).toBe("recording");
+});
 test("logout while ActivityKit update is pending never starts another map snapshot", async () => {
   let resolve!: () => void;
   jest.mocked(activity.update).mockReturnValueOnce(
@@ -209,6 +230,17 @@ test("logout while ActivityKit update is pending never starts another map snapsh
   expect(port.renderMap).not.toHaveBeenCalled();
   expect(activity.end).toHaveBeenCalledWith("immediate");
 });
+test("pace waits for the first 100 metres instead of displaying GPS drift as extreme pace", () => {
+  expect(
+    workoutActivityProps({ ...state.recording, distance: 0.01 }, time, null, 0)
+      .pace,
+  ).toBe("—");
+  expect(
+    workoutActivityProps({ ...state.recording, distance: 0.1 }, time, null, 0)
+      .pace,
+  ).toBe("50:00");
+});
+
 test("payload stays small; no coordinates, email or owner enter ActivityKit props", () => {
   const props = workoutActivityProps(state.recording, time, null, 0);
   expect(props.pace).toBe("05:00");

@@ -32,6 +32,7 @@ export function createWorkoutActivityController(
   let owner: string | undefined;
   let epoch = 0;
   let blocked = false;
+  let allowPausedStart = false;
   let disposed = false;
   let initialized = false;
   let pending = false;
@@ -50,19 +51,24 @@ export function createWorkoutActivityController(
     await port.clearMaps();
   }
 
-  function request(): Promise<void> {
+  function request(restorePaused = false): Promise<void> {
     const s = read();
     const nextOwner = !disposed && canPresentWorkout(s) ? s.userId : undefined;
     if (nextOwner !== owner) {
       owner = nextOwner;
       epoch++;
       blocked = false;
+      allowPausedStart = false;
       mapUri = null;
       mapAt = 0;
       mapAttempt = -Infinity;
       lastRoute = undefined;
       lastUpdate = -Infinity;
     }
+    // An explicit off/on choice may restore a paused workout's display. A
+    // restored draft at cold start still never creates an activity by itself.
+    if (restorePaused && s.foreground && canPresentWorkout(s))
+      allowPausedStart = true;
     pending = true;
     if (!task) {
       task = drain().finally(() => {
@@ -87,6 +93,7 @@ export function createWorkoutActivityController(
         const s = read();
         if (disposed || !canPresentWorkout(s)) {
           if (activity || mapPending || mapUri) await clear();
+          port.error(null);
           continue;
         }
         if (blocked) continue;
@@ -103,13 +110,18 @@ export function createWorkoutActivityController(
           continue;
         }
         if (!activity) {
-          if (!s.foreground || s.recording.status !== "recording") continue;
+          if (
+            !s.foreground ||
+            (s.recording.status !== "recording" && !allowPausedStart)
+          )
+            continue;
           try {
             activity = port.start(
               workoutActivityProps(s.recording, stamp, null, 0),
               new Date(stamp + 45000),
             );
             activityEpoch = epoch;
+            allowPausedStart = false;
             port.error(null);
           } catch {
             blocked = true;

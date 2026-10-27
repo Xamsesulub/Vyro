@@ -1,5 +1,74 @@
 # Testing
 
+## Regresjon: Start med bakgrunnsopptak på — 27. oktober 2026
+
+Typecheck og lint uten cache består. Full Jest-kjøring: **404 tester i 67 suiter bestått**. [Signert preview 7](https://expo.dev/accounts/xamse10/projects/vyro/builds/667d8a24-3308-4843-bf22-ac766f8c328e) er **FINISHED** 27. oktober 2026 kl. 18:10:49 UTC, versjon 0.1.0 (7). Installer over eksisterende VYRO. Fysisk retest er fortsatt ikke utført. Ingen Git-push eller databaseendring er gjort.
+
+Brukerens skjermbilde viser at preview 6 avviser Start på grunn av kravet «Alltid». Dette var strengere enn iOS-flyten vi faktisk bruker. Kontrollert mot installert expo-location 58.0.18: `LocationModule.swift/startLocationUpdatesAsync` krever foreground permission, og `TaskConsumers/EXLocationTaskConsumer.m` aktiverer `allowsBackgroundLocationUpdates` og starter kontinuerlige oppdateringer. Appkonfigurasjonen har `isIosBackgroundLocationEnabled: true` og `showsBackgroundLocationIndicator: true` brukes ved oppstart. [Apples dokumentasjon](https://developer.apple.com/documentation/corelocation/cllocationmanager/allowsbackgroundlocationupdates) beskriver hvordan foreground-startede oppdateringer fortsetter med When In Use-autorisasjon.
+
+Regresjon dekker iOS When In Use med Always avslått, Start/pause/Fortsett, tillatelsesdialog som gjør appen inactive, låsing mens native registrering fullføres (både suksess og feil), manglende tjeneste/tillatelse etter retur, Android-avslag, utlogging/kontobytte og Expo Go. En integrasjonstest kobler Start, bakgrunns-GPS, app-livssyklus og Live Activity-observer: GPS-batcher ved låst skjerm oppdaterer både privat opptak og visningen av tid/distanse. ActivityKit og Core Location er testadaptere, ikke en fysisk iPhone. Foreground-venting har tidsavbrudd, fjerner lytteren og starter ikke senere av seg selv.
+
+Fysisk akseptanse i nytt bygg (ikke utført her):
+1. Velg VYRO → Posisjon → «Når appen er i bruk» med Presis posisjon. Behold «Fortsett med låst skjerm» på; slå også på «Vis tid og km på låseskjermen».
+2. Trykk Start; vent til Pause vises og lås iPhonen. Gå ute i minst to minutter: tid skal løpe og kilometer følge GPS-bevegelsen.
+3. Lås opp/lås igjen tre ganger. Kontroller at økten fortsetter og at tallene oppdateres. Prøv også rask låsing like etter Start.
+4. Slå bare visningsbryteren av/på under økten. GPS/rute/tid skal beholdes, og visningen skal komme tilbake. Pause skal stoppe tiden; Fortsett skal starte et nytt rutesegment; avslutt skal fjerne visningen.
+5. Før neste økt: slå bakgrunn av/på; visningsvalget huskes. Med bakgrunn av skal låsing pause. Kontroller avvist posisjon, Liveaktiviteter av i iOS og ny oppstart etter innstillingsendring.
+
+## Regresjon: bryteren for låseskjerm — 27. oktober 2026
+
+Feilen ble gjenskapt med brukerens av/på-rekkefølge i innstillingene: bakgrunnsbryteren slettet kartpreferansen. Før rettingen feilet fire relevante forventninger; etter rettingen består 37 tester i seks suiter for bakgrunnsopptak, innstillinger, Live Activity og Expo Go.
+
+- Faktisk innstillingskomponent, Zustand-lagring og Live Activity-kontroller testes sammen, med native ActivityKit/MapKit erstattet av testadaptere. Av/på husker kartvalget også etter rehydrering; et uttrykkelig avslått kart forblir av. Bakgrunn av hindrer visningen selv om kartvalget er husket.
+- Tre av/på-runder under en økt avslutter/gjenoppretter én visning uten å endre opptak/rute/bakgrunnsstatus. Raskt på før forrige visning er ferdig avsluttet gir bare én ny visning. Pauset økt kan vises etter et uttrykkelig trykk, men blir ikke gjenopptatt. Kald innlasting av lagrede valg starter ikke en gammel visning. Eksisterende konto-/utloggingsvern og pause/stopp er bevart.
+- Fysisk retest i ny preview: Installer over eksisterende VYRO. Slå på «Vis kart og økttall» én gang dersom den gamle versjonen allerede slo dette av. Før start: slå «Fortsett med låst skjerm» av/på og kontroller at kartvalget kommer tilbake. Start en økt og lås opp/lås skjermen flere ganger. Mens økten pågår: slå «Vis kart og økttall» av/på, lås igjen og sjekk kart/tall. Gjenta ved pause og avslutt til slutt; låseskjermvisningen skal da fjernes. PC-testene bekrefter ikke fysisk ActivityKit eller GPS på iPhone.
+
+Typecheck og lint består. [Preview 6](https://expo.dev/accounts/xamse10/projects/vyro/builds/cca8a0f1-59be-4c2b-8f42-dcbf9a37119c) er FINISHED kl. 17:17:22 UTC, versjon 0.1.0 (6), med eksisterende signering for iPhone/widget/Watch. Brukerens siste presisering gjelder tid og kilometer i øktvisningen på låseskjermen. Det er samme Live Activity som styres av «Vis kart og økttall». Fysisk retest av av/på og tallene gjenstår. Ingen Git-push eller databaseendring er gjort for denne rettingen.
+
+## Fotballanalyse — 27. oktober 2026
+
+Typecheck og lint består. Samlet Jest-kontroll: 391 tester i 66 suiter består (full kjøring ga 386 bestått og fire feil i webkartets testadapter; adapteren ble utvidet med de nye kartmetodene, og alle sju webkarttester, inkludert ny varmekarttest, bestod deretter). Ingen produksjonskode ble endret for å skjule testfeil. iOS/Hermes-eksport består i .expo/football-ios-check. [Signert preview 5](https://expo.dev/accounts/xamse10/projects/vyro/builds/83036035-512b-4335-b928-63486ad90281) er FINISHED kl. 15:15:53 UTC, versjon 0.1.0 (5). iPhone, widget og Watch er bygget med eksisterende signering. Fysisk akseptanse på banen og faktisk MapKit-overlegg er fortsatt utestet.
+
+- Testet avstandsuniformt varmekart, gyldig PNG med flere DEFLATE-blokker, gjennomsiktige kanter, geografiske grenser, pauser/personverngap og tom/ugyldig rute. PNG-en er i tillegg dekodet med Sharp og visuelt kontrollert med syntetiske testdata utenfor appen. Ingen testøkt er lagt i brukerens historikk eller database.
+- Testet femsekunders fartsvindu, dårlig nøyaktighet, GPS-hopp, stillstand, feil rekkefølge og tidsavbrudd. Telefonlagring og Watch-import beregner valgfri maksfart; rå GPS-bevis følger ikke privat sikkerhetskopi eller sosiale innlegg.
+- UI-tester: Rute/Varmekart bevarer geometri og kartinstans; native og web bytter tegning uten nytt kamerautsitt. Deling krever nytt samtykke for hver valgt fotballøkt. Feed laster kart og maksfart først ved åpning, gjennom eksisterende tilgangsregler.
+- PGlite: 22 nye fotballkontroller, 35 private backupkontroller og 126 feed-/personvernkontroller består. Eierskap, følgerpublikum, anonym avvisning, ugyldig fart, simulering og privat rådata testes. Migrering 202610270003_football_analysis.sql er aktiv; lesende etterkontroll bekrefter ny funksjon/kolonne og ingen anonym publisering.
+
+Fysisk test i nytt preview: velg Fotball, start GPS ute med telefonen på kroppen, beveg deg flere ganger gjennom samme område, pause, fortsett og lagre. Bytt Rute/Varmekart og kontroller banen, kartets attribusjon, zoom, mørk modus og manglende målinger. Test deling med to kontoer: skjerming er på som standard; hele ruten vises bare etter bevisst valg og bare for valgt publikum. Bekreft at ny økt krever nytt samtykke. Nøyaktighet under kamp, faktisk MapKit-bildeoverlegg, GPS med låst skjerm og Watch-maskinvare krever fysisk test. Se [fotball](football.md).
+
+## Brukeropprydding, fotball, varsler og Live Activity — 27. oktober 2026
+
+[Signert preview 4](https://expo.dev/accounts/xamse10/projects/vyro/builds/b08a7d49-f1ed-42e0-831c-b5679b652675) er `FINISHED` kl. 12:27 UTC, versjon `0.1.0` (4). EAS bygget iPhone, widget og Watch med eksisterende signering. Bygg 3 ble avbrutt og erstattet for å få med den siste varselrettingen. Dette er en byggebekreftelse; fysisk installasjon og akseptanse for denne versjonen er fortsatt utestet.
+
+- Typecheck og lint består. 373 Jest-tester i 63 suiter består, i tillegg til den nye hooktesten for faktisk GPS-filter/kontobytte/utlogging og én ekstra test for GPS-oppdatering mens tale åpnes (totalt 375 tester i 64 suiter). Siste målrettede kjøring består alle 11 tester for varsler, klokketilkobling og synlig historikk. Regresjonen som forventet synlige gjestesimuleringer er oppdatert til den nye produktregelen.
+- Testet at gammel aktiv simulering nullstilles til tom GPS, at eksisterende private treningsdata bevares, og at både simulering/eksempel/annen konto holdes ute av brukerhistorikken. Ingen falske økter er konvertert til GPS.
+- Flere idretter med Fotball: metadata-validering, duplikater, tomt valg, alle valg og tilbakekompatibel `main_sport`. Watch-import godtar en ekte fotball-GPS-økt privat. 35 PGlite-kontroller består for sikkerhetskopi, idempotens, tilgangsregler, fotballpublisering og fortsatt avvisning av simulering. Migrering `202610270002_football.sql` er kjørt i VYRO; lesende etterkontroll viser Fotball aktivert i både aktivitetsbegrensningen og sikkerhetskopivalideringen.
+- Tale/haptikk: testet adapterkall, nb-NO, ett varsel per kilometer, av/simulering uten varsler, stopp ved pause, ingen ventende tale fra en tidligere økt og synlig feil. Prøvevarsler endrer ikke treningsdata. Manglende Watch/Watch-app forsøker ikke overføring; installert, paret klokke kan fortsatt hente køen selv om den ikke er direkte tilgjengelig.
+- Live Activity-modellen testes fortsatt for pause/resume, stale/timeout, kontobytte, personvern og rydding. Før 100 meter vises «—» for tempo. UI har eksplisitt mørk bakgrunn/lyse tall, enlinjes tall med skalering og 330×60 MapKit-bilde med bevart attribusjon. **Utseendet i SwiftUI/ActivityKit er ikke fysisk verifisert i denne runden.**
+- iOS/Hermes-eksport består (`.expo/user-cleanup-ios-final`). Første lokale forsøk ble blokkert av filtilgang i Windows' midlertidige mappe; kontrollen bestod med ordinær tilgang. Disse lokale artefaktene følger ikke Git/EAS.
+
+Fysisk akseptanse i nytt installert preview: åpne Tren/Kart/Du og bekreft ingen testknapper eller Akerselva-eksempel; velg Løping + Fotball, lagre/gjenåpne, prøv Alle; velg Fotball for én virkelig økt og pause/lagre. Under Varsler og opptak: prøv tale med stillemodus av/volum på og vibrasjon med haptikk på/sparebluss av. Prøv deretter begge varseltypene i hver sin GPS-økt, også med låst skjerm. Kontroller Live Activity i lys/mørk bakgrunn, større tekst, paused/aktiv, Dynamic Island og etter avsluttet økt. Faktisk bakgrunnsvarsling, GPS, alltid-på-skjerm og Watch-sensorer kan ikke bekreftes med PC-tester. Se [klokketest uten klokke](apple-watch.md).
+
+## Signert iPhone-preview 2, 27. oktober 2026
+
+- [EAS-bygg 2](https://expo.dev/accounts/xamse10/projects/vyro/builds/d9452963-8f34-439b-8325-a983297e6630) er `FINISHED` kl. 11:30 UTC, versjon `0.1.0`, byggnummer `2`, med signert IPA. Det er bygget fra lokal arbeidskopi på `0821f86`, inkludert de ukommitterte rettingene for profildeling og gjentatte 2D/3D-bytter. EAS bruker eksisterende `preview`-miljø, app-ID `app.vyro.xamse10` og ad hoc-profiler for app, widget og Watch.
+- TypeScript, Expo lint, `git diff --check` og kontrollen av preview-miljøet bestod før opplasting. De 52 målrettede Jest-testene og 8 databasekontrollene fra rettingen nedenfor gjelder samme appkode; de ble ikke kjørt om igjen bare for byggingen.
+- Ny fysisk installasjon og retest er **ikke bekreftet**. Slå på iOS-utviklermodus, installer over eksisterende VYRO, og test beholdt innlogging, Del profil og gjentatte 2D/3D-bytter i alle karttyper. Ingen Git-push, TestFlight-innsending eller EAS Update ble utført.
+
+## Faktisk delingsårsak og zoom ved gjentatte vinkelbytter, 27. oktober 2026
+
+- Produksjonskontroll fant **2 Auth-kontoer, 0 profiler, 2 manglende profiler**. Lesetilgang/RLS og signup-trigger var på plass. Reparasjonen ble først prøvd i isolert PGlite med **8 kontroller**: gjenoppretting, kun offentlige felt, bevarte brukerendringer, idempotens, ny signup, autentisert lesing og avvist anonym lesing/klientinnsetting. Migrering `202610270001` ble deretter kjørt via Management API; etterkontroll: **2 kontoer, 2 profiler, 0 manglende**. Ingen konto, treningsøkt eller eksisterende profil ble slettet/overskrevet. Historisk årsak til manglende rader er ukjent.
+- Brukeren bekreftet på fysisk telefon at **Del profil åpner delingsmenyen** etter profilreparasjonen. Delingsteksten bruker fortsatt ekte offentlig navn/brukernavn og søkeinstruksjon, uten oppdiktet profil-URL.
+- **52 målrettede Jest-tester i 5 suiter**, TypeScript og Expo lint består. Karttestene inkluderer ti vinkelbytter i hver karttype med midlertidig native kameranullstilling mellom byttene, bevart avstand/retning/sentrum og respekt for etterfølgende brukerzoom. En separat geometrikontroll dekker 20 returer 0° → 55° → 0° og manuelt valgt 30°. Tidligere tester som krevde identisk vertikal høyde er korrigert til identisk kameraavstand, i tråd med MapKits skille mellom høyde og avstand.
+- **Fysisk kartkontroll gjenstår:** Reload i Expo Go, zoom inn, bytt 3D/2D minst ti ganger i Standard/Satellitt/Hybrid; prøv også etter egen panorering/zoom. Testene modellerer kameraet og bekrefter ikke MapKits faktiske visning eller terreng på iPhone. Ingen push eller nytt signert bygg.
+
+## Grå «Del profil»-knapp, 27. oktober 2026
+
+- **24 tester i 3 suiter** (`profile`, `profile-details`, `auth-views`), TypeScript og Expo lint består lokalt. Dette er målrettede kontroller, ikke en ny full suite-kjøring.
+- Gjenskapt at en avbrutt profilforespørsel fra en annen skjerm forkaster et gyldig, aktivt svar. Regresjonstesten feiler før rettingen. Lesere er nå uavhengige av hverandres avbrudd; et nyere fullført svar og lagrede profilendringer vinner fortsatt.
+- Skjermtester dekker mislykket innlasting → trykkbar deling → vellykket ny innlasting, vedvarende nettfeil, sperring under deling, utlogging/lukking under innlasting, avbrutt deling, delingsfeil og kopieringsbekreftelse. Bare den offentlige profilen brukes.
+- **Fysisk iPhone-retest gjenstår:** Reload i Expo Go, åpne Du og trykk Del profil. Kontroller at iOS-delingsarket åpnes, at avbryt tillater et nytt forsøk, og at nettfeil gir beskjed. Testene bruker en mock av systemdeling og beviser ikke at iOS-delingsarket er åpnet på telefonen. Ingen databaseendring, push eller nytt signert bygg.
+
 ## 2D/3D uten rutetilpasning som ekstra trinn, 27. oktober 2026
 
 - En ny regresjon modellerer at MapKit nullstiller kameraet **etter** Reacts layout-effekt, fremfor under mockens render slik den tidligere testen gjorde. Den gamle implementasjonen i `eada135` feiler alle seks tilfeller (begge retninger i Standard/Satellitt/Hybrid); rettingen består dem. Kameratesten leser simulert faktisk sentrum, høyde, retning og vinkel, og krever ingen `fitToCoordinates` eller remontering. Den dekker både native regionhendelse og manglende hendelse.

@@ -12,12 +12,10 @@ export const initialHistoryFilter: HistoryFilter = {
 export function TrainingHistoryFilters({
   filter,
   change,
-  examples,
   count,
 }: {
   filter: HistoryFilter;
   change: (value: HistoryFilter) => void;
-  examples: boolean;
   count: number;
 }) {
   const [open, setOpen] = useState(false);
@@ -53,22 +51,6 @@ export function TrainingHistoryFilters({
           padding: 14,
         }}
       />
-      <View style={styles.wrap}>
-        {(
-          [
-            ["gps", "GPS-økter"],
-            ["simulation", "Simuleringer"],
-            ...(examples ? [["example", "Eksempler"]] : []),
-          ] as [HistoryFilter["source"], string][]
-        ).map(([source, title]) => (
-          <Chip
-            key={source}
-            title={title}
-            selected={filter.source === source}
-            onPress={() => change({ ...filter, source })}
-          />
-        ))}
-      </View>
       {open && (
         <>
           <View style={styles.wrap}>

@@ -4,9 +4,11 @@ export const useTrackingStatus = create<{
   starting: boolean;
   error: string | null;
   liveActivityError: string | null;
+  alertError: string | null;
 }>(() => ({
   backgroundActive: false,
   starting: false,
   error: null,
   liveActivityError: null,
+  alertError: null,
 }));

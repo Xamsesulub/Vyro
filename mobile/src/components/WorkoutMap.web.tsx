@@ -1,12 +1,12 @@
 import { useMemo } from "react";
 import LiveMap from "./LiveMap";
-import { demoRoute } from "../features/tracking/simulator";
 import { routeSegments } from "../features/tracking/gps";
 import { MapPoint, MapRoute } from "../features/maps/config";
 const empty: MapRoute[] = [];
+const emptyPoints: MapPoint[] = [];
 export default function WorkoutMap({
   height = 300,
-  points = demoRoute,
+  points = emptyPoints,
   routes = empty,
 }: {
   height?: number;

@@ -1,4 +1,5 @@
 import { sports, type Workout } from "../activities/model";
+import { validMaxSpeed } from "../football/speed";
 
 // Explicit portable fields: no social audience, credentials or competition proof.
 export function backupPayload(workout: Workout, owner: string): Workout {
@@ -14,6 +15,9 @@ export function backupPayload(workout: Workout, owner: string): Workout {
     date,
     route,
     splits,
+    ...(workout.sport === "Fotball" && workout.maxSpeedKmh !== undefined
+      ? { maxSpeedKmh: workout.maxSpeedKmh }
+      : {}),
     source: "gps" as const,
     visibility: "private" as const,
     ownerId: owner,
@@ -42,6 +46,8 @@ export function validBackup(
     w.source === "gps" &&
     w.visibility === "private" &&
     sports.includes(w.sport) &&
+    (w.maxSpeedKmh === undefined ||
+      (w.sport === "Fotball" && validMaxSpeed(w.maxSpeedKmh))) &&
     typeof w.title === "string" &&
     w.title.trim().length > 0 &&
     w.title.length <= 120 &&

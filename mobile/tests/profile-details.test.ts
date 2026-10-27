@@ -18,7 +18,7 @@ const draft: ProfileDetails = {
   lastName: " Hansen ",
   bio: " Turer ",
   city: " Oslo ",
-  mainSport: "Gange",
+  selectedSports: ["Gange"],
 };
 const user = (id = "a") => ({ id, user_metadata: {} }) as User;
 let q: {
@@ -35,20 +35,16 @@ beforeEach(() => {
     update: jest.fn().mockReturnThis(),
     eq: jest.fn().mockReturnThis(),
     select: jest.fn().mockReturnThis(),
-    single: jest
-      .fn()
-      .mockResolvedValue({
-        data: { ...profile, display_name: "Ada Ny" },
-        error: null,
-      }),
+    single: jest.fn().mockResolvedValue({
+      data: { ...profile, display_name: "Ada Ny" },
+      error: null,
+    }),
   };
   jest.mocked(supabase!.from).mockReturnValue(q as never);
-  jest
-    .mocked(supabase!.auth.updateUser)
-    .mockResolvedValue({
-      data: { user: { ...user(), user_metadata: { bio: "Turer" } } },
-      error: null,
-    });
+  jest.mocked(supabase!.auth.updateUser).mockResolvedValue({
+    data: { user: { ...user(), user_metadata: { bio: "Turer" } } },
+    error: null,
+  });
 });
 test("public name alone goes to profiles; optional details go to private auth metadata", async () => {
   await saveProfileDetails("a", draft);
@@ -61,6 +57,7 @@ test("public name alone goes to profiles; optional details go to private auth me
       bio: "Turer",
       city: "Oslo",
       main_sport: "Gange",
+      sports: ["Gange"],
     },
   });
   expect(useAuthStore.getState().session?.user.user_metadata.bio).toBe("Turer");
@@ -86,12 +83,10 @@ test.each(["response", "network"])(
         .mocked(supabase!.auth.updateUser)
         .mockRejectedValueOnce(new Error("offline"));
     else
-      jest
-        .mocked(supabase!.auth.updateUser)
-        .mockResolvedValueOnce({
-          data: { user: null },
-          error: { message: "offline" },
-        } as never);
+      jest.mocked(supabase!.auth.updateUser).mockResolvedValueOnce({
+        data: { user: null },
+        error: { message: "offline" },
+      } as never);
     await expect(saveProfileDetails("a", draft)).rejects.toThrow(
       "Visningsnavnet er lagret",
     );
@@ -124,7 +119,7 @@ test("invalid or stale-owner drafts do not write, and malformed optional metadat
     bio: "",
     city: "",
     lastName: "",
-    mainSport: "Løping",
+    selectedSports: ["Løping"],
   });
 });
 test("account switching during metadata save cannot restore the previous account", async () => {
@@ -140,4 +135,38 @@ test("account switching during metadata save cannot restore the previous account
   resolve({ data: { user: user() }, error: null });
   await expect(saving).rejects.toThrow("Kontoen ble byttet");
   expect(useAuthStore.getState().session?.user.id).toBe("b");
+});
+
+test("multiple sports including football round trip in private metadata and old single selections migrate", async () => {
+  const chosen: ProfileDetails = {
+    ...draft,
+    selectedSports: ["Løping", "Fotball"],
+  };
+  await saveProfileDetails("a", chosen);
+  expect(supabase!.auth.updateUser).toHaveBeenCalledWith({
+    data: expect.objectContaining({
+      sports: ["Løping", "Fotball"],
+      main_sport: "Løping",
+    }),
+  });
+  expect(
+    profileDetails({
+      ...user(),
+      user_metadata: { sports: ["Fotball", "bad", "Løping", "Fotball"] },
+    }).selectedSports,
+  ).toEqual(["Løping", "Fotball"]);
+  expect(
+    profileDetails({ ...user(), user_metadata: { main_sport: "Fottur" } })
+      .selectedSports,
+  ).toEqual(["Fottur"]);
+  expect(validateProfileDetails({ ...draft, selectedSports: [] })).toBeTruthy();
+  expect(
+    validateProfileDetails({ ...draft, selectedSports: ["Løping", "Løping"] }),
+  ).toBeTruthy();
+  expect(
+    validateProfileDetails({
+      ...draft,
+      selectedSports: ["Løping", "Gange", "Sykling", "Fottur", "Fotball"],
+    }),
+  ).toBeUndefined();
 });

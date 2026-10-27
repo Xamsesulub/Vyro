@@ -28,7 +28,7 @@ export function observeWorkoutActivity() {
       const s = useAppStore.getState();
       return {
         ready: s.ready && useAuthStore.getState().ready,
-        enabled: s.workoutLiveActivity,
+        enabled: s.workoutLiveActivity && s.backgroundRecording,
         foreground: AppState.currentState === "active",
         userId: useAuthStore.getState().session?.user.id,
         recording: s.recording,
@@ -53,7 +53,16 @@ export function observeWorkoutActivity() {
   const request = () => {
     void controller.request();
   };
-  const app = useAppStore.subscribe(request);
+  const app = useAppStore.subscribe((state, previous) => {
+    // Only a change after hydration can explicitly restore a paused display.
+    // Loading saved preferences at startup must not revive an old activity.
+    void controller.request(
+      state.ready &&
+        previous.ready &&
+        state.workoutLiveActivity &&
+        !previous.workoutLiveActivity,
+    );
+  });
   const auth = useAuthStore.subscribe(request);
   const foreground = AppState.addEventListener("change", request);
   // Background location batches also update the store and refresh the activity;

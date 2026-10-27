@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { View } from "react-native";
 import MapView, {
   Marker,
+  Overlay,
   Polyline,
   PROVIDER_DEFAULT,
   type Camera,
@@ -11,6 +12,7 @@ import {
   appleMapGeometry,
 } from "../features/maps/appleGeometry";
 import { beginAppleCameraTransition } from "../features/maps/appleCameraTransition";
+import { cameraAtPitch } from "../features/maps/appleCameraPitch";
 import {
   emptyOverlays,
   emptyRoute,
@@ -35,6 +37,7 @@ export default function AppleMap({
   recenter = 0,
   padding = defaultPadding,
   onPan,
+  heatmap,
 }: LiveMapProps) {
   const map = useRef<MapView>(null);
   const [ready, setReady] = useState(false);
@@ -57,6 +60,9 @@ export default function AppleMap({
     : "";
   const paddingKey = `${padding.top}:${padding.right}:${padding.bottom}:${padding.left}`;
   const cameraRequest = useRef(0);
+  // Preserve the intended view across rapid mode toggles. An intermediate
+  // MapKit reset must not become the starting zoom of the next toggle.
+  const modeCamera = useRef<Camera | null>(null);
   const transition = useRef<ReturnType<
     typeof beginAppleCameraTransition
   > | null>(null);
@@ -144,6 +150,9 @@ export default function AppleMap({
     const reposition =
       !panned.current && (reset || (focus ? moved : frameChanged));
     if (!reposition && !orientationChanged) return;
+    const modeOnly = !reposition && orientationChanged;
+    const capturedModeCamera = modeOnly ? modeCamera.current : null;
+    if (!modeOnly) modeCamera.current = null;
     const view = map.current;
     transition.current?.cancel();
     transition.current = null;
@@ -189,7 +198,14 @@ export default function AppleMap({
     void view
       .getCamera()
       .then((camera) => {
-        apply({ ...camera, ...changes });
+        if (!active()) return;
+        const tilted = cameraAtPitch(
+          capturedModeCamera ?? camera,
+          changes.pitch,
+        );
+        const next = { ...tilted, ...changes };
+        if (modeOnly) modeCamera.current = next;
+        apply(next);
       })
       .catch(() => {
         // Preserve native camera fields if a read fails, without a default zoom.
@@ -266,59 +282,67 @@ export default function AppleMap({
       onTouchStart={() => {
         // A pinch/rotate gesture does not necessarily emit onPanDrag on iOS.
         cameraRequest.current++;
+        modeCamera.current = null;
         transition.current?.cancel();
       }}
       onPanDrag={() => {
         // Embedded workout maps keep following the next fix when they have
         // no external follow/recenter controls. Explorer lets the user pan.
         cameraRequest.current++;
+        modeCamera.current = null;
         transition.current?.cancel();
         panned.current = !follow || !!onPan;
         onPan?.();
       }}
     >
-      {geometry.lines.map((line) => (
-        <Polyline
-          key={`${line.id}-outline`}
-          coordinates={line.coordinates}
-          strokeColor="#FFFFFF"
-          strokeWidth={9}
-          lineCap="round"
-          lineJoin="round"
-          zIndex={1}
-        />
-      ))}
-      {geometry.lines.map((line) => (
-        <Polyline
-          key={line.id}
-          coordinates={line.coordinates}
-          strokeColor={line.color}
-          strokeWidth={5}
-          lineCap="round"
-          lineJoin="round"
-          zIndex={2}
-        />
-      ))}
-      {geometry.markers.map((marker) => (
-        <Marker
-          key={marker.id}
-          coordinate={marker.coordinate}
-          title={marker.title}
-          anchor={{ x: 0.5, y: 0.5 }}
-          tracksViewChanges={false}
-        >
-          <View
-            style={{
-              width: 16,
-              height: 16,
-              borderRadius: 8,
-              backgroundColor: marker.color,
-              borderColor: "white",
-              borderWidth: 2,
-            }}
+      {heatmap && (
+        <Overlay image={{ uri: heatmap.uri }} bounds={heatmap.bounds} />
+      )}
+      {!heatmap &&
+        geometry.lines.map((line) => (
+          <Polyline
+            key={`${line.id}-outline`}
+            coordinates={line.coordinates}
+            strokeColor="#FFFFFF"
+            strokeWidth={9}
+            lineCap="round"
+            lineJoin="round"
+            zIndex={1}
           />
-        </Marker>
-      ))}
+        ))}
+      {!heatmap &&
+        geometry.lines.map((line) => (
+          <Polyline
+            key={line.id}
+            coordinates={line.coordinates}
+            strokeColor={line.color}
+            strokeWidth={5}
+            lineCap="round"
+            lineJoin="round"
+            zIndex={2}
+          />
+        ))}
+      {!heatmap &&
+        geometry.markers.map((marker) => (
+          <Marker
+            key={marker.id}
+            coordinate={marker.coordinate}
+            title={marker.title}
+            anchor={{ x: 0.5, y: 0.5 }}
+            tracksViewChanges={false}
+          >
+            <View
+              style={{
+                width: 16,
+                height: 16,
+                borderRadius: 8,
+                backgroundColor: marker.color,
+                borderColor: "white",
+                borderWidth: 2,
+              }}
+            />
+          </Marker>
+        ))}
       {position && (
         <Marker
           coordinate={position}

@@ -1,6 +1,12 @@
 import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 import { View, Text } from "react-native";
-import { act, render, screen } from "@testing-library/react-native";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  userEvent,
+} from "@testing-library/react-native";
 import Profile from "../src/app/(tabs)/profile";
 import Settings from "../src/app/settings";
 import { AccountGate } from "../src/components/AccountGate";
@@ -8,6 +14,12 @@ import { observeAuth, useAuthStore } from "../src/stores/useAuthStore";
 import { supabase } from "../src/lib/supabase";
 import Home from "../src/app/(tabs)/index";
 import { acceptAuthSession } from "../src/stores/useAuthStore";
+import { useProfileStore } from "../src/stores/useProfileStore";
+import { shareProfile } from "../src/features/social/shareProfile";
+
+jest.mock("../src/features/social/shareProfile", () => ({
+  shareProfile: jest.fn(),
+}));
 
 jest.mock("expo-router", () => ({
   router: {
@@ -30,7 +42,7 @@ jest.mock("../src/features/social/homeFeed", () => ({
 jest.mock("../src/components/CloudPost", () => ({ CloudPost: () => null }));
 jest.mock("../src/components/TurfEvents", () => ({ TurfEvents: () => null }));
 jest.mock("../src/lib/supabase", () => ({
-  supabase: { auth: { onAuthStateChange: jest.fn() } },
+  supabase: { from: jest.fn(), auth: { onAuthStateChange: jest.fn() } },
 }));
 jest.mock("../src/stores/useAppStore", () => {
   const state = {
@@ -215,15 +227,109 @@ test("Home never flashes the sign-in page during slow recovery or a stale initia
   jest.useRealTimers();
 });
 
-test("guests can still open local simulations without seeing another account's GPS history", async () => {
+test("guests never see old simulations or another account's GPS history", async () => {
   useAuthStore.setState({
     ready: true,
     session: null,
     confirmationEmail: null,
   });
   await render(<Profile />);
-  expect(screen.getByText("Lokal testsimulering")).toBeTruthy();
+  expect(screen.queryByText("Lokal testsimulering")).toBeNull();
+  expect(screen.queryByText("Simuleringer")).toBeNull();
+  expect(screen.queryByText("Eksempler")).toBeNull();
   expect(screen.queryByText("En annen kontos GPS-økt")).toBeNull();
   expect(screen.getByRole("tab", { name: "Aktiviteter" })).toBeTruthy();
   expect(screen.queryByRole("tab", { name: "Fremgang" })).toBeNull();
 });
+
+const publicProfile = {
+  id: "runner",
+  username: "runner_a",
+  display_name: "Ada",
+};
+function prepareProfileShare() {
+  useAuthStore.setState({
+    ready: true,
+    session: { user: { id: "runner", user_metadata: {} } } as Session,
+  });
+  useProfileStore.setState({ profile: null, loadedAt: 0, errorFor: null });
+  jest.mocked(shareProfile).mockReset().mockResolvedValue("shared");
+  const q = {
+    select: jest.fn().mockReturnThis(),
+    eq: jest.fn().mockReturnThis(),
+    abortSignal: jest.fn().mockReturnThis(),
+    single: jest
+      .fn()
+      .mockResolvedValue({ data: null, error: new Error("offline") }),
+  };
+  jest.mocked(supabase!.from).mockReturnValue(q as never);
+  return q;
+}
+
+test("Share profile remains actionable after a failed load and retries before opening sharing", async () => {
+  const q = prepareProfileShare();
+  await render(<Profile />);
+  expect(screen.getByRole("button", { name: "Del profil" })).toBeEnabled();
+  expect(screen.getByText(/Kunne ikke hente profilen/)).toBeTruthy();
+  q.single.mockResolvedValueOnce({ data: publicProfile, error: null } as never);
+  await fireEvent.press(screen.getByRole("button", { name: "Del profil" }));
+  expect(shareProfile).toHaveBeenCalledWith(publicProfile);
+  expect(screen.queryByText(/Kunne ikke hente profilen/)).toBeNull();
+});
+
+test("a failed sharing retry explains the failure and leaves the button usable", async () => {
+  prepareProfileShare();
+  await render(<Profile />);
+  await fireEvent.press(screen.getByRole("button", { name: "Del profil" }));
+  expect(screen.getByText(/Sjekk nettforbindelsen/)).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Del profil" })).toBeEnabled();
+  expect(shareProfile).not.toHaveBeenCalled();
+});
+
+test.each(["logout", "unmount"])(
+  "%s during a sharing retry never shares the previous profile",
+  async (action) => {
+    const q = prepareProfileShare();
+    const view = await render(<Profile />);
+    let resolve!: (value: unknown) => void;
+    q.single.mockImplementationOnce(
+      () =>
+        new Promise((done) => {
+          resolve = done;
+        }),
+    );
+    // A real press finishes while the request continues in the background.
+    await userEvent.press(screen.getByRole("button", { name: "Del profil" }));
+    expect(q.single).toHaveBeenCalledTimes(2); // Initial read plus one retry.
+    expect(
+      screen.getByRole("button", { name: "Henter profil …" }),
+    ).toBeDisabled();
+    if (action === "logout")
+      await act(() => useAuthStore.setState({ session: null }));
+    else await view.unmount();
+    await act(async () => resolve({ data: publicProfile, error: null }));
+    expect(shareProfile).not.toHaveBeenCalled();
+  },
+);
+
+test.each(["cancelled", "error", "copied"])(
+  "sharing handles %s without trapping the button",
+  async (result) => {
+    prepareProfileShare();
+    useProfileStore.setState({ profile: publicProfile, loadedAt: Date.now() });
+    if (result === "error")
+      jest.mocked(shareProfile).mockRejectedValueOnce(new Error("unavailable"));
+    else
+      jest
+        .mocked(shareProfile)
+        .mockResolvedValueOnce(result as "cancelled" | "copied");
+    await render(<Profile />);
+    await fireEvent.press(screen.getByRole("button", { name: "Del profil" }));
+    expect(screen.getByRole("button", { name: "Del profil" })).toBeEnabled();
+    if (result === "error")
+      expect(screen.getByText(/Kunne ikke åpne deling/)).toBeTruthy();
+    if (result === "copied")
+      expect(screen.getByText(/Profilteksten er kopiert/)).toBeTruthy();
+    if (result === "cancelled") expect(screen.queryByRole("alert")).toBeNull();
+  },
+);

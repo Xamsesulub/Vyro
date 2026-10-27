@@ -43,7 +43,8 @@ export default function AppleWatch() {
               <Txt style={{ flex: 1 }}>Koble denne kontoen til Apple Watch</Txt>
               <Switch
                 accessibilityLabel="Koble denne kontoen til Apple Watch"
-                value={enabled}
+                value={enabled && status.paired && status.installed}
+                disabled={!status.paired || !status.installed}
                 onValueChange={(on) => {
                   useAppStore.setState((s) => ({
                     watchOwners: on
@@ -62,7 +63,7 @@ export default function AppleWatch() {
                     ? "Klokken er tilgjengelig."
                     : "Øktene overføres når iPhone og klokken får kontakt. Åpne VYRO på begge enhetene for å prøve nå."}
             </Txt>
-            {enabled && (
+            {enabled && status.paired && status.installed && (
               <Button
                 title={status.busy ? "Synkroniserer …" : "Synkroniser nå"}
                 disabled={status.busy}
@@ -71,7 +72,7 @@ export default function AppleWatch() {
                 }}
               />
             )}
-            {!!status.error && <Txt>{status.error}</Txt>}
+            {!!status.error && status.paired && <Txt>{status.error}</Txt>}
           </>
         )}
         <Txt weight="700">På klokken</Txt>

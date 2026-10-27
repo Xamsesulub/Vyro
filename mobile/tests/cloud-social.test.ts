@@ -49,3 +49,30 @@ test("does not report successful publication when the server rejects it", async 
   rpc.mockResolvedValue({ data: null, error: new Error("denied") });
   await expect(publish(workout, "alice")).rejects.toThrow("denied");
 });
+test("football publishes sanitized full pitch only after explicit consent, with optional GPS speed", async () => {
+  const ball: Workout = {
+    ...workout,
+    sport: "Fotball",
+    maxSpeedKmh: 21.6,
+    route: [
+      { latitude: 59.9, longitude: 10.7 },
+      { latitude: 59.9005, longitude: 10.7005 },
+    ],
+  };
+  rpc.mockResolvedValue({ data: "post-id", error: null });
+  await expect(publish(ball, "alice")).rejects.toThrow();
+  expect(rpc).not.toHaveBeenCalled();
+  await expect(publish(ball, "alice", "followers", true)).resolves.toBe(
+    "post-id",
+  );
+  expect(rpc).toHaveBeenCalledWith(
+    "publish_football_workout",
+    expect.objectContaining({
+      p_route: ball.route,
+      p_max_speed_kmh: 21.6,
+      p_audience: "followers",
+    }),
+  );
+  expect(JSON.stringify(rpc.mock.calls[0][1])).not.toContain("private notes");
+  await expect(publish(ball, "bob", "everyone", true)).rejects.toThrow();
+});

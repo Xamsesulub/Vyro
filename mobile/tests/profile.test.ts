@@ -85,3 +85,38 @@ test("cancelled requests never replace the current profile", async () => {
   await loading;
   expect(useProfileStore.getState().profile).toBeNull();
 });
+
+test("an aborted request from another screen does not discard a still active profile read", async () => {
+  const q = query();
+  let resolve!: (value: unknown) => void;
+  q.single.mockImplementationOnce(
+    () =>
+      new Promise((done) => {
+        resolve = done;
+      }),
+  );
+  const active = loadOwnProfile("a", new AbortController().signal);
+  const leavingScreen = new AbortController();
+  const cancelled = loadOwnProfile("a", leavingScreen.signal);
+  leavingScreen.abort();
+  await cancelled;
+  resolve({ data: profile, error: null });
+  await active;
+  expect(useProfileStore.getState().profile).toEqual(profile);
+});
+
+test("a newer successful read is not overwritten by an older response", async () => {
+  const q = query();
+  let resolve!: (value: unknown) => void;
+  q.single.mockImplementationOnce(
+    () =>
+      new Promise((done) => {
+        resolve = done;
+      }),
+  );
+  const older = loadOwnProfile("a", new AbortController().signal);
+  await loadOwnProfile("a", new AbortController().signal);
+  resolve({ data: { ...profile, display_name: "Old" }, error: null });
+  await older;
+  expect(useProfileStore.getState().profile).toEqual(profile);
+});

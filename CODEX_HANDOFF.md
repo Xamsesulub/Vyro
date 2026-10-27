@@ -1,5 +1,29 @@
 # Til Codex på PC: fortsett herfra
 
+## Nyeste retting — Start med bakgrunn på, 27. oktober 2026
+
+[Preview 7](https://expo.dev/accounts/xamse10/projects/vyro/builds/667d8a24-3308-4843-bf22-ac766f8c328e) er **FINISHED** 18:10:49 UTC, versjon 0.1.0 (7). Typecheck/lint og 404 tester i 67 suiter består. Installer over eksisterende VYRO. Brukeren må bekrefte fysisk Start/locking/Live Activity på iPhone.
+
+Brukeren kunne ikke starte med «Fortsett med låst skjerm» på i preview 6: appen krevde feilaktig Always. iOS bruker nå foreground-tillatelsen for kontinuerlige, brukerstartede oppdateringer, inkludert kontroll ved retur. Dette samsvarer med expo-location 58.0.18 sin native implementasjon og Apples dokumentasjon. Androids bakgrunnstillatelse beholdes. Start venter på aktiv app etter tillatelsesdialog, og låsing under native oppstart håndteres uten feilaktig pause. Det eksplisitte valget «Vis tid og km på låseskjermen» finnes også før Start og bruker samme preferanse som innstillingene. Se nyeste testing/roadmap; fysisk akseptanse er fortsatt utestet. Ingen Git-push eller databaseendring for denne rettingen.
+
+## Nyeste retting — av/på av låseskjerm, 27. oktober 2026
+
+Brukeren presiserte at feilen kom etter av/på av bryteren inne i VYRO, og at det gjelder tid og kilometer på låseskjermen (Live Activity). Bakgrunnsbryteren slettet tidligere også denne preferansen. Nå huskes den separat; øktvisningen er effektivt av mens bakgrunnsopptak er av. «Vis kart og økttall» kan også brukes under en aktiv/pauset økt med bakgrunnsopptak, uten å endre GPS eller gjenoppta en pause. Kald oppstart gjenoppretter ikke gamle aktiviteter. Typecheck, lint og 37 relevante tester i seks suiter består. [Preview 6](https://expo.dev/accounts/xamse10/projects/vyro/builds/cca8a0f1-59be-4c2b-8f42-dcbf9a37119c) er FINISHED kl. 17:17:22 UTC, versjon 0.1.0 (6). Installer over eksisterende app. Hvis den gamle versjonen allerede slo visningen av, må brukeren slå «Vis kart og økttall» på én gang. Fysisk retest gjenstår. Ingen Git-push eller databaseendring. Se nyeste docs/testing.md.
+
+## Nyeste tillegg — fotballanalyse, 27. oktober 2026
+
+Rute/varmekart for egne GPS-fotballøkter og delte fotballinnlegg er implementert. Ny valgfri maksfart beregnes fra nøyaktige, sammenhengende GPS-vinduer; rå tidsstemplede data forblir private. Eksplisitt fotballsamtykke kan dele hele banen/ruten i stedet for standardskjerming på 500 meter; nullstilles per valgt økt. Supabase-migrering 202610270003_football_analysis.sql er aktiv og kontrollert. Typecheck/lint, 391 Jest-tester (full + målrettet omkjøring), 183 databasekontroller og iOS-export består. [Signert preview 5](https://expo.dev/accounts/xamse10/projects/vyro/builds/83036035-512b-4335-b928-63486ad90281) er FINISHED kl. 15:15:53 UTC, versjon 0.1.0 (5). Installer over eksisterende VYRO; fysisk fotballtest gjenstår. Se docs/football.md og nyeste docs/testing.md før videre arbeid. Ingen Git-push er gjort.
+
+## Preview 4 ferdig — 27. oktober 2026
+
+Brukeren har testet preview 2 og ba om å fjerne all simulering/eksempler fra brukerflyten, flere profilidretter/Fotball, kontroll av varsler/Watch og bedre Live Activity. Dette er implementert lokalt. Ingen commit/push er gjort. Typecheck, lint, 375 tester (64 suiter samlet), 35 private backup-databasekontroller og iOS/Hermes-eksport består. Additiv `202610270002_football.sql` er aktivert i Supabase. Se nyeste roadmap/testing og apple-watch for faktisk funksjon og fysisk utestede deler.
+
+[Preview 4](https://expo.dev/accounts/xamse10/projects/vyro/builds/b08a7d49-f1ed-42e0-831c-b5679b652675) er `FINISHED` 27. oktober kl. 12:27 UTC, `0.1.0` (4), samme prosjekt/bundle og ad hoc-signering. Bygg 3 ble avbrutt for å inkludere retting/test av et talevarsel som ellers kunne avbrytes av ordinære GPS-oppdateringer mens lyd åpnes. iPhone, widget og Watch er bygget sammen; fysisk installasjon/funksjon gjenstår. Installert preview mottar ikke Git-endringer automatisk. Ikke slett gammel app eller private økter; installer over eksisterende app.
+
+## Nyeste bygg — 27. oktober 2026
+
+Brukeren ba om nytt iPhone-bygg. [Preview 2](https://expo.dev/accounts/xamse10/projects/vyro/builds/d9452963-8f34-439b-8325-a983297e6630) er `FINISHED` 11:30 UTC, `0.1.0` (2), med signert IPA for eksisterende `app.vyro.xamse10`. Kilden var lokal arbeidskopi på `0821f86` inkludert ukommitterte profil-/kamerarettinger; ingen commit/push eller TestFlight-innsending er gjort. To manglende offentlige profiler er reparert i Supabase, og brukeren bekreftet at delingsmenyen åpner. Ny fysisk installasjon og gjentatte 2D/3D-bytter er fortsatt utestet. Se nyeste [teststatus](docs/testing.md). Utviklermodus må være på for dette interne iPhone-bygget; installer over eksisterende app for å beholde lokale data.
+
 ## Nyeste oppfølging — 27. oktober 2026
 
 `eada135` («Fikset layout») er hentet inn før rettingen; omleggingen til brukerdelte løyper, navnefelt og det nye stedfeltet er beholdt. Brukeren rapporterer at 2D/3D først slår inn etter «Vis hele ruten». Reacts layout-effekt er ikke en bekreftelse på at MapKit har avsluttet karttypebyttet. Kartet kontrollerer nå faktisk kamera etter native regionhendelser og kortvarig i bakgrunnen, og korrigerer bare avvik fra ønsket visning uten å tilpasse hele ruten. Berøring/pinch/panorering, nyere kamerakall og lukking avbryter kontrollen; den varer maksimalt 2,5 sekunder.

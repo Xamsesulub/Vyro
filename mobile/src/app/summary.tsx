@@ -1,5 +1,5 @@
 import { useShallow } from "zustand/react/shallow";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { TextInput, View } from "react-native";
 import { router } from "expo-router";
 import {
@@ -16,6 +16,9 @@ import {
 } from "../components/ui";
 
 import LiveMap from "../components/LiveMap";
+import FootballMap, { FootballSpeed } from "../components/FootballMap";
+import { storedRoute } from "../features/tracking/gps";
+import { footballMaxSpeed } from "../features/football/speed";
 import { useAppStore } from "../stores/useAppStore";
 import { duration, km, pace } from "../features/activities/model";
 import { useAuthStore } from "../stores/useAuthStore";
@@ -30,6 +33,14 @@ export default function Summary() {
   );
   const c = useTheme();
   const r = s.recording;
+  const footballRoute = useMemo(() => storedRoute(r.route), [r.route]);
+  const maxSpeed = useMemo(
+    () =>
+      r.mode === "gps" && r.sport === "Fotball"
+        ? footballMaxSpeed(r.turfTrace ?? [])
+        : undefined,
+    [r.mode, r.sport, r.turfTrace],
+  );
   const userId = useAuthStore((s) => s.session?.user.id);
   const [title, setTitle] = useState("");
   const [notes, setNotes] = useState("");
@@ -76,7 +87,11 @@ export default function Summary() {
       />
       {r.mode === "gps" && r.route.flat().length > 1 && (
         <View style={{ borderRadius: 16, overflow: "hidden" }}>
-          <LiveMap height={200} route={r.route} />
+          {r.sport === "Fotball" ? (
+            <FootballMap points={footballRoute} />
+          ) : (
+            <LiveMap height={200} route={r.route} />
+          )}
         </View>
       )}
       <Card>
@@ -85,7 +100,11 @@ export default function Summary() {
           <Metric value={duration(r.seconds)} label="aktiv tid" />
         </View>
         <View style={styles.row}>
-          <Metric value={pace(r.distance, r.seconds)} label="snitt min/km" />
+          {r.sport === "Fotball" ? (
+            <FootballSpeed value={maxSpeed} />
+          ) : (
+            <Metric value={pace(r.distance, r.seconds)} label="snitt min/km" />
+          )}
           <Metric
             value={
               r.seconds > 0 ? ((r.distance / r.seconds) * 3600).toFixed(1) : "—"

@@ -41,6 +41,9 @@ export function syncWatch(): Promise<void> {
     while (requested) {
       requested = false;
       try {
+        const connection = await native.status();
+        useWatchStatus.setState({ ...connection, error: null });
+        if (!connection.paired || !connection.installed) continue;
         const imported = await importWatchWorkouts({
           owner,
           setOwner: (id) => native.setOwner(id),

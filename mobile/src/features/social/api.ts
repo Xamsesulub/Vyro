@@ -1,7 +1,9 @@
 import { supabase } from "../../lib/supabase";
 import { Workout, Sport } from "../activities/model";
 import { shareable } from "../../stores/useSocialStore";
-import { sharedRoute, hasVisibleSegment } from "./routePrivacy";
+import { hasVisibleSegment } from "./routePrivacy";
+import { publicationRoute } from "../football/sharing";
+import { validMaxSpeed } from "../football/speed";
 export type Profile = { id: string; username: string; display_name: string };
 export type Post = {
   audience?: "followers" | "everyone";
@@ -41,25 +43,37 @@ export async function publish(
   workout: Workout,
   userId: string,
   audience: "followers" | "everyone" = "followers",
+  wholeFootballRoute = false,
 ) {
   if (!shareable(workout) || workout.ownerId !== userId)
     throw new Error("Only your own GPS workouts can be shared.");
-  const route = sharedRoute(workout.route);
+  const route = publicationRoute(workout, wholeFootballRoute);
   if (!hasVisibleSegment(route))
     throw new Error(
       "Ruten er for kort til å deles med skjermet start og slutt.",
     );
-  const { data, error } = await client().rpc("publish_workout", {
-    p_local_id: workout.id,
-    p_title: workout.title,
-    p_sport: workout.sport,
-    p_distance_km: workout.distance,
-    p_seconds: Math.round(workout.seconds),
-    p_recorded_at: workout.date,
-    p_source: workout.source,
-    p_route: route,
-    p_audience: audience,
-  });
+  const football = workout.sport === "Fotball";
+  const { data, error } = await client().rpc(
+    football ? "publish_football_workout" : "publish_workout",
+    {
+      p_local_id: workout.id,
+      p_title: workout.title,
+      p_sport: workout.sport,
+      p_distance_km: workout.distance,
+      p_seconds: Math.round(workout.seconds),
+      p_recorded_at: workout.date,
+      p_source: workout.source,
+      p_route: route,
+      p_audience: audience,
+      ...(football
+        ? {
+            p_max_speed_kmh: validMaxSpeed(workout.maxSpeedKmh)
+              ? workout.maxSpeedKmh
+              : null,
+          }
+        : {}),
+    },
+  );
   if (error) throw error;
   return data as string;
 }

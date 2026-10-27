@@ -1,14 +1,7 @@
-import { Switch } from "react-native";
-import {
-  ChoiceRow,
-  Page,
-  SettingsGroup,
-  SettingsRow,
-} from "../../components/SettingsUi";
+import { ChoiceRow, Page, SettingsGroup } from "../../components/SettingsUi";
 import { useAppStore } from "../../stores/useAppStore";
 export default function FeedSettings() {
   const feed = useAppStore((s) => s.homeFeed ?? "following");
-  const examples = useAppStore((s) => s.examplesVisible);
   const preferences = useAppStore((s) => s.preferences);
   return (
     <Page title="Hjem og innhold">
@@ -33,24 +26,6 @@ export default function FeedSettings() {
           description="Dine private GPS-økter på denne enheten."
           selected={feed === "own"}
           onPress={() => preferences({ homeFeed: "own" })}
-        />
-      </SettingsGroup>
-      <SettingsGroup
-        title="Eksempler"
-        note="Eksempler og simuleringer teller aldri i treningsstatistikken din."
-      >
-        <SettingsRow
-          title="Vis eksempeløkter"
-          description="Eksempelruter i kartet og egen visning i treningsloggen."
-          end={
-            <Switch
-              accessibilityLabel="Vis eksempeløkter"
-              value={examples}
-              onValueChange={(examplesVisible) =>
-                preferences({ examplesVisible })
-              }
-            />
-          }
         />
       </SettingsGroup>
     </Page>

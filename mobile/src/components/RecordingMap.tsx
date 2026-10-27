@@ -276,7 +276,10 @@ export default function RecordingMap({
           >
             {[
               [duration(r.seconds), "Tid"],
-              [pace(r.distance, r.seconds), "Snitt /km"],
+              [
+                r.distance >= 0.1 ? pace(r.distance, r.seconds) : "—",
+                "Snitt /km",
+              ],
               [km(r.distance), "Distanse · km"],
             ].map(([value, label]) => (
               <View key={label} style={s.metric}>
@@ -332,11 +335,20 @@ export default function RecordingMap({
           )}
           <Txt size={10} style={{ textAlign: "center", color: "#596579" }}>
             {gps
-              ? tracking.backgroundActive
-                ? "GPS fortsetter med låst skjerm og i andre apper"
-                : "Hold appen åpen · opptaket pauser i bakgrunnen"
+              ? tracking.starting
+                ? "Starter GPS-opptak … hold appen åpen et øyeblikk"
+                : tracking.backgroundActive
+                  ? "GPS fortsetter med låst skjerm og i andre apper"
+                  : "Hold appen åpen · opptaket pauser i bakgrunnen"
               : "Eksempelfart og illustrert rute · lagres aldri som GPS"}
           </Txt>
+          {gps && tracking.liveActivityError && (
+            <View accessibilityRole="alert">
+              <Txt size={12} style={{ color: "#596579" }}>
+                {tracking.liveActivityError}
+              </Txt>
+            </View>
+          )}
         </View>
       </View>
     </View>

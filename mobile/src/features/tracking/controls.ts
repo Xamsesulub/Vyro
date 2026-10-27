@@ -3,6 +3,7 @@ import { useAuthStore } from "../../stores/useAuthStore";
 import { useTrackingStatus } from "../../stores/useTrackingStatus";
 import { useLocationStore } from "../../stores/useLocationStore";
 import { locationDeadline } from "./locationDeadline";
+import { waitForRecordingForeground } from "./recordingForeground";
 import {
   backgroundSupported,
   requestBackgroundAccess,
@@ -39,6 +40,7 @@ export async function beginRecording(event: "start" | "resume") {
       useAppStore.getState().backgroundRecording &&
       backgroundSupported;
     if (background) await locationDeadline(requestBackgroundAccess());
+    if (before.mode === "gps") await waitForRecordingForeground();
     if (
       useAuthStore.getState().session?.user.id !== owner ||
       useAppStore.getState().recording !== before

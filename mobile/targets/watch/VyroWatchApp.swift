@@ -34,7 +34,7 @@ private struct WorkoutView: View {
               Text("Åpne VYRO på iPhone, logg inn og velg Innstillinger → Apple Watch.").font(.footnote)
             } else {
               Picker("Aktivitet", selection: $sport) {
-                ForEach(["Løping", "Gange", "Sykling", "Fottur"], id: \.self) { Text($0).tag($0) }
+                ForEach(["Løping", "Gange", "Sykling", "Fottur", "Fotball"], id: \.self) { Text($0).tag($0) }
               }.pickerStyle(.navigationLink)
               Button { recorder.start(sport: sport) } label: { Label("Start", systemImage: "play.fill") }
                 .tint(lime).foregroundStyle(.black).buttonStyle(.borderedProminent)

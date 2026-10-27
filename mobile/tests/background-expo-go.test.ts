@@ -35,6 +35,7 @@ jest.mock("expo-location", () => ({
 }));
 
 test("Expo Go explains its foreground-only limit even when the saved preference requests background GPS", async () => {
+  AppState.currentState = "active";
   useAuthStore.setState({
     ready: true,
     session: { user: { id: "runner" } } as Session,

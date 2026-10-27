@@ -13,7 +13,6 @@ import RecordingMap from "../../components/RecordingMap";
 import LiveMap from "../../components/LiveMap";
 import { useAppStore } from "../../stores/useAppStore";
 import { useLiveLocation } from "../../features/tracking/useLiveLocation";
-import { demoRoute, RecordingMode } from "../../features/tracking/simulator";
 import { sports } from "../../features/activities/model";
 import { brand } from "../../theme/tokens";
 import { useAuthStore } from "../../stores/useAuthStore";
@@ -23,22 +22,15 @@ import { backgroundSupported } from "../../features/tracking/background";
 import { useTrackingStatus } from "../../stores/useTrackingStatus";
 import { BackgroundRecordingSetting } from "../../components/BackgroundRecordingSetting";
 
-const modes: { mode: RecordingMode; title: string }[] = [
-  { mode: "gps", title: "GPS" },
-  { mode: "simulation", title: "Simulering" },
-];
-const exampleRoute = [demoRoute];
 export default function Track() {
   const r = useAppStore((s) => s.recording);
   const userId = useAuthStore((s) => s.session?.user.id);
   const event = useAppStore((s) => s.event);
   const setSport = useAppStore((s) => s.sport);
-  const setMode = useAppStore((s) => s.mode);
   const tracking = useTrackingStatus();
   const background = useAppStore((s) => s.backgroundRecording);
   const { height } = useWindowDimensions();
   const mapHeight = Math.max(300, Math.min(520, height * 0.49));
-  const [showDemo, setShowDemo] = useState(r.mode === "simulation");
   const gps = r.mode === "gps";
   const loc = useLiveLocation(gps);
 
@@ -157,41 +149,11 @@ export default function Track() {
       </View>
       {r.status === "idle" && (
         <View style={{ gap: 16 }}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityState={{ expanded: showDemo }}
-            onPress={() => setShowDemo(!showDemo)}
-            style={{ minHeight: 44, justifyContent: "center" }}
-          >
-            <Txt size={14} muted>
-              {gps ? "Prøv uten GPS" : "Simulering er valgt · endre"}
-            </Txt>
-          </Pressable>
-          {showDemo && (
-            <View style={styles.wrap}>
-              {modes.map((m) => (
-                <Chip
-                  key={m.mode}
-                  title={m.title}
-                  selected={r.mode === m.mode}
-                  onPress={() => {
-                    setMode(m.mode);
-                    useTrackingStatus.setState({ error: null });
-                  }}
-                />
-              ))}
-            </View>
-          )}
           <View style={{ borderRadius: 16, overflow: "hidden" }}>
             <LiveMap
               height={mapHeight}
               position={gps ? loc.position : null}
               follow={gps && !r.challenge && !r.guide}
-              route={
-                !gps || (!loc.position && !r.challenge && !r.guide)
-                  ? exampleRoute
-                  : undefined
-              }
               overlays={
                 r.challenge
                   ? [
@@ -223,7 +185,7 @@ export default function Track() {
               : loc.permission !== "granted"
                 ? r.challenge
                   ? "Valgt løype"
-                  : "Eksempelkart"
+                  : "Start økten for å finne posisjonen din"
                 : (tracking.error ??
                   loc.error ??
                   (loc.position

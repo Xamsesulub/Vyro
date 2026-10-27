@@ -173,7 +173,7 @@ function ProfileForm({ user }: { user: User }) {
         {field("bio", "Biografi (valgfritt)", 280, true)}
         {field("city", "Sted (valgfritt)", 80)}
       </SettingsGroup>
-      <SettingsGroup title="Hovedidrett">
+      <SettingsGroup title="Dine idretter" note="Velg én, flere eller alle.">
         <View
           style={{
             padding: 22,
@@ -182,13 +182,26 @@ function ProfileForm({ user }: { user: User }) {
             flexWrap: "wrap",
           }}
         >
+          <Chip
+            title="Alle"
+            selected={draft.selectedSports.length === sports.length}
+            onPress={() => {
+              if (!busy) setDraft({ ...draft, selectedSports: [...sports] });
+            }}
+          />
           {sports.map((sport) => (
             <Chip
               key={sport}
               title={sport}
-              selected={draft.mainSport === sport}
+              selected={draft.selectedSports.includes(sport)}
               onPress={() => {
-                if (!busy) setDraft({ ...draft, mainSport: sport });
+                if (!busy)
+                  setDraft({
+                    ...draft,
+                    selectedSports: draft.selectedSports.includes(sport)
+                      ? draft.selectedSports.filter((item) => item !== sport)
+                      : [...draft.selectedSports, sport],
+                  });
               }}
             />
           ))}

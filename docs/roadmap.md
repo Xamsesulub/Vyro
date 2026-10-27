@@ -1,5 +1,53 @@
 # Leveranseplan
 
+## Start med låst skjerm — 27. oktober 2026
+
+Rettet et feilaktig krav om «Alltid» på iPhone. En økt startet mens appen er åpen bruker nå iOS-støtten for kontinuerlige posisjonsoppdateringer med «Når appen er i bruk», bakgrunnsmodus og synlig posisjonsindikator. Kontroll etter gjenåpning bruker samme tillatelse, slik at en fungerende økt ikke pauses feilaktig. Android beholder sitt separate krav om bakgrunnstillatelse.
+
+Start venter på at tillatelsesdialogen er lukket før opptaket starter. Skjermlås mens native oppstart fullføres avbryter ikke en vellykket oppstart; feil/tidsavbrudd pauser fortsatt. «Vis tid og km på låseskjermen» er et eksplisitt valg både før Start og i innstillingene, med samme lagrede preferanse og av/på-oppførsel. Ingen GPS- eller visningsrettighet omgås. Se [teststatus](testing.md); ny fysisk iPhone-test gjenstår.
+
+[Preview 7](https://expo.dev/accounts/xamse10/projects/vyro/builds/667d8a24-3308-4843-bf22-ac766f8c328e) er ferdig signert 18:10:49 UTC, 0.1.0 (7). Typecheck, lint og alle 404 tester består. Avvist Live Activity vises nå også som forklaring under den aktive økten.
+
+## Av/på av låseskjermvisning — 27. oktober 2026
+
+Brukeren presiserte at det var bryteren inne i VYRO, og at feilen gjaldt visning av tid og kilometer på låseskjermen. «Fortsett med låst skjerm» slettet tidligere også valget «Vis kart og økttall» når den ble slått av; på igjen gjenopprettet ikke valget for Live Activity. Valget huskes nå separat, men visningen er fortsatt av når bakgrunnsopptak er av. Et uttrykkelig valg om å skjule øktvisningen respekteres også etter av/på.
+
+Øktvisningen kan slås av/på under en økt som allerede har bakgrunnsopptak. Det endrer ikke GPS, tid, rute eller pause. På igjen kan også vise en pauset økt, med stoppet klokke. Gjenåpning/innlasting av et gammelt utkast starter fortsatt ikke Live Activity automatisk. [Signert preview 6](https://expo.dev/accounts/xamse10/projects/vyro/builds/cca8a0f1-59be-4c2b-8f42-dcbf9a37119c) er FINISHED kl. 17:17:22 UTC, versjon 0.1.0 (6). Se [teststatus](testing.md); fysisk retest gjenstår.
+
+## Fotball: rutekart, varmekart og GPS-maksfart — 27. oktober 2026
+
+[Preview 5](https://expo.dev/accounts/xamse10/projects/vyro/builds/83036035-512b-4335-b928-63486ad90281) er ferdig signert. Installer over eksisterende VYRO for fysisk test.
+
+Fotballøkter får Rute/Varmekart i oppsummeringen, privat aktivitetsvisning og delte innlegg. Varmekartet lages lokalt fra den aktuelle GPS-ruten og viser bevegelsestetthet, ikke tid stående stille eller et samlet varmekart fra andre brukere. Apple-kart beholdes på iPhone. Ingen ny kartleverandør eller betalt API er lagt til.
+
+Nye telefon- og Watch-opptak kan lagre konservativ GPS-maksfart fra sammenhengende målinger med tidspunkt og god nøyaktighet. Manglende målinger vises som manglende, ikke som et oppdiktet tall. Eldre ruter kan vise varmekart uten maksfart. Kalorier/puls estimeres ikke fra GPS alene.
+
+Deling beholder 500 meters skjerming som standard. Et eget fotballvalg lar eieren uttrykkelig dele hele ruten, inkludert start/slutt og eventuell reise til banen; valget nullstilles ved bytte av økt. Publikum er fortsatt følgere som standard. Migrering 202610270003_football_analysis.sql er aktivert og etterkontrollert i Supabase. Se [fotball](football.md) og [teststatus](testing.md).
+
+## Brukerapp uten testinnhold, flere idretter og bedre låseskjerm — 27. oktober 2026
+
+[Preview 4](https://expo.dev/accounts/xamse10/projects/vyro/builds/b08a7d49-f1ed-42e0-831c-b5679b652675) er ferdig og signert (`0.1.0` (4), 12:27 UTC) med disse endringene. Installer over den gamle versjonen. Fysisk akseptanse gjenstår; ingen Git-push eller TestFlight-innsending er gjort.
+
+Simulering og eksempelvalg er fjernet fra velkomst, Tren, treningslogg, kart og innstillinger. Akerselva-eksemplet tegnes ikke lenger i kartet eller før GPS-start. Kart/historikk viser bare innlogget eiers virkelige GPS-økter; gamle testøkter beholdes i privat lagring, men vises ikke. Et gammelt simulert opptak nullstilles ved gjenåpning uten å bli konvertert til GPS. Interne testverktøy og testdata er beholdt.
+
+Profilen støtter én, flere eller alle fem idretter, inkludert Fotball. En konkret økt har fortsatt én idrett. Fotball er tilgjengelig ved opptak, filtrering, privat sikkerhetskopi og eksplisitt deling, samt som soccer-aktivitet i Watch-koden. Migrering `202610270002_football.sql` er aktivert i Supabase; den utvider eksisterende validering uten å slette data eller endre tilgangsreglene. Fotball er ikke lagt til som løypeforslag eller en ny konkurranseform.
+
+Varsler har prøveknapper for tale og vibrasjon, feiltilbakemelding og stopp av ventende tale ved pause/øktbytte. Live Activity har mørk bakgrunn, lyse tall og et kompakt kart med bevart sideforhold og Apple-attribusjon. Tempo skjules inntil 100 meter for å unngå meningsløse tall fra de første GPS-meterne; den lagrede tiden og distansen er uendret. Uten tilkoblet klokke vises ikke aktiv synkronisering. Se [teststatus](testing.md) for verifikasjon og gjenværende fysisk testing.
+
+## Ny iPhone-preview klar, 27. oktober 2026
+
+[Preview-bygg 2](https://expo.dev/accounts/xamse10/projects/vyro/builds/d9452963-8f34-439b-8325-a983297e6630) er ferdig og signert, versjon `0.1.0` (2). Bygget inkluderer den lokale profildelings- og kamerarettingen beskrevet nedenfor, samt brukerdelte løyper. Neste steg er installasjon over den gamle VYRO-versjonen og fysisk retest av innlogging, profildeling og 2D/3D. Git-push oppdaterer fortsatt ikke installerte preview-apper automatisk. Se [teststatus](testing.md).
+
+## Bekreftet profilreparasjon og stabil zoom, 27. oktober 2026
+
+Etter den første knapprettingen fant kontroll av produksjonsdatabasen **to Auth-kontoer, men null profiler**. Innsettingstriggeren for nye kontoer var aktiv; årsaken til at de eldre profilradene manglet er ikke fastslått. Migrering `202610270001_restore_missing_profiles.sql` oppretter bare manglende profiler med offentlig visningsnavn/brukernavn og bevarer eksisterende profiler. Den er kjørt mot VYRO, og etterkontrollen viser to profiler og null mangler. Brukeren har bekreftet at iOS-delingsmenyen nå åpnes.
+
+2D/3D-kameraet bevarer nå avstanden til kartsentrum ved vinkelbytte, i stedet for å bruke samme høyde over bakken i begge visninger. Tilten styrer dermed ikke zoomen. En kort kjede av modebytter beholder ønsket kamera fremfor å lese et midlertidig MapKit-reset som ny zoom. Berøring/panorering, nye posisjoner og rutetilpasning tar fortsatt over. Fysisk retest av gjentatte bytter gjenstår; se teststatus.
+
+## Del profil kan prøves igjen, 27. oktober 2026
+
+«Del profil» er ikke lenger deaktivert når den offentlige profilen mangler lokalt. Et trykk henter profilen på nytt og åpner deling når den er tilgjengelig; feil vises med mulighet til å prøve igjen. Overlappende profilforespørsler fra flere skjermer kan ikke lenger forkaste hverandres gyldige svar bare fordi en skjerm lukkes. Kontobytte, profilredigering og nyere fullførte svar beskyttes fortsatt mot gamle svar. Delingen inneholder fortsatt bare offentlig navn og brukernavn, uten en oppdiktet profillenke. Fysisk iPhone-retest gjenstår.
+
 ## 2D/3D uten ekstra trykk på «Vis hele ruten», 27. oktober 2026
 
 Brukeren rapporterte at 2D/3D først ble synlig etter trykk på rutetilpasning. Reacts ferdige oppdatering var behandlet som om også MapKit var ferdig med karttype-/pitch-bytte. Den innhentede kameravinkelen kan da bli overstyrt av en senere native oppdatering. Nå leses faktisk kamera etter native regionhendelser og i en kort, avgrenset kontrollperiode. Bare avvik korrigeres, med bevart posisjon/høyde/retning og uten ny rutetilpasning. Et nytt kameravalg, berøring/zoom, panorering eller lukking avbryter kontrollen, som uansett stopper etter 2,5 sekunder. PC-endringene i `eada135` og brukerdelte løyper er bevart. Se [testing](testing.md) for modellert regresjon og fysisk retest som fortsatt gjenstår.

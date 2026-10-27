@@ -81,12 +81,14 @@ public final class VyroWorkoutMapModule: Module {
     }
     let minimum = 500 * MKMapPointsPerMeterAtLatitude(last.latitude)
     let height = max(bounds.size.height * 1.65, minimum / 2.6)
-    let width = max(bounds.size.width * 1.4, height * 330 / 112, minimum)
-    let region = MKMapRect(x: bounds.midX - width / 2, y: bounds.midY - width * 112 / 330 / 2,
-      width: width, height: width * 112 / 330)
+    // Match the compact Live Activity strip without stretching the map or
+    // cropping Apple's attribution. Workout metrics remain above this image.
+    let width = max(bounds.size.width * 1.4, height * 330 / 60, minimum)
+    let region = MKMapRect(x: bounds.midX - width / 2, y: bounds.midY - width * 60 / 330 / 2,
+      width: width, height: width * 60 / 330)
     let options = MKMapSnapshotter.Options()
     options.region = MKCoordinateRegion(region)
-    options.size = CGSize(width: 330, height: 112)
+    options.size = CGSize(width: 330, height: 60)
     options.scale = 2
     options.mapType = .standard
     options.traitCollection = UITraitCollection(userInterfaceStyle: .light)
@@ -116,7 +118,7 @@ public final class VyroWorkoutMapModule: Module {
         let cg = context.cgContext
         // Leave Apple's attribution at the bottom unobstructed.
         cg.saveGState()
-        cg.clip(to: CGRect(x: 0, y: 0, width: 330, height: 92))
+        cg.clip(to: CGRect(x: 0, y: 0, width: 330, height: 40))
         cg.setLineCap(.round)
         cg.setLineJoin(.round)
         for segment in segments where segment.count > 1 {

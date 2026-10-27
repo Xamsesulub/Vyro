@@ -10,6 +10,56 @@ const originalWrite = jest
   .mocked(AsyncStorage.setItem)
   .getMockImplementation()!;
 
+test("old developer recordings reset to empty GPS without changing real workout history", async () => {
+  const workouts = [
+    {
+      id: "real",
+      ownerId: "a",
+      source: "gps",
+      sport: "Fotball",
+      title: "Kampen",
+      distance: 2,
+      seconds: 1200,
+      date: "2026-10-27T10:00:00Z",
+      notes: "",
+      visibility: "private",
+    },
+    {
+      id: "dev",
+      source: "simulation",
+      sport: "Løping",
+      title: "Test",
+      distance: 1,
+      seconds: 300,
+      date: "2026-10-26T10:00:00Z",
+      notes: "",
+      visibility: "private",
+    },
+  ];
+  await AsyncStorage.setItem(
+    "vyro-prototype-v1",
+    JSON.stringify({
+      version: 2,
+      state: {
+        examplesVisible: true,
+        workouts,
+        recording: {
+          ...initialRecording,
+          mode: "simulation",
+          status: "paused",
+          distance: 5,
+          seconds: 1500,
+          route: [[{ latitude: 59, longitude: 10 }]],
+        },
+      },
+    }),
+  );
+  await useAppStore.persist.rehydrate();
+  expect(useAppStore.getState().recording).toEqual(initialRecording);
+  expect(useAppStore.getState().examplesVisible).toBe(false);
+  expect(useAppStore.getState().workouts).toEqual(workouts);
+});
+
 test("selected turf survives pause and recovery, cannot change mid-run, and stays linked on save", async () => {
   useAppStore.setState({ recording: initialRecording, workouts: [] });
   const challenge = {
@@ -117,6 +167,41 @@ test("save is private and idempotent, and clears the pending session", () => {
     visibility: "private",
   });
   expect(useAppStore.getState().recording.status).toBe("idle");
+});
+test("saving a real football recording stores conservative GPS speed and leaves other sports unchanged", () => {
+  const trace = Array.from({ length: 11 }, (_, i) => ({
+    latitude: 60 + (i * 6) / 111195,
+    longitude: 10,
+    timestamp: i * 1000,
+    accuracy: 3,
+  }));
+  useAppStore.setState({
+    recording: {
+      ...initialRecording,
+      sport: "Fotball",
+      status: "finishing",
+      seconds: 10,
+      distance: 0.06,
+      route: [trace],
+      turfTrace: trace,
+    },
+  });
+  expect(useAppStore.getState().save("Fotball", "")).toBeTruthy();
+  expect(useAppStore.getState().workouts[0].maxSpeedKmh).toBeCloseTo(21.6, 1);
+  expect(useAppStore.getState().workouts[0].visibility).toBe("private");
+  useAppStore.setState({
+    recording: {
+      ...initialRecording,
+      sport: "Løping",
+      status: "finishing",
+      seconds: 10,
+      distance: 0.06,
+      route: [trace],
+      turfTrace: trace,
+    },
+  });
+  useAppStore.getState().save("Løping", "");
+  expect(useAppStore.getState().workouts[0].maxSpeedKmh).toBeUndefined();
 });
 test("saving and reloading preserve unrounded distance and time for average pace", async () => {
   useAppStore.setState({
@@ -335,14 +420,12 @@ test("appearance, map and Home preferences survive reload without changing priva
   expect(initial.sharingAudienceByOwner).toEqual({});
   expect(initial.defaultMapKind).toBe("standard");
   expect(initial.homeFeed).toBe("following");
-  useAppStore
-    .getState()
-    .preferences({
-      theme: "system",
-      defaultMapKind: "hybrid",
-      homeFeed: "own",
-      sharingAudienceByOwner: { a: "everyone", b: "followers" },
-    });
+  useAppStore.getState().preferences({
+    theme: "system",
+    defaultMapKind: "hybrid",
+    homeFeed: "own",
+    sharingAudienceByOwner: { a: "everyone", b: "followers" },
+  });
   await appPersistence.flush();
   const raw = JSON.parse((await AsyncStorage.getItem("vyro-prototype-v1"))!);
   expect(raw.state).toMatchObject({

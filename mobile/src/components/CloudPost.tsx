@@ -5,6 +5,7 @@ import { FeedPost, ReactionSummary } from "../features/social/feed";
 import { km, duration, pace } from "../features/activities/model";
 import { Button, Txt, styles, useTheme } from "./ui";
 import WorkoutMap from "./WorkoutMap";
+import FootballMap, { FootballSpeed } from "./FootballMap";
 import { Avatar } from "./SocialUi";
 
 export function CloudPost({
@@ -75,7 +76,12 @@ export function CloudPost({
         {[
           ["Distanse", `${km(Number(post.distance_km))} km`],
           ["Tid", duration(post.seconds)],
-          ["Tempo", `${pace(Number(post.distance_km), post.seconds)}`],
+          post.sport === "Fotball"
+            ? [
+                "Snittfart",
+                `${post.seconds > 0 ? ((Number(post.distance_km) * 3600) / post.seconds).toFixed(1).replace(".", ",") : "—"} km/t`,
+              ]
+            : ["Tempo", `${pace(Number(post.distance_km), post.seconds)}`],
         ].map(([label, value]) => (
           <View key={label} style={{ gap: 5, flexShrink: 1 }}>
             <Txt muted size={12}>
@@ -92,7 +98,11 @@ export function CloudPost({
           </View>
         ))}
       </View>
-      <PostMap postId={post.id} />
+      <PostMap
+        key={post.id}
+        postId={post.id}
+        football={post.sport === "Fotball"}
+      />
       <Txt muted size={12}>
         {post.sport} ·{" "}
         {post.audience === "followers"
@@ -222,10 +232,11 @@ export function CloudPost({
   );
 }
 
-function PostMap({ postId }: { postId: string }) {
+function PostMap({ postId, football }: { postId: string; football: boolean }) {
   const [open, setOpen] = useState(false);
   const [route, setRoute] = useState<Post["route"] | null>(null);
   const [error, setError] = useState("");
+  const [maxSpeed, setMaxSpeed] = useState<number | null>(null);
   useEffect(() => {
     if (!open) return;
     const controller = new AbortController();
@@ -233,23 +244,35 @@ function PostMap({ postId }: { postId: string }) {
       try {
         const result = await client()
           .from("posts")
-          .select("route")
+          .select("route,max_speed_kmh")
           .eq("id", postId)
           .abortSignal(controller.signal)
           .single();
         if (result.error) throw result.error;
-        if (!controller.signal.aborted)
+        if (!controller.signal.aborted) {
           setRoute(result.data.route as Post["route"]);
+          setMaxSpeed(
+            result.data.max_speed_kmh == null
+              ? null
+              : Number(result.data.max_speed_kmh),
+          );
+        }
       } catch (e) {
         if (!controller.signal.aborted) setError(socialError(e));
       }
     })();
     return () => controller.abort();
-  }, [postId, open]);
+  }, [postId, open, football]);
   return (
     <>
       <Button
-        title={open ? "Skjul rutekart" : "Vis rutekart"}
+        title={
+          open
+            ? "Skjul rutekart"
+            : football
+              ? "Vis rute og varmekart"
+              : "Vis rutekart"
+        }
         secondary
         icon="map"
         onPress={() => {
@@ -262,7 +285,14 @@ function PostMap({ postId }: { postId: string }) {
         (error ? (
           <Txt>{error}</Txt>
         ) : route ? (
-          <WorkoutMap points={route} height={220} />
+          football ? (
+            <View style={{ gap: 16 }}>
+              <FootballMap points={route} height={260} />
+              <FootballSpeed value={maxSpeed} />
+            </View>
+          ) : (
+            <WorkoutMap points={route} height={220} />
+          )
         ) : (
           <Txt muted>Laster kart …</Txt>
         ))}

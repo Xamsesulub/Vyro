@@ -1,4 +1,5 @@
 import WorkoutMap from "../../components/WorkoutMap";
+import FootballMap, { FootballSpeed } from "../../components/FootballMap";
 import { ExportWorkout } from "../../components/ExportWorkout";
 import { useState } from "react";
 import { View } from "react-native";
@@ -17,7 +18,6 @@ import {
 
 import { useAppStore } from "../../stores/useAppStore";
 import { useVisibleWorkouts } from "../../features/activities/useVisibleWorkouts";
-import { examples } from "../../features/activities/examples";
 import { duration, km, pace } from "../../features/activities/model";
 export default function Activity() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -25,7 +25,7 @@ export default function Activity() {
   const workouts = useVisibleWorkouts();
   const [repeatError, setRepeatError] = useState(false);
   const [confirm, setConfirm] = useState(false);
-  const w = [...workouts, ...examples].find((item) => item.id === id);
+  const w = workouts.find((item) => item.id === id);
   const back = () => {
     if (router.canGoBack()) router.back();
     else router.replace("/(tabs)/profile");
@@ -56,14 +56,24 @@ export default function Activity() {
               : "Lagret simulering"
         }
       />
-      {w.route && w.route.length > 1 && <WorkoutMap points={w.route} />}
+      {w.route &&
+        w.route.length > 1 &&
+        (w.sport === "Fotball" && w.source === "gps" ? (
+          <FootballMap key={w.id} points={w.route} />
+        ) : (
+          <WorkoutMap points={w.route} />
+        ))}
       <Card>
         <View style={styles.row}>
           <Metric value={km(w.distance)} label="kilometer" />
           <Metric value={duration(w.seconds)} label="aktiv tid" />
         </View>
         <View style={styles.row}>
-          <Metric value={pace(w.distance, w.seconds)} label="snitt min/km" />
+          {w.sport === "Fotball" ? (
+            <FootballSpeed value={w.maxSpeedKmh} />
+          ) : (
+            <Metric value={pace(w.distance, w.seconds)} label="snitt min/km" />
+          )}
           <Metric
             value={((w.distance / w.seconds) * 3600).toFixed(1)}
             label="snitt km/t"

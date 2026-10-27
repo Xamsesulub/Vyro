@@ -42,6 +42,7 @@ const speeds: Record<Sport, number> = {
   Gange: 4.8,
   Sykling: 22,
   Fottur: 3.6,
+  Fotball: 6,
 };
 export function snapshot(state: Recording, now: number): Recording {
   if (state.status !== "recording" || state.startedAt === null) return state;

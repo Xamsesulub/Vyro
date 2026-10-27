@@ -49,8 +49,7 @@ export function BackupSettings({ owner }: { owner: string }) {
         Ta vare på GPS-økter ved bytte av telefon. Når du aktiverer dette,
         lagres hele rutene, tidene og notatene privat på kontoen din, og
         tidligere sikkerhetskopierte økter hentes til denne enheten. Dette
-        publiserer ingen innlegg. Simuleringer og konkurransebevis kopieres
-        ikke.
+        publiserer ingen innlegg. Konkurransebevis kopieres ikke.
       </Txt>
       <Txt size={14}>
         {enabled

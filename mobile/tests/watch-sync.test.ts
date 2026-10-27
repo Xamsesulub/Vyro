@@ -97,6 +97,29 @@ test("real watch coordinates determine distance; credentials, heart data and com
   expect(workout).not.toHaveProperty("turfTrace");
   expect(workout.route?.[0]).not.toHaveProperty("timestamp");
 });
+test("football from the watch stays a private GPS workout", () => {
+  expect(watchWorkout({ ...payload(), sport: "Fotball" }, owner)).toMatchObject(
+    { sport: "Fotball", source: "gps", visibility: "private", ownerId: owner },
+  );
+});
+test("football speed is derived from validated watch fixes, never a supplied total", () => {
+  const value = {
+    ...payload(),
+    sport: "Fotball",
+    maxSpeedKmh: 999,
+    points: Array.from({ length: 11 }, (_, i) => ({
+      latitude: 60 + (i * 6) / 111195,
+      longitude: 10,
+      accuracy: 3,
+      timestamp: start + i * 1000,
+    })),
+  };
+  expect(watchWorkout(value, owner).maxSpeedKmh).toBeCloseTo(21.6, 1);
+  expect(
+    watchWorkout({ ...value, points: payload().points }, owner).maxSpeedKmh,
+  ).toBeUndefined();
+});
+
 test.each([
   ["wrong owner", { ownerId: other }],
   ["unknown format", { version: 2 }],

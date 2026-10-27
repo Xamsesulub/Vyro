@@ -129,7 +129,7 @@ final class WorkoutRecorder: NSObject, ObservableObject, CLLocationManagerDelega
   }
   private func begin(sport: String, owner: String) {
     let configuration = HKWorkoutConfiguration()
-    configuration.activityType = sport == "Sykling" ? .cycling : sport == "Gange" ? .walking : sport == "Fottur" ? .hiking : .running
+    configuration.activityType = sport == "Sykling" ? .cycling : sport == "Gange" ? .walking : sport == "Fottur" ? .hiking : sport == "Fotball" ? .soccer : .running
     configuration.locationType = .outdoor
     do {
       let newSession = try HKWorkoutSession(healthStore: health, configuration: configuration)

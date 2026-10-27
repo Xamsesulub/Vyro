@@ -36,6 +36,7 @@ export default function LiveMap({
   recenter = 0,
   padding,
   onPan,
+  heatmap,
 }: LiveMapProps) {
   // Satellite and Hybrid share imagery; toggling labels must not reload tiles.
   const base = mapKind === "standard" ? "standard" : "satellite";
@@ -240,6 +241,40 @@ export default function LiveMap({
     if (!ready || !map.current) return;
     (map.current.getSource("workout") as GeoJSONSource)?.setData(shape);
   }, [ready, shape]);
+  useEffect(() => {
+    const instance = map.current;
+    if (!ready || !instance || !instance.getSource("workout")) return;
+    for (const id of ["route-outline", "route", "points", "names"])
+      instance.setLayoutProperty(
+        id,
+        "visibility",
+        heatmap ? "none" : "visible",
+      );
+    if (instance.getLayer("football-heatmap"))
+      instance.removeLayer("football-heatmap");
+    if (instance.getSource("football-heatmap"))
+      instance.removeSource("football-heatmap");
+    if (heatmap) {
+      const [[north, east], [south, west]] = heatmap.bounds;
+      instance.addSource("football-heatmap", {
+        type: "image",
+        url: heatmap.uri,
+        coordinates: [
+          [west, north],
+          [east, north],
+          [east, south],
+          [west, south],
+        ],
+      });
+      instance.addLayer({
+        id: "football-heatmap",
+        type: "raster",
+        source: "football-heatmap",
+        slot: "top",
+        paint: { "raster-fade-duration": 0 },
+      });
+    }
+  }, [ready, heatmap]);
   useEffect(() => {
     if (!ready || !map.current) return;
     if (preserveCamera.current) {

@@ -1,6 +1,7 @@
 import * as Location from "expo-location";
 import * as TaskManager from "expo-task-manager";
 import Constants, { ExecutionEnvironment } from "expo-constants";
+import { AppState, Platform } from "react-native";
 import { appPersistence, useAppStore } from "../../stores/useAppStore";
 import { useAuthStore } from "../../stores/useAuthStore";
 import { useLocationStore } from "../../stores/useLocationStore";
@@ -31,15 +32,28 @@ export async function requestBackgroundAccess() {
     throw new Error(
       "Bakgrunnsopptak krever et nytt mobilbygg på denne enheten.",
     );
-  const result = await Location.requestBackgroundPermissionsAsync();
+  // iOS continuous updates started by the user in the foreground work with
+  // When In Use + the location background mode and visible location indicator.
+  // Expo's native startLocationUpdatesAsync checks foreground permission for
+  // this flow. Requiring Always here incorrectly prevents a valid workout.
+  const result =
+    Platform.OS === "ios"
+      ? await Location.getForegroundPermissionsAsync()
+      : await Location.requestBackgroundPermissionsAsync();
   if (!result.granted)
     throw new Error(
-      "Velg Alltid for VYRO under Posisjon i telefonens innstillinger. Slå på Presis posisjon. Du kan også slå av opptak med låst skjerm og holde appen åpen.",
+      Platform.OS === "ios"
+        ? "Tillat posisjon for VYRO i telefonens innstillinger og velg «Når appen er i bruk». Slå på Presis posisjon og prøv igjen."
+        : "Velg Alltid for VYRO under Posisjon i telefonens innstillinger. Slå på Presis posisjon og prøv igjen.",
     );
 }
 export function startBackground() {
   return serial(async () => {
     if (!ownsRecording()) return;
+    if (AppState.currentState !== "active")
+      throw new Error(
+        "Hold VYRO åpen mens opptaket starter, og trykk Fortsett.",
+      );
     await Location.startLocationUpdatesAsync(TASK, {
       accuracy: Location.Accuracy.BestForNavigation,
       timeInterval: 1000,
@@ -83,7 +97,9 @@ export async function verifyBackgroundRecording() {
   try {
     const [started, permission] = await Promise.all([
       Location.hasStartedLocationUpdatesAsync(TASK),
-      Location.getBackgroundPermissionsAsync(),
+      Platform.OS === "ios"
+        ? Location.getForegroundPermissionsAsync()
+        : Location.getBackgroundPermissionsAsync(),
     ]);
     available = started && permission.granted;
   } catch {

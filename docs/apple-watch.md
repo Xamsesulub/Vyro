@@ -1,5 +1,13 @@
 # VYRO på Apple Watch
 
+## Test uten egen klokke — 27. oktober 2026
+
+PC-testene dekker validering av ekte GPS-data, personvern, kontobytte, avbrudd, lagring før kvittering, duplikater og Fotball. IPhone viser tilkoblingsvalg som inaktivt uten paret klokke/installert Watch-app, og forsøker da ikke synkronisering. Dette beviser ikke at sensorer eller WatchConnectivity fungerer på en fysisk klokke.
+
+På en Mac kan Watch- og iPhone-målene kjøres i Xcodes simulatorer for å kontrollere skjermflyt og simulerte situasjoner. Se [Apple: simulatorer og fysiske enheter](https://developer.apple.com/documentation/xcode/running-your-app-on-simulated-or-physical-devices). Windows kan ikke kjøre Apples watchOS-simulator. Endelig test av puls, GPS, bakgrunn, batteri og faktisk overføring krever en fysisk Apple Watch, for eksempel en lånt klokke/tester. Ikke registrer simulatorposisjoner som virkelige løp eller del dem i produksjon.
+
+Watch velger én idrett per opptak; Fotball bruker HealthKit `.soccer`. Flere idrettsinteresser på telefonprofilen endrer ikke typen til en økt som pågår.
+
 ## Status, 25. oktober 2026
 
 En første watchOS-app og synkronisering til iPhone er implementert. **Både Watch-appen og hele iPhone-appen bestod usignert simulatorbygg med Xcode 27.1 i GitHub Actions [40188672169](https://github.com/Xamsesulub/Vyro/actions/runs/40188672169), på commit `0901069`. Dette inkluderer den native WatchConnectivity-modulen og eksisterende Live Activity-mål. Signering, installasjon og fysisk testing gjenstår.** Dette er ikke en publisert eller godkjent klokkeapp. Nytt iPhone-/Watch-bygg kreves; Expo Go støtter ikke WatchConnectivity eller den lokale native-modulen. Den eksisterende iPhone-appen kan fortsatt åpnes i Expo Go med klokkestøtten deaktivert.

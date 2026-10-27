@@ -1,4 +1,5 @@
 import type { Session } from "@supabase/supabase-js";
+import { AppState } from "react-native";
 import { beginRecording } from "../src/features/tracking/controls";
 import { requestForegroundPermission } from "../src/features/tracking/foregroundPermission";
 import { initialRecording } from "../src/features/tracking/simulator";
@@ -16,6 +17,7 @@ const granted = { granted: true, canAskAgain: true } as Awaited<
   ReturnType<typeof requestForegroundPermission>
 >;
 beforeEach(() => {
+  AppState.currentState = "active";
   useAuthStore.setState({
     session: { user: { id: "runner" } } as Session,
     ready: true,
@@ -69,6 +71,38 @@ test("a timeout is visible, releases Start, and permits a successful retry", asy
   expect(useAppStore.getState().recording.status).toBe("idle");
   await beginRecording("start");
   expect(useAppStore.getState().recording.status).toBe("recording");
+});
+
+test("leaving during permission cannot start GPS later after the foreground wait expires", async () => {
+  jest.useFakeTimers();
+  AppState.currentState = "background";
+  const removed = jest.fn();
+  let activate!: (state: "active") => void;
+  const events = jest
+    .spyOn(AppState, "addEventListener")
+    .mockImplementation((_, listener) => {
+      activate = listener;
+      return { remove: removed };
+    });
+  try {
+    const starting = beginRecording("start");
+    await jest.advanceTimersByTimeAsync(15_000);
+    await starting;
+    expect(useAppStore.getState().recording.status).toBe("idle");
+    expect(useTrackingStatus.getState().starting).toBe(false);
+    expect(useTrackingStatus.getState().error).toContain("Hold VYRO åpen");
+    expect(removed).toHaveBeenCalledTimes(1);
+    AppState.currentState = "active";
+    activate("active");
+    await Promise.resolve();
+    expect(useAppStore.getState().recording.status).toBe("idle");
+    await beginRecording("start");
+    expect(useAppStore.getState().recording.status).toBe("recording");
+  } finally {
+    events.mockRestore();
+    AppState.currentState = "active";
+    jest.useRealTimers();
+  }
 });
 
 test("revoked permission on resume leaves the workout paused", async () => {

@@ -3,6 +3,7 @@ import { routeSegments, type Coord } from "../tracking/gps";
 import type { MapRoute } from "./config";
 import { brand } from "../../theme/tokens";
 export type LiveMapProps = {
+  heatmap?: import("../football/heatmap").HeatmapOverlay | null;
   height?: number;
   attributionBottom?: number;
   mapKind?: import("./config").MapKind;

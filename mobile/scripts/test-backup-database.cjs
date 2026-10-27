@@ -121,6 +121,62 @@ async function main() {
     await db.exec("delete from public.workout_backups");
     check((await db.query("select * from public.workout_backups")).rows, []);
     await db.query(insert, [a, workout.id, workout]);
+    const football = { ...workout, id: "football-1", sport: "Fotball" };
+    await db.query(insert, [a, football.id, football]);
+    check(
+      (
+        await db.query(
+          "select payload->>'sport' as sport from public.workout_backups where local_id=$1",
+          [football.id],
+        )
+      ).rows,
+      [{ sport: "Fotball" }],
+    );
+    await as(b);
+    check((await db.query("select * from public.workout_backups")).rows, []);
+    await as(a);
+    await db.query(
+      "select public.publish_workout($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9)",
+      [
+        football.id,
+        "Fotballtrening",
+        "Fotball",
+        1,
+        300,
+        workout.date,
+        "gps",
+        JSON.stringify(
+          workout.route.map(({ latitude, longitude }) => ({
+            latitude,
+            longitude,
+          })),
+        ),
+        "followers",
+      ],
+    );
+    check(
+      (
+        await db.query(
+          "select sport from public.activities where local_id=$1",
+          [football.id],
+        )
+      ).rows,
+      [{ sport: "Fotball" }],
+    );
+    await denied(
+      "select public.publish_workout($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9)",
+      [
+        "fake-football",
+        "Test",
+        "Fotball",
+        1,
+        300,
+        workout.date,
+        "simulation",
+        JSON.stringify(workout.route),
+        "followers",
+      ],
+    );
     await db.exec("reset role");
     await db.query("delete from auth.users where id=$1", [a]);
     check((await db.query("select * from public.workout_backups")).rows, []);

@@ -3,6 +3,7 @@ import type {
   MapViewProps,
   MapPolylineProps,
   MapMarkerProps,
+  MapOverlayProps,
   Camera,
 } from "react-native-maps";
 import AppleMap from "../src/components/LiveMap.ios";
@@ -44,12 +45,16 @@ jest.mock("react-native-maps", () => {
       <View testID="route-line" {...props} />
     ),
     Marker: (props: MapMarkerProps) => <View testID="map-marker" {...props} />,
+    Overlay: (props: MapOverlayProps) => (
+      <View testID="heatmap-overlay" {...props} />
+    ),
   };
 });
 const a = { latitude: 59.9, longitude: 10.7 };
 const b = { latitude: 59.91, longitude: 10.71 };
 const c = { latitude: 60, longitude: 11 };
 const d = { latitude: 60.01, longitude: 11.01 };
+const tiltScale = Math.cos((55 * Math.PI) / 180); // height / eye-to-centre distance.
 beforeEach(() => {
   jest.clearAllMocks();
   mockNativeModeChange = undefined;
@@ -60,6 +65,28 @@ beforeEach(() => {
 });
 
 afterEach(() => jest.useRealTimers());
+
+test("heatmap replaces route artwork while keeping the Apple map and camera mounted", async () => {
+  const route = [[a, b]];
+  const heatmap = {
+    uri: "data:image/png;base64,test",
+    bounds: [
+      [60, 11],
+      [59, 10],
+    ] as [[number, number], [number, number]],
+  };
+  const view = await render(<AppleMap route={route} />);
+  expect(screen.getAllByTestId("route-line")).toHaveLength(2);
+  await view.rerender(<AppleMap route={route} heatmap={heatmap} />);
+  expect(screen.queryByTestId("route-line")).toBeNull();
+  expect(screen.getByTestId("heatmap-overlay").props.image.uri).toBe(
+    heatmap.uri,
+  );
+  expect(mockMount).toHaveBeenCalledTimes(1);
+  await view.rerender(<AppleMap route={route} />);
+  expect(screen.queryByTestId("heatmap-overlay")).toBeNull();
+  expect(screen.getAllByTestId("route-line")).toHaveLength(2);
+});
 
 test.each([
   ["standard", true],
@@ -78,6 +105,7 @@ test.each([
       heading: 68,
       pitch: threeD ? 0 : 55,
     };
+    const expectedAltitude = threeD ? 432 * tiltScale : 432 / tiltScale;
     mockCamera.mockImplementation(async () => native);
     mockSet.mockImplementation((camera) => {
       native = { ...native, ...camera };
@@ -97,7 +125,7 @@ test.each([
     await act(async () => mockProps.onRegionChangeComplete?.({} as never, {}));
     expect(native).toEqual({
       center: c,
-      altitude: 432,
+      altitude: expectedAltitude,
       heading: 68,
       pitch: threeD ? 55 : 0,
     });
@@ -108,7 +136,7 @@ test.each([
     });
     expect(native).toEqual({
       center: c,
-      altitude: 432,
+      altitude: expectedAltitude,
       heading: 68,
       pitch: threeD ? 55 : 0,
     });
@@ -162,6 +190,41 @@ test("camera reconciliation stops for a new selection, pinch/touch, unmount and 
   });
   expect(mockSet).not.toHaveBeenCalled();
 });
+
+test.each(["standard", "satellite", "hybrid"] as const)(
+  "%s keeps the original zoom through ten toggles even if the next read sees a native reset",
+  async (mapKind) => {
+    jest.useFakeTimers();
+    let native = { center: c, altitude: 600, heading: 68, pitch: 0 };
+    mockCamera.mockImplementation(async () => ({ ...native }));
+    mockSet.mockImplementation((next) => {
+      native = { ...native, ...next };
+    });
+    await render(<AppleMap mapKind={mapKind} />);
+    await act(async () => mockProps.onMapReady?.());
+    native = { center: c, altitude: 600, heading: 68, pitch: 0 };
+    for (let i = 0; i < 10; i++) {
+      const threeD = i % 2 === 0;
+      await screen.rerender(<AppleMap mapKind={mapKind} threeD={threeD} />);
+      expect(
+        native.altitude / Math.cos((native.pitch * Math.PI) / 180),
+      ).toBeCloseTo(600, 5);
+      expect(native.center).toEqual(c);
+      expect(native.heading).toBe(68);
+      // Toggle again before the asynchronous reset has been reconciled.
+      native = { center: d, altitude: 8000, heading: 0, pitch: 0 };
+    }
+    expect(mockFit).not.toHaveBeenCalled();
+    // User zoom is authoritative; a subsequent toggle must respect the new view.
+    await act(async () => mockProps.onTouchStart?.({} as never));
+    native = { center: a, altitude: 900, heading: 12, pitch: 0 };
+    await screen.rerender(<AppleMap mapKind={mapKind} threeD />);
+    expect(native.altitude / tiltScale).toBeCloseTo(900, 5);
+    expect(native.center).toEqual(a);
+    expect(native.heading).toBe(12);
+    await screen.unmount();
+  },
+);
 
 test("the iOS entry uses Apple with distinct modes and no automatic GPS collection or remount", async () => {
   await render(<AppleMap mapKind="standard" position={a} />);
@@ -273,7 +336,7 @@ test("first render frames the actual route rather than loading Oslo before jumpi
 });
 
 test.each(["standard", "satellite", "hybrid"] as const)(
-  "%s switches between 2D and 3D without fitting again or changing altitude/center/heading",
+  "%s switches between 2D and 3D without fitting again or changing distance/center/heading",
   async (mapKind) => {
     const padding = { top: 170, right: 68, bottom: 350, left: 35 };
     const renderMap = (threeD: boolean) => (
@@ -296,8 +359,16 @@ test.each(["standard", "satellite", "hybrid"] as const)(
       mapKind === "standard" ? "standard" : `${mapKind}Flyover`,
     );
     expect(mockProps.pitchEnabled).toBe(true);
-    expect(mockSet).toHaveBeenLastCalledWith({ ...camera, pitch: 55 });
-    mockCamera.mockResolvedValue({ ...camera, pitch: 55 });
+    expect(mockSet).toHaveBeenLastCalledWith({
+      ...camera,
+      altitude: 678 * tiltScale,
+      pitch: 55,
+    });
+    mockCamera.mockResolvedValue({
+      ...camera,
+      altitude: 678 * tiltScale,
+      pitch: 55,
+    });
     await screen.rerender(renderMap(false));
     expect(mockProps.mapType).toBe(mapKind);
     expect(mockProps.pitchEnabled).toBe(false);
@@ -370,7 +441,7 @@ test.each(["standard", "satellite", "hybrid"] as const)(
       await screen.rerender(<AppleMap mapKind={mapKind} threeD />);
       expect(camera).toEqual({
         center: c,
-        altitude: 432,
+        altitude: 432 * tiltScale,
         heading: 68,
         pitch: 55,
       });
@@ -407,7 +478,7 @@ test("the native mode stays unchanged while its camera snapshot is pending", asy
   expect(mockProps.pitchEnabled).toBe(false);
   expect(mockSet).toHaveBeenLastCalledWith({
     center: c,
-    altitude: 380,
+    altitude: 380 / tiltScale,
     heading: 42,
     pitch: 0,
   });

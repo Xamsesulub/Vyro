@@ -21,8 +21,6 @@ import { Txt, Icon } from "../../components/ui";
 import { MapRouteSheet } from "../../components/MapRouteSheet";
 import { MapSearch } from "../../components/MapSearch";
 import LiveMap from "../../components/LiveMap";
-import { demoTurfs, people } from "../../features/social/demo";
-import { useSocialStore } from "../../stores/useSocialStore";
 import { useAppStore } from "../../stores/useAppStore";
 import { useLiveLocation } from "../../features/tracking/useLiveLocation";
 import { duration, km } from "../../features/activities/model";
@@ -61,9 +59,6 @@ export default function Maps() {
   const [threeD, setThreeD] = useState(false);
   const [north, setNorth] = useState(0);
   const [target, setTarget] = useState<Place | null>(null);
-  const following = useSocialStore((s) => s.following);
-  const examples = useAppStore((s) => s.examplesVisible);
-  const [filter, setFilter] = useState("Følger");
   const [index, setIndex] = useState(0);
   const [expanded, setExpanded] = useState(false);
   const [panelHeight, setPanelHeight] = useState(300);
@@ -96,16 +91,8 @@ export default function Maps() {
         distance: w.distance,
         points: w.route!,
         color: brand.route,
-        example: false,
       }));
-    const demo = examples
-      ? demoTurfs
-          .filter(
-            (t) => filter === "Alle eksempler" || following.includes(t.ownerId),
-          )
-          .map((t) => ({ ...t, example: true }))
-      : [];
-    return [...own, ...demo].filter(
+    return own.filter(
       (t) =>
         !length ||
         (length === 1
@@ -114,12 +101,9 @@ export default function Maps() {
             ? t.distance >= 3 && t.distance <= 10
             : t.distance > 10),
     );
-  }, [workouts, examples, filter, following, length]);
+  }, [workouts, length]);
   const turf = turfs[index % Math.max(1, turfs.length)];
-  const owner =
-    turf?.ownerId === "self"
-      ? { name: "Deg", initials: "DU" }
-      : people.find((p) => p.id === turf?.ownerId);
+  const owner = { name: "Deg", initials: "DU" };
   const routes = useMemo(
     () =>
       turf
@@ -269,11 +253,7 @@ export default function Maps() {
               <View style={s.tag}>
                 <View style={s.dot} />
                 <MapText size={11} weight="700">
-                  {turf?.example
-                    ? "EKSEMPEL-TURF"
-                    : turf
-                      ? "DIN LAGREDE GPS-RUTE"
-                      : "RUTER"}
+                  {turf ? "DIN LAGREDE GPS-RUTE" : "RUTER"}
                 </MapText>
               </View>
               {!!turf && (
@@ -318,7 +298,7 @@ export default function Maps() {
                   <MapText muted>·</MapText>
                   <MapText weight="600">
                     {duration(turf.seconds)}
-                    {turf.example ? " å slå" : " totalt"}
+                    {" totalt"}
                   </MapText>
                 </View>
                 <View
@@ -330,9 +310,7 @@ export default function Maps() {
                     </MapText>
                   </View>
                   <MapText size={13} muted>
-                    {turf.example
-                      ? `${owner?.name} eier eksempelruten`
-                      : "Din private GPS-rute"}
+                    Din private GPS-rute
                   </MapText>
                   {turfs.length > 1 && (
                     <Pressable
@@ -360,9 +338,9 @@ export default function Maps() {
             )}
             {expanded && (
               <MapText muted size={13}>
-                Dette panelet viser private ruter og merkede eksempler. Åpne
-                Soner for konkurranseløyper. Slå hele løypa og velg om du vil
-                utvide den med resten av turen.
+                Dette panelet viser dine private GPS-ruter. Åpne Soner for
+                konkurranseløyper. Slå hele løypa og velg om du vil utvide den
+                med resten av turen.
               </MapText>
             )}
             <Pressable
@@ -436,30 +414,6 @@ export default function Maps() {
                   Ruteforslag ↗
                 </MapText>
               </Pressable>
-              {["Følger", "Alle eksempler"].map((t) => (
-                <Pressable
-                  key={t}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: t === filter }}
-                  onPress={() => {
-                    setFilter(t);
-                    setIndex(0);
-                    setFollow(false);
-                  }}
-                  style={[
-                    s.chip,
-                    t === filter && { backgroundColor: "#11182C" },
-                  ]}
-                >
-                  <MapText
-                    size={13}
-                    weight="600"
-                    style={{ color: t === filter ? "white" : "#11182C" }}
-                  >
-                    {t}
-                  </MapText>
-                </Pressable>
-              ))}
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="Filtrer på lengde"

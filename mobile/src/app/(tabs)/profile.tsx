@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { FlatList, Pressable, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -13,10 +13,10 @@ import {
   initialHistoryFilter,
   TrainingHistoryFilters,
 } from "../../components/TrainingHistoryFilters";
-import { examples } from "../../features/activities/examples";
 import { filterHistory, ownTraining } from "../../features/activities/training";
 import { useAppStore } from "../../stores/useAppStore";
 import { useAuthStore } from "../../stores/useAuthStore";
+import { loadOwnProfile } from "../../stores/useProfileStore";
 import { useOwnProfile } from "../../features/auth/useOwnProfile";
 import { useConnectionCounts } from "../../features/social/connections";
 import { shareProfile } from "../../features/social/shareProfile";
@@ -43,16 +43,17 @@ function ProfileContent({ user }: { user?: User }) {
           : "activities";
   const [filter, setFilter] = useState<typeof initialHistoryFilter>(() => ({
     ...initialHistoryFilter,
-    source: user ? "gps" : "simulation",
+    source: "gps",
   }));
   const [shareMessage, setShareMessage] = useState("");
   const [sharing, setSharing] = useState(false);
+  const shareRequest = useRef<AbortController | null>(null);
+  useEffect(() => () => shareRequest.current?.abort(), []);
   const workouts = useAppStore((s) => s.workouts);
-  const examplesVisible = useAppStore((s) => s.examplesVisible);
   const localName = useAppStore((s) => s.name);
   const storageError = useAppStore((s) => s.storageError);
   const confirmation = useAuthStore((s) => s.confirmationEmail);
-  const { profile } = useOwnProfile();
+  const { profile, failed: profileFailed } = useOwnProfile();
   const counts = useConnectionCounts(user?.id);
   const name =
     profile?.display_name ||
@@ -64,13 +65,8 @@ function ProfileContent({ user }: { user?: User }) {
     [workouts, user?.id],
   );
   const list = useMemo(
-    () =>
-      filterHistory(
-        examplesVisible ? [...workouts, ...examples] : workouts,
-        filter,
-        user?.id,
-      ),
-    [workouts, examplesVisible, filter, user?.id],
+    () => filterHistory(workouts, filter, user?.id),
+    [workouts, filter, user?.id],
   );
   function selectTab(value: ProfileTab) {
     router.setParams({ tab: value });
@@ -235,41 +231,67 @@ function ProfileContent({ user }: { user?: User }) {
                     </Pressable>
                     <Pressable
                       accessibilityRole="button"
-                      accessibilityState={{ disabled: !profile || sharing }}
-                      disabled={!profile || sharing}
+                      accessibilityState={{ disabled: sharing, busy: sharing }}
+                      disabled={sharing}
                       onPress={async () => {
-                        if (!profile || sharing) return;
+                        if (shareRequest.current || !user) return;
+                        const request = new AbortController();
+                        shareRequest.current = request;
                         setSharing(true);
                         setShareMessage("");
                         try {
-                          const result = await shareProfile(profile);
+                          const currentProfile =
+                            profile ??
+                            (await loadOwnProfile(
+                              user.id,
+                              request.signal,
+                              true,
+                            ));
+                          if (
+                            request.signal.aborted ||
+                            useAuthStore.getState().session?.user.id !== user.id
+                          )
+                            return;
+                          if (!currentProfile) {
+                            setShareMessage(
+                              "Kunne ikke hente profilen. Sjekk nettforbindelsen og trykk Del profil igjen.",
+                            );
+                            return;
+                          }
+                          const result = await shareProfile(currentProfile);
+                          if (request.signal.aborted) return;
                           if (result === "copied")
                             setShareMessage(
                               "Profilteksten er kopiert. Lim den inn der du vil dele den.",
                             );
                         } catch {
+                          if (request.signal.aborted) return;
                           setShareMessage(
-                            `Du finner meg på VYRO som @${profile.username}.`,
+                            "Kunne ikke åpne deling. Trykk Del profil for å prøve igjen.",
                           );
                         } finally {
-                          setSharing(false);
+                          shareRequest.current = null;
+                          if (!request.signal.aborted) setSharing(false);
                         }
                       }}
-                      style={[
-                        outlineButton,
-                        { opacity: !profile || sharing ? 0.5 : 1 },
-                      ]}
+                      style={[outlineButton, { opacity: sharing ? 0.5 : 1 }]}
                     >
                       <Txt size={14} weight="700">
-                        {sharing ? "Åpner …" : "Del profil"}
+                        {sharing
+                          ? profile
+                            ? "Åpner …"
+                            : "Henter profil …"
+                          : "Del profil"}
                       </Txt>
                     </Pressable>
                   </View>
-                  {!!shareMessage && (
-                    <Txt muted size={13}>
-                      {shareMessage}
-                    </Txt>
-                  )}
+                  {!!(shareMessage || (!profile && profileFailed)) &&
+                    !sharing && (
+                      <Txt muted size={13} accessibilityRole="alert">
+                        {shareMessage ||
+                          "Kunne ikke hente profilen. Trykk Del profil for å prøve igjen."}
+                      </Txt>
+                    )}
                 </>
               )}
               {!!storageError && <Txt>{storageError}</Txt>}
@@ -345,7 +367,6 @@ function ProfileContent({ user }: { user?: User }) {
                     filter={filter}
                     change={setFilter}
                     count={list.length}
-                    examples={examplesVisible}
                   />
                 )}
                 {tab === "more" && (

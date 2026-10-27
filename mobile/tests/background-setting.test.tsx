@@ -10,6 +10,9 @@ jest.mock("../src/features/tracking/background", () => ({
     return mockSupported;
   },
 }));
+jest.mock("../src/features/tracking/liveActivitySupport", () => ({
+  liveActivitySupported: true,
+}));
 jest.mock("../src/lib/workoutStorage", () => ({
   workoutStorage: require("@react-native-async-storage/async-storage"),
 }));
@@ -54,7 +57,14 @@ test("the start-screen choice enables background recording and clearly describes
     "valueChange",
     false,
   );
-  expect(useAppStore.getState().workoutLiveActivity).toBe(false);
+  expect(useAppStore.getState().workoutLiveActivity).toBe(true);
+  await fireEvent(
+    screen.getByLabelText("Fortsett med låst skjerm"),
+    "valueChange",
+    true,
+  );
+  expect(useAppStore.getState().backgroundRecording).toBe(true);
+  expect(useAppStore.getState().workoutLiveActivity).toBe(true);
 });
 
 test("Expo Go cannot enable an unsupported native feature", async () => {
@@ -62,6 +72,31 @@ test("Expo Go cannot enable an unsupported native feature", async () => {
   await render(<BackgroundRecordingSetting />);
   expect(screen.queryByRole("switch")).toBeNull();
   expect(screen.getByText(/Expo Go pauser opptaket/)).toBeTruthy();
+});
+
+test("the start screen can explicitly enable time and distance without losing the choice on background off/on", async () => {
+  useAppStore.setState({ backgroundRecording: true });
+  await render(<BackgroundRecordingSetting compact />);
+  await fireEvent(
+    screen.getByLabelText("Vis tid og km på låseskjermen"),
+    "valueChange",
+    true,
+  );
+  expect(useAppStore.getState().workoutLiveActivity).toBe(true);
+  await fireEvent(
+    screen.getByLabelText("Fortsett med låst skjerm"),
+    "valueChange",
+    false,
+  );
+  expect(screen.queryByLabelText("Vis tid og km på låseskjermen")).toBeNull();
+  await fireEvent(
+    screen.getByLabelText("Fortsett med låst skjerm"),
+    "valueChange",
+    true,
+  );
+  expect(
+    screen.getByLabelText("Vis tid og km på låseskjermen").props.value,
+  ).toBe(true);
 });
 
 test("an active workout disables changes to the recording mode", async () => {

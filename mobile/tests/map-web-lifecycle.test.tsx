@@ -62,17 +62,22 @@ function engine() {
   const callbacks: Record<string, (event?: unknown) => void> = {};
   const config = new Map<string, unknown>();
   const source = { setData: jest.fn() };
+  const sources = new Map<string, unknown>();
+  const layers = new Set<string>();
   const map = {
     on: jest.fn((event: string, callback: (event?: unknown) => void) => {
       callbacks[event] = callback;
     }),
     addControl: jest.fn(),
-    addSource: jest.fn(),
-    addLayer: jest.fn(),
+    addSource: jest.fn((id: string, data: unknown) => sources.set(id, data)),
+    addLayer: jest.fn((layer: { id: string }) => layers.add(layer.id)),
     getSource: jest.fn((name: string) =>
-      name === "workout" ? source : undefined,
+      name === "workout" ? source : sources.get(name),
     ),
-    getLayer: jest.fn(),
+    getLayer: jest.fn((id: string) => layers.has(id)),
+    removeLayer: jest.fn((id: string) => layers.delete(id)),
+    removeSource: jest.fn((id: string) => sources.delete(id)),
+    setLayoutProperty: jest.fn(),
     getTerrain: () => null,
     setTerrain: jest.fn(),
     getConfigProperty: (_: string, key: string) => config.get(key),
@@ -126,6 +131,61 @@ test("a permission/position update preserves the existing map and tiles", async 
   expect(map.easeTo).toHaveBeenCalledWith(
     expect.objectContaining({ center: [10.7, 59.9] }),
   );
+});
+test("football heatmap is geographically aligned and toggles without rebuilding the map or changing zoom", async () => {
+  const { constructor, callbacks, map } = engine();
+  const route = [
+    [
+      { latitude: 59.9, longitude: 10.7 },
+      { latitude: 59.9005, longitude: 10.7005 },
+    ],
+  ];
+  const heatmap = {
+    uri: "data:image/png;base64,test",
+    bounds: [
+      [60, 11],
+      [59, 10],
+    ] as [[number, number], [number, number]],
+  };
+  await act(async () =>
+    root.render(<LiveMap route={route} mapKind="satellite" />),
+  );
+  await act(async () => callbacks["style.load"]());
+  map.fitBounds.mockClear();
+  map.easeTo.mockClear();
+  await act(async () =>
+    root.render(
+      <LiveMap route={route} mapKind="satellite" heatmap={heatmap} />,
+    ),
+  );
+  expect(map.addSource).toHaveBeenCalledWith("football-heatmap", {
+    type: "image",
+    url: heatmap.uri,
+    coordinates: [
+      [10, 60],
+      [11, 60],
+      [11, 59],
+      [10, 59],
+    ],
+  });
+  expect(map.setLayoutProperty).toHaveBeenCalledWith(
+    "route",
+    "visibility",
+    "none",
+  );
+  await act(async () =>
+    root.render(<LiveMap route={route} mapKind="satellite" />),
+  );
+  expect(map.removeLayer).toHaveBeenCalledWith("football-heatmap");
+  expect(map.removeSource).toHaveBeenCalledWith("football-heatmap");
+  expect(map.setLayoutProperty).toHaveBeenCalledWith(
+    "route",
+    "visibility",
+    "visible",
+  );
+  expect(map.fitBounds).not.toHaveBeenCalled();
+  expect(map.easeTo).not.toHaveBeenCalled();
+  expect(constructor).toHaveBeenCalledTimes(1);
 });
 
 test("Hybrid toggles labels while tiles are pending, without resetting the style or workout source", async () => {

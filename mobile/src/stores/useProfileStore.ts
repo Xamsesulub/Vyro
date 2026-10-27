@@ -10,22 +10,27 @@ export const useProfileStore = create<{
 }>(() => ({ profile: null, loadedAt: 0, errorFor: null }));
 
 let revision = 0;
+let readSequence = 0;
+let appliedRead = 0;
 const ownsSession = (userId: string) =>
   useAuthStore.getState().session?.user.id === userId;
 export async function loadOwnProfile(
   userId: string,
   signal: AbortSignal,
   force = false,
-) {
-  if (!supabase || !ownsSession(userId)) return;
+): Promise<Profile | null> {
+  if (!supabase || !ownsSession(userId) || signal.aborted) return null;
   const cached = useProfileStore.getState();
   if (
     !force &&
     cached.profile?.id === userId &&
     Date.now() - cached.loadedAt < 60_000
   )
-    return;
-  const request = ++revision;
+    return cached.profile;
+  // Reads from different screens may overlap. Cancelling one must not discard
+  // another screen's result; edits and account changes still invalidate reads.
+  const request = revision;
+  const read = ++readSequence;
   try {
     const { data, error } = await supabase
       .from("profiles")
@@ -33,16 +38,27 @@ export async function loadOwnProfile(
       .eq("id", userId)
       .abortSignal(signal)
       .single();
-    if (error || !data) throw error ?? new Error("Profile unavailable");
-    if (signal.aborted || !ownsSession(userId) || revision !== request) return;
+    if (error || !data || data.id !== userId)
+      throw error ?? new Error("Profile unavailable");
+    if (signal.aborted || !ownsSession(userId) || revision !== request)
+      return null;
+    if (read < appliedRead) return useProfileStore.getState().profile;
+    appliedRead = read;
     useProfileStore.setState({
       profile: data,
       loadedAt: Date.now(),
       errorFor: null,
     });
+    return data;
   } catch {
-    if (!signal.aborted && ownsSession(userId) && revision === request)
+    if (
+      !signal.aborted &&
+      ownsSession(userId) &&
+      revision === request &&
+      read >= appliedRead
+    )
       useProfileStore.setState({ errorFor: userId });
+    return null;
   }
 }
 

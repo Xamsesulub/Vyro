@@ -10,6 +10,7 @@ import { addFix, GpsFix, storedRoute } from "../features/tracking/gps";
 import { withSplits } from "../features/tracking/splits";
 import type { WeeklyGoal } from "../features/activities/training";
 import { appendTurfFix } from "../features/turf/trace";
+import { footballMaxSpeed } from "../features/football/speed";
 import {
   initialRecording,
   Recording,
@@ -173,7 +174,7 @@ export const useAppStore = create<State>()(
       defaultMapKind: "standard",
       homeFeed: "following",
       sharingAudienceByOwner: {},
-      examplesVisible: true,
+      examplesVisible: false,
       workouts: [],
       recording: initialRecording,
       joined: false,
@@ -315,6 +316,9 @@ export const useAppStore = create<State>()(
                     route,
                     ownerId: r.ownerId,
                     turfTrace: r.turfTrace,
+                    ...(r.sport === "Fotball"
+                      ? { maxSpeedKmh: footballMaxSpeed(r.turfTrace ?? []) }
+                      : {}),
                     turfId: r.challenge?.id,
                     splits: r.splits,
                   }
@@ -361,6 +365,21 @@ export const useAppStore = create<State>()(
         };
       },
       storage: appPersistence,
+      merge: (persisted, current) => {
+        const saved = (persisted ?? {}) as Partial<SavedState>;
+        const recording = saved.recording ?? current.recording;
+        return {
+          ...current,
+          ...saved,
+          examplesVisible: false,
+          // An old developer simulation must never resume as a real GPS workout.
+          // Historical records are retained privately; user screens show GPS only.
+          recording:
+            recording.mode === "simulation"
+              ? { ...initialRecording, sport: recording.sport }
+              : recording,
+        };
+      },
       partialize: (s): SavedState => ({
         onboarded: s.onboarded,
         name: s.name,

@@ -6,7 +6,7 @@ export function useVisibleWorkouts() {
   const id = useAuthStore((s) => s.session?.user.id);
   return useMemo(
     () =>
-      workouts.filter((w) => w.source !== "gps" || (!!id && w.ownerId === id)),
+      workouts.filter((w) => w.source === "gps" && !!id && w.ownerId === id),
     [workouts, id],
   );
 }

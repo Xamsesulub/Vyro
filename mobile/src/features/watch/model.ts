@@ -1,4 +1,5 @@
 import { sports, type Sport, type Workout } from "../activities/model";
+import { footballMaxSpeed } from "../football/speed";
 import {
   MAX_ACCURACY_M,
   MAX_SPEED_MS,
@@ -101,6 +102,9 @@ export function watchWorkout(
     notes: "",
     source: "gps",
     visibility: "private",
+    ...(w.sport === "Fotball"
+      ? { maxSpeedKmh: footballMaxSpeed(w.points) }
+      : {}),
     // No competition trace, automatic social post, credentials or HealthKit data.
   };
 }

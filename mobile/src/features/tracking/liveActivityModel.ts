@@ -45,7 +45,8 @@ export function workoutActivityProps(
     seconds: duration(current.seconds),
     timerStart: now - current.seconds * 1000,
     distance: km(current.distance),
-    pace: pace(current.distance, current.seconds),
+    pace:
+      current.distance >= 0.1 ? pace(current.distance, current.seconds) : "—",
     mapUri,
     mapTime: mapAt
       ? new Date(mapAt).toLocaleTimeString("nb-NO", {

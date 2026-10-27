@@ -10,20 +10,23 @@ export type ProfileDetails = {
   lastName: string;
   bio: string;
   city: string;
-  mainSport: Sport;
+  selectedSports: Sport[];
 };
 export function profileDetails(user: User, displayName = ""): ProfileDetails {
   const metadata = user.user_metadata ?? {};
   const text = (key: string) =>
     typeof metadata[key] === "string" ? metadata[key] : "";
+  const selected = Array.isArray(metadata.sports)
+    ? sports.filter((sport) => metadata.sports.includes(sport))
+    : [];
   return {
     displayName: displayName || text("display_name"),
     lastName: text("last_name"),
     bio: text("bio"),
     city: text("city"),
-    mainSport: sports.includes(metadata.main_sport)
-      ? metadata.main_sport
-      : "Løping",
+    selectedSports: selected.length
+      ? selected
+      : [sports.includes(metadata.main_sport) ? metadata.main_sport : "Løping"],
   };
 }
 export function validateProfileDetails(draft: ProfileDetails) {
@@ -33,8 +36,12 @@ export function validateProfileDetails(draft: ProfileDetails) {
     return "Etternavnet kan ha maks 50 tegn.";
   if (draft.bio.trim().length > 280) return "Biografien kan ha maks 280 tegn.";
   if (draft.city.trim().length > 80) return "Stedet kan ha maks 80 tegn.";
-  if (!sports.includes(draft.mainSport))
-    return "Velg en av idrettene i listen.";
+  if (
+    !draft.selectedSports?.length ||
+    draft.selectedSports.some((sport) => !sports.includes(sport)) ||
+    new Set(draft.selectedSports).size !== draft.selectedSports.length
+  )
+    return "Velg minst én idrett fra listen.";
 }
 export async function saveProfileDetails(
   userId: string,
@@ -63,7 +70,9 @@ export async function saveProfileDetails(
         last_name: draft.lastName.trim() || null,
         bio: draft.bio.trim() || null,
         city: draft.city.trim() || null,
-        main_sport: draft.mainSport,
+        sports: sports.filter((sport) => draft.selectedSports.includes(sport)),
+        // Older installed clients can still read a single main sport.
+        main_sport: draft.selectedSports[0],
       },
     });
     if (error) throw error;

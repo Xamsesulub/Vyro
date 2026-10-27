@@ -1,11 +1,18 @@
-export type Sport = "Løping" | "Gange" | "Sykling" | "Fottur";
-export const sports: Sport[] = ["Løping", "Gange", "Sykling", "Fottur"];
+export type Sport = "Løping" | "Gange" | "Sykling" | "Fottur" | "Fotball";
+export const sports: Sport[] = [
+  "Løping",
+  "Gange",
+  "Sykling",
+  "Fottur",
+  "Fotball",
+];
 export type Workout = {
   id: string;
   title: string;
   sport: Sport;
   distance: number;
   seconds: number;
+  maxSpeedKmh?: number;
   date: string;
   notes: string;
   source: "example" | "simulation" | "gps";

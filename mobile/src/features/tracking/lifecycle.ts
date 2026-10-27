@@ -20,9 +20,18 @@ export function observeRecording() {
       return;
     }
     const recording = useAppStore.getState().recording;
+    // Native registration can still be resolving when the user locks the
+    // screen. Start owns this bounded operation and pauses on failure; do not
+    // cancel a successfully starting background service in the meantime.
+    const backgroundStarting =
+      useTrackingStatus.getState().starting &&
+      recording.mode === "gps" &&
+      useAppStore.getState().backgroundRecording &&
+      backgroundSupported;
     if (
       recording.status === "recording" &&
-      !useTrackingStatus.getState().backgroundActive
+      !useTrackingStatus.getState().backgroundActive &&
+      !backgroundStarting
     ) {
       useAppStore.getState().event("pause");
       if (recording.mode === "gps")

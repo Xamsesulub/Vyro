@@ -20,7 +20,7 @@ const questions = [
   ],
   [
     "Hvor finner jeg øktene mine?",
-    "Åpne Du → Aktiviteter. GPS-økter, simuleringer og eksempler har egne visninger. Ved bytte av telefon kan du hente økter som du har aktivert privat sikkerhetskopiering for.",
+    "Åpne Du → Aktiviteter for dine egne GPS-økter. Ved bytte av telefon kan du hente økter som du har aktivert privat sikkerhetskopiering for.",
   ],
   [
     "Hvorfor er Hjem tom?",
@@ -32,7 +32,7 @@ const questions = [
   ],
   [
     "Hvordan fungerer soner?",
-    "Du kan opprette en sone fra en kvalifisert GPS-rute og konkurrere på den. Simuleringer kan aldri opprette eller overta ekte soner.",
+    "Du kan opprette en sone fra en kvalifisert GPS-rute og konkurrere på den. Bare godkjente GPS-opptak teller i konkurransen.",
   ],
 ] as const;
 export default function Help() {

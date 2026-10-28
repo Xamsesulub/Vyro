@@ -1,5 +1,6 @@
 import type { Workout } from "../activities/model";
 import { competitionTrace } from "./trace";
+import { WORKOUT_SHARING_RADIUS_METERS } from "../social/routePrivacy";
 import { previewGrowth, type GrowingTurf } from "./growth";
 
 /** Local feedback before sharing; the server still validates every attempt. */
@@ -18,7 +19,7 @@ export function turfPreview(
   const samples = competitionTrace(workout);
   if (samples.length < 2)
     throw new Error(
-      "Ingen sammenhengende løype er igjen når 500 meter rundt start og slutt skjermes. Prøv en lengre tur uten avbrudd.",
+      `Ingen sammenhengende løype er igjen når ${WORKOUT_SHARING_RADIUS_METERS} meter rundt start og slutt skjermes. Prøv en lengre tur uten avbrudd.`,
     );
   if (samples.some((p) => p.timestamp < now - 7 * 86400000))
     throw new Error("Økten er eldre enn 7 dager. Velg en nyere løpetur.");

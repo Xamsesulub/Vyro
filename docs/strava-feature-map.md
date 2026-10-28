@@ -1,5 +1,21 @@
 # VYRO – funksjonskart mot Strava
 
+## Feed og kommentarer, 28. oktober 2026
+
+Treningsinnlegg viser skjermet rutekart automatisk. Genererte systembrukernavn skjules i sosiale visninger. Kommentarer har et eget panel med rullbar liste, voksende skrivefelt over tastaturet, sendeknapp, bevart utkast og bekreftet sletting av egen kommentar. Soneforsøk bruker nå 200 meter skjerming rundt start/slutt, med minst 200 meter synlig sammenhengende spor. Native tastaturkontroll på fysisk iPhone gjenstår.
+
+## Varsler om innlegg og reaksjoner, 28. oktober 2026
+
+Kommentarer og likerklikk på egne treningsinnlegg samt nye trenings-/stedsinnlegg fra godkjente fulgte kontoer gir varsler. Fire kategorier har uavhengige app-/telefonvalg. Nye innlegg er av som telefonvarsel som standard. Trykk åpner tilgangskontrollert kilde, med kommentarer synlige for kommentarvarsel. Privat lagring og oppdatering av eksisterende deling varsler ikke. Database/worker er aktivert; fysisk APNs-levering i preview 11 gjenstår. Stedsbilder har fortsatt ikke egne kommentar-/likerklikkfunksjoner.
+
+## Kontoprivatliv og følgervarsler, 28. oktober 2026
+
+Privat/offentlig konto, følgeforespørsler med godkjenning/avslag, fjerning av følgere, varselliste med ulest-teller og profilbilder er implementert med serverstyrte rettigheter. Telefonvarsler bruker Expo/APNs og en autorisert kø med kvitteringer. Database og server er aktivert; fysisk varslings- og bildevelgertest i ny installert app gjenstår. Profilbildet og grunnleggende profilnavn forblir synlige i søk. Dette inkluderer ikke blokkering, rapportering, moderering eller varslingsinnstillinger for alle framtidige hendelsestyper.
+
+## Tren og idretter, 28. oktober 2026
+
+Kartbasert startskjerm med målinger, idrettsvelger, stor Start og rutevalg. Opptaks- og låseskjermbrytere er samlet i innstillingene. Søkbar katalog har 36 idretter og støtte for GPS-opptak eller ren tidtaking. Lagre aktivitet har økttype, anstrengelse og private notater, med privat lagring som standard og separat deling. Dette inkluderer ikke generelle sensormålinger, kaloriberegning, sportsspesifikk teknikk-/rundetelling eller alle idrettene på Apple Watch. Se [teststatus](testing.md) for grensen mellom automatiske kontroller og fysisk verifisering.
+
 ## Profil, Hjem og innstillinger, 25. oktober 2026
 
 Referansens struktur er brukt til en egen VYRO-utforming: sveipbar introduksjon, direkte Hjem for innloggede, rund toppnavigasjon, profilfaner, 12-ukers graf, aktivitetsdager, ukerekke, redigering/deling av profil og faktiske følgelister. Innstillinger er gruppert i Konto, Din VYRO, Trening og Hjelp med funksjonelle undersider. Utseende følger også telefonen; standardkart, Hjem-strøm, eksempler og kontoens delingsforvalg lagres lokalt.

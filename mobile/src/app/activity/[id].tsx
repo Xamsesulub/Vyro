@@ -1,5 +1,5 @@
 import WorkoutMap from "../../components/WorkoutMap";
-import FootballMap, { FootballSpeed } from "../../components/FootballMap";
+import FootballMap from "../../components/FootballMap";
 import { ExportWorkout } from "../../components/ExportWorkout";
 import { useState } from "react";
 import { View } from "react-native";
@@ -10,7 +10,6 @@ import {
   Card,
   Header,
   Icon,
-  Metric,
   Screen,
   Txt,
   styles,
@@ -18,7 +17,8 @@ import {
 
 import { useAppStore } from "../../stores/useAppStore";
 import { useVisibleWorkouts } from "../../features/activities/useVisibleWorkouts";
-import { duration, km, pace } from "../../features/activities/model";
+import { duration, isRecordedWorkout } from "../../features/activities/model";
+import WorkoutStats from "../../components/WorkoutStats";
 export default function Activity() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const remove = useAppStore((s) => s.remove);
@@ -53,7 +53,9 @@ export default function Activity() {
             ? "Eksempeløkt"
             : w.source === "gps"
               ? "GPS-økt"
-              : "Lagret simulering"
+              : w.source === "timer"
+                ? "Tidtaking"
+                : "Lagret simulering"
         }
       />
       {w.route &&
@@ -64,21 +66,17 @@ export default function Activity() {
           <WorkoutMap points={w.route} />
         ))}
       <Card>
-        <View style={styles.row}>
-          <Metric value={km(w.distance)} label="kilometer" />
-          <Metric value={duration(w.seconds)} label="aktiv tid" />
-        </View>
-        <View style={styles.row}>
-          {w.sport === "Fotball" ? (
-            <FootballSpeed value={w.maxSpeedKmh} />
-          ) : (
-            <Metric value={pace(w.distance, w.seconds)} label="snitt min/km" />
-          )}
-          <Metric
-            value={((w.distance / w.seconds) * 3600).toFixed(1)}
-            label="snitt km/t"
-          />
-        </View>
+        <WorkoutStats
+          sport={w.sport}
+          seconds={w.seconds}
+          distance={w.distance}
+          timerOnly={w.source === "timer"}
+          maxSpeed={w.maxSpeedKmh}
+        />
+        {w.workoutType && <Txt>{w.workoutType}</Txt>}
+        {w.effort !== undefined && (
+          <Txt muted>Anstrengelse: {w.effort} av 10 · privat</Txt>
+        )}
       </Card>
 
       {!!w.splits?.length && (
@@ -121,7 +119,7 @@ export default function Activity() {
         <Txt muted size={12}>
           {w.source === "example"
             ? "Dette er en fiktiv økt for å vise produktet."
-            : w.source === "gps"
+            : isRecordedWorkout(w)
               ? "Dette er den private kopien på enheten. Eventuell sikkerhetskopi beholdes ved lokal sletting. Deling trekkes tilbake fra Hjem."
               : "Simuleringen er lagret lokalt. Den teller ikke som et ekte treningsopptak."}
         </Txt>
@@ -129,6 +127,14 @@ export default function Activity() {
       {w.source !== "example" && (
         <>
           <ExportWorkout key={w.id} workout={w} />
+          {isRecordedWorkout(w) && (
+            <Button
+              title="Del økten"
+              icon="share"
+              secondary
+              onPress={() => router.push("/share-workout")}
+            />
+          )}
           {w.source === "gps" && w.sport === "Løping" && (
             <Button
               title={w.turfId ? "Send soneforsøk" : "Legg ut som sone"}
@@ -148,7 +154,7 @@ export default function Activity() {
             title={
               confirm
                 ? "Bekreft sletting"
-                : w.source === "gps"
+                : isRecordedWorkout(w)
                   ? "Slett fra denne enheten"
                   : "Slett simuleringen"
             }

@@ -1,5 +1,70 @@
 # Testing
 
+## Feedkart, kommentarpanel og 200-meterssoner — 28. oktober 2026
+
+- Hele Jest-pakken består: **494 tester i 77 suiter**. Typecheck og lint består. Etter siste justering av kommentarlistens rulleflate består også 10 målrettede UI-tester.
+- Isolert nettlesertest ved 393 × 852 og 320 × 540 viser automatisk kart, skjult systemnavn, eget kommentarpanel, bevart flerliniers utkast etter lukking, sending og lesbar kommentar. Etter sending blir skrivefeltet kompakt igjen. Bekreftet sletting fjernet bare egen syntetisk kommentar. Dette tester responsiv layout; det erstatter ikke en fysisk iOS-tastaturtest. Skjermbilde: `mobile/.expo/comments-panel-verified.png`. Den isolerte testserveren er stoppet.
+- 32 målrettede tester i seks suiter består: automatisk kartinnlasting, feil/nytt forsøk, fotballkart, innlegg uten GPS, skjulte systemnavn, kommentarutkast, sendefeil, dobbeltrykk, kontobytte, sletting av egne kommentarer og sonepublisering.
+- En syntetisk, sammenhengende løpetur på 650 meter får et gyldig soneutsnitt med 200 meter skjerming rundt begge ender. Opplastingen inneholder bare det godkjente utsnittet. Returer gjennom skjermede områder, avbrudd, gamle spor og simuleringer testes fortsatt. Lengde alene garanterer ikke at en virkelig tur har et gyldig utsnitt.
+- 35 PostgreSQL-kontroller av sonefunksjonen består i isolert PGlite. Ingen databaseendring eller testinnlegg/soner i produksjon.
+- Fysisk iPhone-kontroll gjenstår: åpne Kommentarer, skriv flere linjer med tastaturet oppe, send, lukk/åpne og slett egen kommentar. Kontroller også en faktisk kort løpetur i Legg ut sone. Native tastatur og Apple-kart kan ikke ferdigverifiseres på Windows.
+- [Preview 13](https://expo.dev/accounts/xamse10/projects/vyro/builds/0613e411-ae29-47a3-8199-b4c266ef9103), versjon 0.1.0 (13), er **FINISHED** 28. oktober kl. 18:26:21 UTC, med installasjonsfil bekreftet av EAS. Eksisterende iPhone/widget/Watch-signering er brukt. Ingen Git-push utført.
+
+## Øktdeling: 200 meter rundt start og slutt — 28. oktober 2026
+
+- Typecheck og lint består. 33 tester i seks suiter består: route-privacy, cloud-social, football-analysis, football-ui, turf-publishing og route-contribution.
+- Nye regresjonstester kontrollerer en syntetisk 650-meters tur: kartdeling er mulig, ingen delte punkter ligger innen 200 meter fra endepunktene, og full distanse (0,65 km), tid (439 sekunder) og lokal original bevares. Retur inn i skjermede områder og linjer gjennom dem gir brudd. En liten rundtur helt innenfor 200 meter gir fortsatt ingen delbar rute.
+- Eksplisitt deling av hele fotballbanen krever fortsatt nytt samtykke per økt. Rutebibliotekets og sonekonkurransenes separate 500-metersregler består eksisterende tester. Ingen databaseendring eller Git-push er utført.
+- Fysisk iPhone-kontroll gjenstår: åpne Del en økt, velg kort tur, kontroller 200-metersforklaringen og kartet før eventuell publisering. Lengde alene garanterer ikke et synlig segment; rutens geometri avgjør.
+- [Preview 12](https://expo.dev/accounts/xamse10/projects/vyro/builds/cb411020-0ccf-4576-9eb8-dbd00ad2b184), versjon 0.1.0 (12), er **FINISHED** i EAS 28. oktober kl. 17:15:28 UTC. Eksisterende iPhone/widget/Watch-signering er brukt. Den ferdige installasjonslenken er levert; fysisk installasjon og deling med 200-metersskjerming er ikke verifisert her.
+
+## Innleggsvarsler og separate kategorier — 28. oktober 2026
+
+- Typecheck og lint består. Hele Jest-pakken bestod med **477 tester i 74 suiter**. Etter sluttjustering av kommentarinnlasting bestod 20 målrettede tester; fem ekstra tester av selve push-observeren består: riktig kommentarinnlegg, annen mottaker, kontobytte under oppslag, slettet kilde og nettverksfeil med tilbakefall til varsellisten. Totalt 482 tester i 75 suiter er kjørt med bestått resultat, fordelt på full og målrettede kjøringer.
+- Hele `npm run test:database` består: **577 PostgreSQL/RLS-kontroller**, inkludert 68 nye kontroller av kategorivalg, separate kanaler, mottakerisolasjon, egne reaksjoner, repetisjonsgrenser, private kontoer, opphevet følging, slettede kilder, køvalg og autorisert varselmål. Kun isolert PGlite med syntetiske kontoer; ingen testinnlegg i produksjon. Eldre databasefixtures er oppdatert med `auth.sessions` for å kunne teste gjeldende push-triggere.
+- Web-eksport til `.expo/post-notifications-ui-final` består. Isolert UI-test ved 393 og 320 pikslers mobilbredde bekrefter at kommentarvarsel åpner riktig innlegg med synlige kommentarer, nytt-innlegg-varsel åpner kilden, og lest-status oppdateres. Kommentar-push av og nye-innlegg-push på ble lagret uavhengig og beholdt etter omlasting. Ingen tekstoverlapp i kontrollert visning. Lokalt skjermbilde: `mobile/.expo/notice-settings-320.png`.
+- Migrering 004 og varselarbeider er aktivert. Lesende produksjonskontroll bekrefter preferansetabell med RLS, mål-RPC, fire hendelsestriggere og aktiv minuttplan. Ingen ventende jobber ved etterkontroll. Autorisert test via Vault/pg_net ga HTTP 200 med 0 behandlede jobber; ingen testmelding sendt. Ingen eksisterende treningsdata slettet og ingen hemmeligheter lagt i appen.
+- [Preview 11](https://expo.dev/accounts/xamse10/projects/vyro/builds/d1bab756-150f-4de6-96c5-bc0936708e89) er **FINISHED** 28. oktober kl. 16:51:13 UTC, versjon 0.1.0 (11). Den lokale testserveren er stoppet. Ingen Git-push er utført. Fysisk Apple/APNs-levering og navigasjon fra låst/lukket app er **ikke verifisert** her.
+
+Fysisk akseptanse: Installer preview 11 over VYRO, aktiver «Varsler på telefonen» og tillat iOS-varsler. La en annen konto kommentere og like et delt innlegg. Kontroller varselliste, låseskjerm og åpning av kommentarene. Slå «Nye innlegg → På telefonen» på og publiser fra en fulgt konto. Prøv også kategori av, privat konto uten godkjent følger, slettet innlegg og utlogging/kontobytte. Nye varsler kan ta omtrent ett minutt før serverens planlagte levering, i tillegg til APNs/Fokus-forsinkelser.
+
+## Sosiale varsler, private kontoer og avatar — 28. oktober 2026
+
+- Typecheck og lint består. Hele Jest-pakken: **465 tester i 72 suiter** består. Push-testene dekker avvist tillatelse, kontobytte, opt-out under pågående registrering, feil uten falsk suksess, navigasjon bare til egen varselliste, generisk innhold, Expo-billetter/kvitteringer, ugyldige enheter og begrensede retry-forløp.
+- `node scripts/test-social-profiles.cjs`: **35 PostgreSQL/RLS-kontroller** består med alle migreringer. Kontrollerer privat/offentlig posttilgang, følgeforespørsel/godkjenning/avslag, mottakerisolasjon, varselrettigheter, avatar-eierskap/lagring samt push-kø, leasing, opt-out og utløpt Auth-sesjon. Ingen ekte bruker eller økt opprettet.
+- Produksjon: nye migreringer og worker er aktivert. Direkte worker-test ga 401 uten gyldig autorisasjon og 200 / 0 jobber med riktig autorisasjon. Minuttplan er aktiv, profilbildebucket er privat. Hemmeligheten er serverlagret, aldri i appen.
+- Apple Push Key er tilknyttet VYRO i Expo. Dette bekrefter oppsett, ikke at et varsel har nådd fysisk iPhone.
+- Web- og iOS-eksport består. Isolert UI-kontroll ved 320/393 pikslers mobilbredde bekrefter følgeforespørsel → godkjenn, varselliste, privat/offentlig-bryter og profilbilde: velg → last opp → vis → fjern. Både database og bildefiler var lokale testdata. Fysisk fotobeskjæring, tillatelsesdialog, varsler i lukket app og trykk på låseskjermvarsel gjenstår.
+- [Preview 10](https://expo.dev/accounts/xamse10/projects/vyro/builds/fdb03517-de8d-4dde-830e-773c39495c85) er **FINISHED** 28. oktober kl. 15:48:50 UTC, versjon 0.1.0 (10). EAS bekreftet Push Notifications, oppdatert iPhone-provisionering og eksisterende widget/Watch-signering. Ingen Git-push utført.
+
+Fysisk test i nytt bygg: tillat Sosiale varsler, lås telefonen og følg kontoen fra en annen konto. Kontroller både låseskjerm og varselliste; bytt til privat, send og godkjenn en forespørsel. Slå varsler av/på, logg ut/bytt konto og sjekk at andre kontoers varsler ikke åpnes. Velg/fjern profilbilde og kontroller etter omstart. En 650-meters tur uten punkter utenfor skjermingssonene skal fortsatt avvises ved kartdeling og beholdes privat.
+
+## Fotballtall og forkast uten lagring — 28. oktober 2026
+
+Typecheck og lint består. Målrettet Jest-kjøring består med **52 tester i tre suiter** (`workout-summary`, `sports-recording`, `football-analysis`). De fem nye regresjonstestene dekker hele tids-/distanseverdier fra brukerens eksempler (`00:11 / 0,01 km` og `10:47 / 0,32 km`), bekreft/avbryt forkasting i faste handlinger, forkasting når lagring er deaktivert og bevaring av opprinnelige målinger ved privat lagring. Dette er en visningsretting; ingen endring i GPS-beregninger eller lagrede data.
+
+Web-eksport til `.expo/summary-web` består. Isolert lokal test med syntetisk fotballopptak kontrollerte 393 og 320 pikslers bredde: tallene er hele og forklaringen står separat. Forkast → Behold → Forkast → Bekreft gikk tilbake til Tren uten å lagre. Lagret aktivitet viste `10:47` og `0,32` uten loddrett tekst. Testkonto og økter finnes bare i den isolerte testen. Webkartet viste leverandørbegrensning under testen; kartfliser/Apple MapKit ble derfor ikke verifisert av denne UI-kontrollen.
+
+Fysisk retest i nytt iPhone-bygg gjenstår: åpne den eksisterende fotballøkten og kontroller tallene; fullfør et nytt opptak og prøv først Behold, deretter Forkast uten lagring. Prøv også større tekst i iOS. Nøyaktighet for tid, GPS-distanse og maksfart under faktisk aktivitet kan ikke fastslås fra skjermbildene alene.
+
+[Preview 9](https://expo.dev/accounts/xamse10/projects/vyro/builds/426edc63-8a68-4122-9ad8-06a3f48dc3ea) er **FINISHED** 28. oktober kl. 14:26:11 UTC, versjon 0.1.0 (9), med eksisterende signering for iPhone/widget/Watch. Testserveren er stoppet og ingen testdata er sendt til produksjon. Ingen databaseendring eller Git-push er utført.
+
+## Tren, idrettskatalog og øktlagring — 28. oktober 2026
+
+Typecheck og lint består. Hele Jest-pakken består: **447 tester i 69 suiter**. De nye testene dekker alle 36 idretter, valg av GPS/tidtaking, start/pause/lagring, eierskap, kontobytte, treningsmål, privat sikkerhetskopi og den faktiske idrettsvelgeren. Start-komponenten testes med idrettsvalg, Start, rute og innstillingslenke uten de to bryterne.
+
+Databasetestene kjører mot isolert PGlite. 108 nye kontroller dekker de 36 idrettene, privat lagring og publisering av tidtaking uten rute/distanse. Regresjon for generell database, turf, feed/personvern, sikkerhetskopi, klubber/bilder, brukerdelte løyper, profilreparasjon og fotball består. Produksjonsmigrering `202610280001_workout_sports.sql` er kjørt etter brukerens autorisasjon. Lesende etterkontroll bekrefter Yoga/Rulleski, målingskravet og fortsatt aktiv RLS på aktiviteter.
+
+Expo Widgets sin faktiske serialisering er kontrollert i åtte tilstander, inkludert tidtaking og sykkelfart. Native GPS og ActivityKit bruker testadaptere i regresjonstestene; dette erstatter ikke fysisk testing. Web-eksport til `.expo/sports-web` består. Isolert nettlesertest med fiktiv testkonto gjennomførte søk etter Yoga, Start, Pause, Fullfør, økttype, anstrengelse, privat notat og lagring. Aktiviteten beholdt tid og private detaljer etter gjenåpning. Ingen testøkt ble lagt i produksjonsdatabasen. Start og idrettsliste kontrolleres også ved 393 pikslers bredde.
+
+Fysisk akseptanse i nytt iPhone-bygg gjenstår:
+1. Åpne tannhjulet fra Tren og slå på bakgrunnsopptak og låseskjermvisning. Tilbake viser stort kart og Start uten bryterne.
+2. Velg Løping eller Fotball, start med posisjonstillatelse, gå ute og lås skjermen. Kontroller tid/distanse, lås opp igjen og prøv Pause/Fortsett. Gjenta visningsbryter av/på i innstillingene.
+3. Velg Yoga eller Styrketrening. Start uten posisjonsforespørsel, lås skjermen og kontroller løpende tid. Pause skal stoppe tiden; lagringen skal være uten kart/distanse.
+4. Lagre økttype, anstrengelse og et privat notat. Del eventuelt økten uttrykkelig, og kontroller på en annen konto at notat/anstrengelse ikke vises. Apple Watch og basseng-/utendørs bruk er ikke fysisk verifisert her.
+
+[Signert preview 8](https://expo.dev/accounts/xamse10/projects/vyro/builds/f438c71e-8a2b-4e4e-904a-712747a8af3d) er **FINISHED** 28. oktober kl. 12:25:51 UTC, versjon 0.1.0 (8), med iPhone/widget/Watch. En ekstra isolert UI-testkjøring traff standardgrensen på fem sekunder under oppstart; samme tre tester består med 15 sekunders testgrense. Ingen forventninger eller produksjonskode ble svekket. Ingen Git-push er utført.
+
 ## Regresjon: Start med bakgrunnsopptak på — 27. oktober 2026
 
 Typecheck og lint uten cache består. Full Jest-kjøring: **404 tester i 67 suiter bestått**. [Signert preview 7](https://expo.dev/accounts/xamse10/projects/vyro/builds/667d8a24-3308-4843-bf22-ac766f8c328e) er **FINISHED** 27. oktober 2026 kl. 18:10:49 UTC, versjon 0.1.0 (7). Installer over eksisterende VYRO. Fysisk retest er fortsatt ikke utført. Ingen Git-push eller databaseendring er gjort.

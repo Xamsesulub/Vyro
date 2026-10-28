@@ -15,7 +15,8 @@ export default function TrainingGoal() {
       {id && (
         <Page title="Treningsmål" fallback="/profile">
           <PageNote>
-            Velg et mål som passer din uke. Bare dine egne GPS-økter teller.
+            Velg et mål som passer din uke. Bare dine egne registrerte økter
+            teller.
           </PageNote>
           <View style={{ padding: 22 }}>
             <GoalEditor

@@ -1,4 +1,5 @@
-import { sports, type Workout } from "../activities/model";
+import { sports, isRecordedWorkout, type Workout } from "../activities/model";
+import { validWorkoutDetails } from "../activities/sports";
 import { validMaxSpeed } from "../football/speed";
 
 // Explicit portable fields: no social audience, credentials or competition proof.
@@ -18,12 +19,14 @@ export function backupPayload(workout: Workout, owner: string): Workout {
     ...(workout.sport === "Fotball" && workout.maxSpeedKmh !== undefined
       ? { maxSpeedKmh: workout.maxSpeedKmh }
       : {}),
-    source: "gps" as const,
+    ...(workout.workoutType ? { workoutType: workout.workoutType } : {}),
+    ...(workout.effort !== undefined ? { effort: workout.effort } : {}),
+    source: workout.source,
     visibility: "private" as const,
     ownerId: owner,
   };
   if (
-    workout.source !== "gps" ||
+    !isRecordedWorkout(workout) ||
     workout.ownerId !== owner ||
     !validBackup(payload, owner, id)
   )
@@ -43,18 +46,21 @@ export function validBackup(
     w.id === id &&
     /^[a-zA-Z0-9_-]{1,120}$/.test(id) &&
     w.ownerId === owner &&
-    w.source === "gps" &&
+    isRecordedWorkout(w) &&
+    validWorkoutDetails(w) &&
     w.visibility === "private" &&
     sports.includes(w.sport) &&
     (w.maxSpeedKmh === undefined ||
-      (w.sport === "Fotball" && validMaxSpeed(w.maxSpeedKmh))) &&
+      (w.source === "gps" &&
+        w.sport === "Fotball" &&
+        validMaxSpeed(w.maxSpeedKmh))) &&
     typeof w.title === "string" &&
     w.title.trim().length > 0 &&
     w.title.length <= 120 &&
     typeof w.notes === "string" &&
     w.notes.length <= 10000 &&
     Number.isFinite(w.distance) &&
-    w.distance > 0 &&
+    (w.source === "timer" ? w.distance === 0 : w.distance > 0) &&
     w.distance <= 5000 &&
     Number.isFinite(w.seconds) &&
     w.seconds > 0 &&
@@ -62,7 +68,7 @@ export function validBackup(
     typeof w.date === "string" &&
     Number.isFinite(Date.parse(w.date)) &&
     Array.isArray(w.route) &&
-    w.route.length >= 2 &&
+    (w.source === "timer" ? w.route.length === 0 : w.route.length >= 2) &&
     w.route.length <= 20000 &&
     w.route.every(
       (p) =>

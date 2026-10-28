@@ -1,4 +1,4 @@
-import { Sport, Workout, weekWorkouts } from "./model";
+import { Sport, Workout, weekWorkouts, isRecordedWorkout } from "./model";
 
 export type WeeklyGoal = {
   kind: "distance" | "minutes" | "sessions";
@@ -14,7 +14,7 @@ export const goalUnit = (goal: WeeklyGoal) =>
   ({ distance: "km", minutes: "minutter", sessions: "økter" })[goal.kind];
 export function ownTraining(workouts: Workout[], owner?: string) {
   return owner
-    ? workouts.filter((w) => w.source === "gps" && w.ownerId === owner)
+    ? workouts.filter((w) => isRecordedWorkout(w) && w.ownerId === owner)
     : [];
 }
 export function goalProgress(
@@ -43,7 +43,7 @@ export type HistoryFilter = {
   search: string;
   sport: Sport | "Alle";
   period: "all" | "week" | "month";
-  source: "gps" | "simulation" | "example";
+  source: "recorded" | "gps" | "timer" | "simulation" | "example";
 };
 export function filterHistory(
   workouts: Workout[],
@@ -60,8 +60,10 @@ export function filterHistory(
   return workouts
     .filter(
       (w) =>
-        w.source === filter.source &&
-        (w.source !== "gps" || (!!owner && w.ownerId === owner)) &&
+        (filter.source === "recorded"
+          ? isRecordedWorkout(w)
+          : w.source === filter.source) &&
+        (!isRecordedWorkout(w) || (!!owner && w.ownerId === owner)) &&
         (filter.sport === "Alle" || w.sport === filter.sport) &&
         (!query || w.title.toLocaleLowerCase("nb-NO").includes(query)) &&
         (filter.period === "all" ||
@@ -71,10 +73,12 @@ export function filterHistory(
 }
 export function milestones(workouts: Workout[], owner?: string) {
   const real = ownTraining(workouts, owner);
-  const longest = real.reduce<Workout | null>(
-    (best, w) => (!best || w.distance > best.distance ? w : best),
-    null,
-  );
+  const longest = real
+    .filter((w) => w.distance > 0)
+    .reduce<Workout | null>(
+      (best, w) => (!best || w.distance > best.distance ? w : best),
+      null,
+    );
   const weeks = new Map<string, number>();
   for (const w of real) {
     const monday = new Date(w.date);

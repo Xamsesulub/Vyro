@@ -4,7 +4,8 @@ jest.mock("../src/lib/supabase", () => ({
 import { supabase } from "../src/lib/supabase";
 import { publish } from "../src/features/social/api";
 import { Workout } from "../src/features/activities/model";
-import { sharedRoute } from "../src/features/social/routePrivacy";
+import { sharedRoute, WORKOUT_SHARING_RADIUS_METERS } from "../src/features/social/routePrivacy";
+import { metersBetween } from "../src/features/tracking/gps";
 const rpc = supabase!.rpc as jest.Mock;
 const workout: Workout = {
   id: "gps-test",
@@ -40,7 +41,7 @@ test("publishes only explicit workout fields, never private notes or an owner ov
   await expect(publish(workout, "alice")).resolves.toBe("post-id");
   expect(rpc.mock.calls[0][0]).toBe("publish_workout");
   const payload = rpc.mock.calls[0][1];
-  expect(payload.p_route).toEqual(sharedRoute(workout.route));
+  expect(payload.p_route).toEqual(sharedRoute(workout.route, WORKOUT_SHARING_RADIUS_METERS));
   expect(payload.p_distance_km).toBe(2);
   expect(JSON.stringify(payload)).not.toContain("private notes");
   expect(payload).not.toHaveProperty("owner_id");
@@ -48,6 +49,26 @@ test("publishes only explicit workout fields, never private notes or an owner ov
 test("does not report successful publication when the server rejects it", async () => {
   rpc.mockResolvedValue({ data: null, error: new Error("denied") });
   await expect(publish(workout, "alice")).rejects.toThrow("denied");
+});
+
+test("shares a 650 m workout with 200 m endpoint shielding and complete totals", async () => {
+  const route = Array.from({ length: 27 }, (_, index) => ({
+    latitude: 60 + (index * 25) / 111195,
+    longitude: 10,
+  }));
+  const original = JSON.stringify(route);
+  rpc.mockResolvedValue({ data: "short-post", error: null });
+  await expect(publish({ ...workout, distance: 0.65, seconds: 439, route }, "alice")).resolves.toBe("short-post");
+  const payload = rpc.mock.calls[0][1];
+  expect(payload.p_route.length).toBeGreaterThan(1);
+  for (const point of payload.p_route) {
+    expect(metersBetween(route[0], point)).toBeGreaterThan(200);
+    expect(metersBetween(route[26], point)).toBeGreaterThan(200);
+  }
+  expect(payload.p_route.some((point: (typeof route)[number]) => metersBetween(route[0], point) < 500)).toBe(true);
+  expect(payload.p_distance_km).toBe(0.65);
+  expect(payload.p_seconds).toBe(439);
+  expect(JSON.stringify(route)).toBe(original);
 });
 test("football publishes sanitized full pitch only after explicit consent, with optional GPS speed", async () => {
   const ball: Workout = {

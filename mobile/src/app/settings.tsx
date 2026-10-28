@@ -1,3 +1,4 @@
+import { preparePushSignOut } from "../features/social/push";
 import { useRef, useState } from "react";
 import { Pressable, TextInput, View } from "react-native";
 import { router } from "expo-router";
@@ -39,7 +40,7 @@ export default function Settings() {
             backgroundColor: c.surface,
           }}
         >
-          <Avatar name={name} size={60} />
+          <Avatar name={name} path={profile?.avatar_path} size={60} />
           <View style={{ flex: 1, gap: 5 }}>
             <Txt size={20} weight="700">
               {name}
@@ -61,6 +62,7 @@ export default function Settings() {
         </SettingsGroup>
       )}
       <SettingsGroup title="Konto">
+        <SettingsRow title="Sosiale varsler" description="Nye følgere og følgeforespørsler" icon="bell" onPress={()=>router.push("/settings/notifications")}/>
         <SettingsRow
           title={session ? "Konto og sikkerhet" : "Innlogging"}
           description={session?.user.email}
@@ -181,6 +183,7 @@ export default function Settings() {
               setBusy(true);
               setError("");
               try {
+                await preparePushSignOut(session.user.id);
                 const { error: failure } = await supabase.auth.signOut({
                   scope: "local",
                 });

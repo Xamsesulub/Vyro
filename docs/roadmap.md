@@ -1,5 +1,55 @@
 # Leveranseplan
 
+## Feedkart, kommentarpanel og soner — 28. oktober 2026
+
+GPS-innlegg viser nå sitt autoriserte, allerede skjermede rutekart direkte. Kartfeil kan prøves på nytt; tidtakingsøkter uten GPS får ikke et kart. Automatiske `runner_<32 hex>`-brukernavn skjules i innlegg, personsøk, følgerlister og følgeforespørsler. Valgte brukernavn, søk og profillenker beholdes.
+
+Kommentarer åpner et eget panel over strømmen. Listen kan rulles, mens et flerliniers skrivefelt og sendeknapp følger tastaturet. Utkast beholdes ved lukking/gjenåpning av samme innlegg og ved sendefeil. Dobbeltrykk blokkeres mens sending pågår. Egne kommentarer kan slettes med bekreftelse; andres kommentarer har ingen sletteknapp.
+
+Soneforsøk bruker nå samme 200-metersskjerming som øktinnlegg. Kravet om minst 200 meter synlig, sammenhengende GPS-løype og serverens øvrige konkurranseregler beholdes. Ingen endring av eksisterende soner eller private originaler. Rutebiblioteket beholder sin separate skjerming. Se [teststatus](testing.md).
+
+[Preview 13](https://expo.dev/accounts/xamse10/projects/vyro/builds/0613e411-ae29-47a3-8199-b4c266ef9103), versjon 0.1.0 (13), er **FINISHED** i EAS 28. oktober kl. 18:26:21 UTC med installasjonsfil. Typecheck, lint, 494 Jest-tester, 35 isolerte sonekontroller og lokal visuell kontroll består; 10 berørte UI-tester er kjørt igjen etter siste justering. Fysisk iPhone-kontroll av tastaturet og Apple-kart gjenstår. Ingen Git-push utført.
+
+## Kartdeling med 200 meter skjerming — 28. oktober 2026
+
+Nye delinger og ny deling av eksisterende treningsinnlegg skjuler nå punkter innen 200 meter fra øktens start og slutt. Forhåndsvisning, publisering og personverntekst bruker samme verdi. Senere passeringer gjennom områdene skjules også, uten linjer gjennom skjulte områder. Full tid og distanse beholdes. En kort tur kan deles når minst ett synlig segment gjenstår; en tur helt innenfor områdene har fortsatt ingen delbar rute. Eksisterende innlegg endres først ved uttrykkelig ny deling. Egne bidrag til rutebibliotek og sonekonkurranser beholder sine separate regler på 500 meter.
+
+Typecheck, lint og 33 relevante tester består. [Preview 12](https://expo.dev/accounts/xamse10/projects/vyro/builds/cb411020-0ccf-4576-9eb8-dbd00ad2b184), versjon 0.1.0 (12), er ferdig signert i EAS 28. oktober kl. 17:15:28 UTC. Fysisk kontroll på iPhone gjenstår. Ingen Git-push utført. Se [teststatus](testing.md).
+
+## Kommentarer, likerklikk og nye innlegg — 28. oktober 2026
+
+Varsellisten inkluderer kommentarer og likerklikk på egne innlegg, samt nye innlegg fra godkjente personer man følger. Trykk åpner riktig innlegg; kommentarvarsler åpner også kommentarene. Nye publiserte treningsøkter og stedsbilder kan varsle følgere. Privat lagring og oppdatering av et allerede delt innlegg sender ikke nye publiseringsvarsler. Reaksjoner på egne innlegg varsler ikke en selv.
+
+Sosiale varsler har separate valg for appen og telefonen under Følgere, Kommentarer, Likerklikk og Nye innlegg. Telefonvarsler om nye innlegg er av som standard; øvrige kategorier krever fortsatt at telefonvarsling er aktivert og tillatt på enheten. Valgene følger kontoen. Lesing, sletting, opphevet følging og utmelding kontrolleres før usendte varsler leveres, og målinnlegget tilgangskontrolleres igjen ved åpning. Kommentarer fra samme person på samme innlegg samles med fem minutters avstand; likerklikk har 24 timers sperre mot gjentatte varsler.
+
+Migrering `202610280004_post_notifications.sql` og oppdatert varselarbeider er aktivert og kontrollert i Supabase. Ingen eksisterende treningsdata er slettet. [Preview 11](https://expo.dev/accounts/xamse10/projects/vyro/builds/d1bab756-150f-4de6-96c5-bc0936708e89) er ferdig signert 28. oktober kl. 16:51:13 UTC, versjon 0.1.0 (11), med eksisterende iPhone/widget/Watch-signering. Fysisk levering og åpning fra låseskjerm må fortsatt testes. Ingen Git-push utført. Se [teststatus](testing.md).
+
+## Følgervarsler, privat konto og profilbilder — 28. oktober 2026
+
+Hjem har en varselliste med ulest-teller, nye følgere og følgeforespørsler. Private kontoer krever godkjenning; valget ligger i Personvern og deling. Godkjente følgere beholdes når kontoen blir privat og kan fjernes fra følgerlisten. Synlighet håndheves på serveren for innlegg og bilder. Navn, brukernavn og profilbilde er fortsatt søkbare; tidligere uttrykkelige bidrag til ruteforslag/soner er ikke trukket tilbake av profilvalget.
+
+Rediger profil støtter valg, beskjæring og fjerning av profilbilde. Bildet lagres som en liten JPEG uten metadata i privat lagring, og vises via kortvarige lenker. Bilder kan ikke overskrives eller kobles til en annen konto.
+
+Telefonvarsler er valgfrie i Sosiale varsler. Supabase-kø og en planlagt worker sender via Expo med kvitteringer, begrensede forsøk, kontobytte-/utloggingsvern og generiske meldinger uten posisjon. Migreringene `202610280002_social_profiles.sql` og `202610280003_follower_push.sql`, worker og minuttplan er aktivert. Apple-varslingen er konfigurert i Expo; fysisk levering krever den nye installerte iPhone-versjonen og må fortsatt verifiseres.
+
+En kort GPS-tur kan fortsatt være for kort til kartdeling når 500 meter rundt start og slutt skjules. Forklaringen er tydeligere; privat lagring og beskyttelsen beholdes. [Preview 10](https://expo.dev/accounts/xamse10/projects/vyro/builds/fdb03517-de8d-4dde-830e-773c39495c85) er ferdig signert 28. oktober kl. 15:48:50 UTC, versjon 0.1.0 (10), med Push Notifications aktivert og oppdatert iPhone-profil. Ingen Git-push utført. Se [teststatus](testing.md).
+
+## Lesbare økttall og tydelig forkasting — 28. oktober 2026
+
+Fotballforklaringen om maksfart tok tidligere plassen fra tid og distanse i oppsummering og lagret aktivitet. Målingene har nå egne kolonner med minste bredde; en hel måling kan flyttes til neste rad på smale skjermer, mens tallene blir på én linje. Forklaringen står under målingene. Registrerte verdier og beregningene er ikke endret.
+
+«Forkast økten» er fast synlig sammen med «Lagre økten» og krever bekreftelse. Også en økt uten nok GPS-data til lagring kan forkastes direkte; ingen mellomlagring er nødvendig. [Signert preview 9](https://expo.dev/accounts/xamse10/projects/vyro/builds/426edc63-8a68-4122-9ad8-06a3f48dc3ea) er ferdig 28. oktober kl. 14:26:11 UTC, versjon 0.1.0 (9). Se [teststatus](testing.md); fysisk retest gjenstår. Ingen databaseendring eller Git-push er gjort.
+
+## Ny Tren-skjerm og 36 idretter — 28. oktober 2026
+
+Tren åpner med stort kart, målinger og en fast rad for idrett, Start og rute. Aktiv økt beholder fremtredende Pause. Bryterne for bakgrunnsopptak og låseskjermvisning finnes nå bare i Varsler og opptak, tilgjengelig fra tannhjulet. Eksisterende valg og tillatelsesvern er bevart.
+
+Idrettsvalget er søkbart og gruppert, med 36 idretter. Profilen kan velge flere eller alle; én økt har én idrett. Utendørsidretter registrerer GPS og tid. Innendørsidretter som Yoga, Styrketrening og Spinning registrerer aktiv tid uten GPS, kart eller oppdiktet distanse. Treningslogg, mål, privat sikkerhetskopi og uttrykkelig deling støtter begge opptakstypene. Tidtaking kan ikke gi løypebidrag eller vinne soner. Watch beholder sine fem støttede idretter; telefonens utvidede katalog er ikke Watch-paritet.
+
+Lagre aktivitet har navn, økttype, valgfri anstrengelse og private notater. Lagring er privat som standard, og notater/anstrengelse sendes aldri til den sosiale strømmen. Migrering `202610280001_workout_sports.sql` er aktivert i Supabase og etterkontrollert; tilgangsreglene er fortsatt aktive. Ingen eksisterende økter er slettet. Se [verifikasjon og fysisk test](testing.md).
+
+[Preview 8](https://expo.dev/accounts/xamse10/projects/vyro/builds/f438c71e-8a2b-4e4e-904a-712747a8af3d) er ferdig signert 28. oktober kl. 12:25:51 UTC, versjon 0.1.0 (8), for iPhone, widget og Watch. Installer over eksisterende VYRO. Fysisk akseptanse gjenstår. Ingen Git-push er utført for denne leveransen.
+
 ## Start med låst skjerm — 27. oktober 2026
 
 Rettet et feilaktig krav om «Alltid» på iPhone. En økt startet mens appen er åpen bruker nå iOS-støtten for kontinuerlige posisjonsoppdateringer med «Når appen er i bruk», bakgrunnsmodus og synlig posisjonsindikator. Kontroll etter gjenåpning bruker samme tillatelse, slik at en fungerende økt ikke pauses feilaktig. Android beholder sitt separate krav om bakgrunnstillatelse.

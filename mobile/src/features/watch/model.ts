@@ -1,4 +1,4 @@
-import { sports, type Sport, type Workout } from "../activities/model";
+import { type Sport, type Workout } from "../activities/model";
 import { footballMaxSpeed } from "../football/speed";
 import {
   MAX_ACCURACY_M,
@@ -30,7 +30,9 @@ export function watchWorkout(
     !uuid.test(w.id) ||
     w.ownerId !== owner ||
     !uuid.test(owner) ||
-    !sports.includes(w.sport as Sport) ||
+    !["Løping", "Gange", "Sykling", "Fottur", "Fotball"].includes(
+      w.sport as string,
+    ) ||
     typeof w.startedAt !== "number" ||
     !Number.isFinite(w.startedAt) ||
     typeof w.endedAt !== "number" ||

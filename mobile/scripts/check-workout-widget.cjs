@@ -67,12 +67,16 @@ for (const variant of [
   "dark",
   "dimmed",
   "no-map",
+  "timer",
+  "cycling",
 ]) {
   const rendered = context.__expoWidgetRender(
     {
       ...props,
       paused: variant === "paused",
-      mapUri: variant === "no-map" ? null : props.mapUri,
+      timerOnly: variant === "timer",
+      paceLabel: variant === "cycling" ? "Snitt km/t" : undefined,
+      mapUri: ["no-map", "timer"].includes(variant) ? null : props.mapUri,
     },
     {
       colorScheme: variant === "dark" ? "dark" : "light",
@@ -84,12 +88,23 @@ for (const variant of [
   assert.ok(rendered.compactLeading);
   assert.ok(rendered.compactTrailing);
   const tree = JSON.stringify(rendered);
-  assert.ok(tree.includes("Snitt /km"));
-  assert.equal(tree.includes("file:///shared/map.png"), variant !== "no-map");
+  assert.equal(
+    tree.includes("Snitt /km"),
+    !["timer", "cycling"].includes(variant),
+  );
+  if (variant === "timer") {
+    assert.ok(!tree.includes("Distanse"));
+    assert.ok(JSON.stringify(rendered.compactTrailing).includes("timer"));
+  }
+  if (variant === "cycling") assert.ok(tree.includes("Snitt km/t"));
+  assert.equal(
+    tree.includes("file:///shared/map.png"),
+    !["no-map", "timer"].includes(variant),
+  );
   if (variant === "paused") assert.ok(tree.includes("Pauset"));
   if (variant === "stale") assert.ok(tree.includes("Åpne økten"));
   assert.ok(!tree.includes("View not found"));
 }
 console.log(
-  "Workout widget: 6 states serialized and rendered in the Expo widget runtime.",
+  "Workout widget: 8 states serialized and rendered in the Expo widget runtime.",
 );

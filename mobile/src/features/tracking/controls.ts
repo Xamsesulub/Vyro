@@ -17,7 +17,7 @@ export async function beginRecording(event: "start" | "resume") {
   const owner = useAuthStore.getState().session?.user.id;
   if (
     before.status !== (event === "start" ? "idle" : "paused") ||
-    (before.mode === "gps" &&
+    (before.mode !== "simulation" &&
       (!owner || (before.ownerId && before.ownerId !== owner)))
   )
     return;

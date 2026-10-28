@@ -46,7 +46,7 @@ function ClubDetail({ id, userId }: { id: string; userId: string }) {
               .single(),
             client()
               .from("club_members")
-              .select("user_id,profiles(id,username,display_name)")
+              .select("user_id,profiles(id,username,display_name,is_private,avatar_path)")
               .eq("club_id", id)
               .order("joined_at")
               .limit(200)
@@ -174,7 +174,7 @@ function ClubDetail({ id, userId }: { id: string; userId: string }) {
           )}
           {members.map((member) => (
             <View key={member.user_id} style={[styles.row, { gap: 12 }]}>
-              <Avatar name={member.profiles.display_name} />
+              <Avatar name={member.profiles.display_name} path={member.profiles.avatar_path} />
               <View style={{ flex: 1 }}>
                 <Txt weight="700">{member.profiles.display_name}</Txt>
                 <Txt muted size={12}>

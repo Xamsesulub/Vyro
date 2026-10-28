@@ -13,7 +13,8 @@ async function main() {
     c = "33333333-3333-4333-8333-333333333333";
   await db.exec(`create role anon; create role authenticated; create role service_role; create schema auth;
  create table auth.users(id uuid primary key,raw_user_meta_data jsonb default '{}');
- create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
+ create table auth.sessions(id uuid primary key,user_id uuid references auth.users);
+create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
  grant usage on schema auth,public to anon,authenticated;
  insert into auth.users values('${a}','{"display_name":"Alex (test)"}'),('${b}','{"display_name":"Mina (test)"}'),('${c}','{"display_name":"Noah (test)"}');
  create schema storage; create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);
@@ -47,6 +48,57 @@ async function main() {
     "insert into follows(follower_id,following_id) values($1,$2)",
     [a, b],
   );
+  await db.query("update profiles set is_private=true where id=$1", [a]);
+  await as(b);
+  await db.query("select vyro_follow($1)", [a]);
+  if (
+    ["post-notifications", "feed-comments"].includes(
+      process.env.VYRO_UI_SCENARIO,
+    )
+  ) {
+    await as(a);
+    await db.query("select vyro_respond_follow($1,true)", [b]);
+    const own = (
+      await db.query(
+        "select publish_workout('notice-own','Yoga etter jobb','Yoga',0,900,now(),'timer','[]','followers') id",
+      )
+    ).rows[0].id;
+    await as(b);
+    await db.query("insert into likes(user_id,post_id) values($1,$2)", [
+      b,
+      own,
+    ]);
+    await db.query(
+      "insert into comments(author_id,post_id,body) values($1,$2,'Fin økt! Dette er bare en lokal test.')",
+      [b, own],
+    );
+    await db.query(
+      "select publish_workout('notice-other','En rolig yogaøkt','Yoga',0,1200,now(),'timer','[]','followers')",
+    );
+    if (process.env.VYRO_UI_SCENARIO === "feed-comments") {
+      // Synthetic already-shielded route, only in disposable PostgreSQL.
+      await db.query(
+        "update posts set title='Tur i parken · lokal test',sport='Løping',distance_km=0.65,seconds=439,route=$1::jsonb where author_id=$2",
+        [
+          JSON.stringify([
+            { latitude: 59.924, longitude: 10.722 },
+            { latitude: 59.925, longitude: 10.7225 },
+            { latitude: 59.926, longitude: 10.723 },
+          ]),
+          b,
+        ],
+      );
+      await db.query(
+        "update profiles set username='runner_e85ffea8a1e7416c834b2c79e9d65617' where id=$1",
+        [b],
+      );
+      await db.query(
+        "insert into comments(author_id,post_id,body) select $1,id,'Fint sted for en tur! Lokal test.' from posts where author_id=$1",
+        [b],
+      );
+    }
+  }
+  await as(a);
   await db.exec("set role authenticated");
   let current = a;
   const users = {
@@ -69,8 +121,57 @@ async function main() {
       created_at: new Date().toISOString(),
     },
   });
-  const script = `<script>if(!sessionStorage.getItem('social-fixture')){localStorage.clear();localStorage.setItem('sb-diviitenhbidwrcpmkxr-auth-token',${JSON.stringify(JSON.stringify(session(a)))});localStorage.setItem('vyro-prototype-v1',${JSON.stringify(JSON.stringify({ version: 2, state: { onboarded: true, name: "Alex (test)", examplesVisible: false, theme: "light", workouts: [] } }))});sessionStorage.setItem('social-fixture','yes');}const originalFetch=window.fetch.bind(window);window.fetch=(input,init)=>{const url=typeof input==='string'?input:input.url||String(input);if(url.includes('.supabase.co/')){const u=new URL(url);return originalFetch('/fixture-api'+u.pathname+u.search,init);}return originalFetch(input,init);};document.addEventListener('DOMContentLoaded',()=>{const b=document.createElement('div');b.textContent='LOKAL TEST · INGEN EKTE BRUKERE';b.style='position:fixed;bottom:0;right:0;background:#11182C;color:white;z-index:99999;font:8px sans-serif;padding:2px;pointer-events:none';document.body.appendChild(b);});</script>`;
-  const root = path.resolve(__dirname, "../dist");
+  const footballPreview = process.env.VYRO_UI_SCENARIO === "football-summary";
+  const sampleRoute = [
+    { latitude: 59.914, longitude: 10.75 },
+    { latitude: 59.916, longitude: 10.751 },
+  ];
+  const fixtureState = {
+    version: 2,
+    state: {
+      onboarded: true,
+      name: "Alex (test)",
+      examplesVisible: false,
+      theme: "light",
+      workouts: footballPreview
+        ? [
+            {
+              id: "local-football",
+              ownerId: a,
+              source: "gps",
+              sport: "Fotball",
+              title: "Fotball · kun lokal visningstest",
+              seconds: 647,
+              distance: 0.32,
+              route: sampleRoute,
+              notes: "",
+              visibility: "private",
+              date: "2026-10-28T12:00:00Z",
+            },
+          ]
+        : [],
+      ...(footballPreview
+        ? {
+            recording: {
+              status: "finishing",
+              sport: "Fotball",
+              mode: "gps",
+              seconds: 11,
+              distance: 0.01,
+              startedAt: null,
+              lastFix: null,
+              route: [sampleRoute],
+              ownerId: a,
+            },
+          }
+        : {}),
+    },
+  };
+  const fixtureMarker = footballPreview
+    ? "football-summary-fixture"
+    : "social-fixture-v2";
+  const script = `<script>if(!sessionStorage.getItem(${JSON.stringify(fixtureMarker)})){localStorage.clear();localStorage.setItem('sb-diviitenhbidwrcpmkxr-auth-token',${JSON.stringify(JSON.stringify(session(a)))});localStorage.setItem('sb-127-auth-token',localStorage.getItem('sb-diviitenhbidwrcpmkxr-auth-token'));localStorage.setItem('vyro-prototype-v1',${JSON.stringify(JSON.stringify(fixtureState))});sessionStorage.setItem(${JSON.stringify(fixtureMarker)},'yes');}const originalFetch=window.fetch.bind(window);window.fetch=(input,init)=>{const url=typeof input==='string'?input:input.url||String(input);if(url.includes('.supabase.co/')){const u=new URL(url);return originalFetch('/fixture-api'+u.pathname+u.search,init);}return originalFetch(input,init);};document.addEventListener('DOMContentLoaded',()=>{const b=document.createElement('div');b.textContent='LOKAL TEST · INGEN EKTE BRUKERE';b.style='position:fixed;bottom:0;right:0;background:#11182C;color:white;z-index:99999;font:8px sans-serif;padding:2px;pointer-events:none';document.body.appendChild(b);});</script>`;
+  const root = path.resolve(__dirname, process.env.VYRO_UI_ROOT || "../dist");
   const images = new Map();
   let queue = Promise.resolve();
   const server = http.createServer((req, res) => {
@@ -79,7 +180,17 @@ async function main() {
         const url = new URL(req.url, "http://127.0.0.1:8103");
         try {
           res.setHeader("Cache-Control", "no-store");
-          if (url.pathname.startsWith("/fixture-api")) {
+          if (url.pathname === "/fixture-worker.js") {
+            res.setHeader("Content-Type", "application/javascript");
+            res.end(
+              `self.addEventListener('install',()=>self.skipWaiting());self.addEventListener('activate',event=>event.waitUntil(self.clients.claim()));self.addEventListener('fetch',event=>{const u=new URL(event.request.url);if(u.hostname.endsWith('.supabase.co'))event.respondWith(fetch('/fixture-api'+u.pathname+u.search));});`,
+            );
+            return;
+          }
+          if (
+            url.pathname.startsWith("/fixture-api") ||
+            /^\/(auth|rest|storage)\/v1\//.test(url.pathname)
+          ) {
             res.setHeader("Content-Type", "application/json");
             const ep = url.pathname.replace("/fixture-api", "");
             const chunks = [];
@@ -103,9 +214,15 @@ async function main() {
               url.searchParams.get(field)?.replace(/^eq\./, "");
             if (ep === "/auth/v1/user") result = session(current).user;
             else if (ep === "/rest/v1/profiles") {
+              if (req.method === "PATCH") {
+                if (typeof body.is_private === "boolean")
+                  await db.query(
+                    "update profiles set is_private=$1 where id=$2",
+                    [body.is_private, filter("id")],
+                  );
+              }
               result = await rows(
-                "select id,display_name,username from profiles where id<>$1 order by display_name",
-                [current],
+                "select * from profiles order by display_name",
               );
               const term = url.searchParams
                 .get("or")
@@ -116,6 +233,85 @@ async function main() {
                     .toLowerCase()
                     .includes(term.toLowerCase()),
                 );
+              if (filter("id")?.startsWith("neq."))
+                result = result.filter((p) => p.id !== current);
+              if (url.searchParams.get("id")?.startsWith("eq."))
+                result = result.filter((p) => p.id === filter("id"));
+              if (req.headers.accept?.includes("vnd.pgrst.object"))
+                result = result[0] ?? null;
+            } else if (ep === "/rest/v1/follow_requests") {
+              result = await rows(
+                "select r.*,to_jsonb(p) profiles from follow_requests r join profiles p on p.id=r.requester_id",
+              );
+              if (
+                filter("recipient_id") &&
+                !filter("recipient_id").startsWith("in.")
+              )
+                result = result.filter(
+                  (r) => r.recipient_id === filter("recipient_id"),
+                );
+              if (filter("requester_id"))
+                result = result.filter(
+                  (r) => r.requester_id === filter("requester_id"),
+                );
+            } else if (ep === "/rest/v1/notification_preferences") {
+              if (req.method === "POST")
+                await db.query(
+                  `insert into notification_preferences(owner_id,category,in_app,push) values($1,$2,$3,$4)
+                on conflict(owner_id,category) do update set in_app=excluded.in_app,push=excluded.push`,
+                  [body.owner_id, body.category, body.in_app, body.push],
+                );
+              result = await rows("select * from notification_preferences");
+            } else if (ep === "/rest/v1/posts") {
+              result = await rows(
+                "select n.*,to_jsonb(p) profiles from posts n join profiles p on p.id=n.author_id where n.id=$1",
+                [filter("id")],
+              );
+              if (req.headers.accept?.includes("vnd.pgrst.object"))
+                result = result[0] ?? null;
+            } else if (ep === "/rest/v1/comments") {
+              if (req.method === "POST")
+                await db.query(
+                  "insert into comments(author_id,post_id,body) values($1,$2,$3)",
+                  [body.author_id, body.post_id, body.body],
+                );
+              if (req.method === "DELETE")
+                await db.query(
+                  "delete from comments where id=$1 and post_id=$2 and author_id=$3",
+                  [filter("id"), filter("post_id"), filter("author_id")],
+                );
+              result = await rows(
+                "select n.*,to_jsonb(p) profiles from comments n join profiles p on p.id=n.author_id where n.post_id=$1 order by n.created_at desc",
+                [filter("post_id")],
+              );
+            } else if (["/rest/v1/likes", "/rest/v1/reposts"].includes(ep)) {
+              const table = ep.endsWith("/likes") ? "likes" : "reposts";
+              result = await rows(`select * from ${table} where post_id=$1`, [
+                filter("post_id"),
+              ]);
+              if (filter("user_id"))
+                result = result.filter((r) => r.user_id === filter("user_id"));
+              res.setHeader(
+                "Content-Range",
+                `0-${Math.max(0, result.length - 1)}/${result.length}`,
+              );
+            } else if (ep === "/rest/v1/social_notifications") {
+              if (req.method === "PATCH")
+                await db.query(
+                  "update social_notifications set read_at=now() where recipient_id=$1",
+                  [current],
+                );
+              result = await rows(
+                "select n.*,to_jsonb(p) profiles from social_notifications n join profiles p on p.id=n.actor_id order by n.created_at desc,n.id desc",
+              );
+              if (req.method === "HEAD") {
+                res.setHeader(
+                  "Content-Range",
+                  `0-0/${result.filter((n) => !n.read_at).length}`,
+                );
+                res.end();
+                return;
+              }
             } else if (ep === "/rest/v1/clubs") {
               result = await rows(
                 "select c.*,jsonb_build_array(jsonb_build_object('count',(select count(*) from club_members m where m.club_id=c.id))) club_members from clubs c order by created_at desc",
@@ -163,6 +359,10 @@ async function main() {
             else if (ep.startsWith("/rest/v1/rpc/")) {
               const name = ep.split("/").at(-1);
               const rpc = {
+                vyro_follow: ["p_target", "p_follow"],
+                vyro_respond_follow: ["p_requester", "p_accept"],
+                vyro_set_avatar: ["p_path"],
+                vyro_notification_target: ["p_notice"],
                 create_club: ["p_name", "p_description", "p_visibility"],
                 join_open_club: ["p_club"],
                 set_club_visibility: ["p_club", "p_visibility"],
@@ -195,29 +395,50 @@ async function main() {
               const keys = rpc[name].filter((k) => Object.hasOwn(body, k));
               const args = keys.map((k) => body[k]);
               const q = `${name}(${keys.map((k, i) => `${k}=>$${i + 1}`).join(",")})`;
-              result = name.startsWith("vyro_")
-                ? await rows(`select * from ${q}`, args)
-                : (await rows(`select ${q} result`, args))[0].result;
+              result =
+                name.startsWith("vyro_") &&
+                ![
+                  "vyro_follow",
+                  "vyro_respond_follow",
+                  "vyro_set_avatar",
+                  "vyro_notification_target",
+                ].includes(name)
+                  ? await rows(`select * from ${q}`, args)
+                  : (await rows(`select ${q} result`, args))[0].result;
             } else if (ep.startsWith("/storage/v1/object")) {
-              const prefix = "/storage/v1/object/place-photos/";
-              const readprefix =
-                "/storage/v1/object/authenticated/place-photos/";
+              const bucket = ep.includes("/profile-photos")
+                ? "profile-photos"
+                : "place-photos";
+              const prefix = `/storage/v1/object/${bucket}/`;
+              const readprefix = `/storage/v1/object/authenticated/${bucket}/`;
+              const signprefix = `/storage/v1/object/sign/${bucket}/`;
               const name = decodeURIComponent(
                 ep.startsWith(readprefix)
                   ? ep.slice(readprefix.length)
-                  : ep.slice(prefix.length),
+                  : ep.startsWith(signprefix)
+                    ? ep.slice(signprefix.length)
+                    : ep.slice(prefix.length),
               );
-              if (req.method === "POST" && ep.startsWith(prefix)) {
+              if (req.method === "POST" && ep.startsWith(signprefix)) {
+                const allowed = await rows(
+                  "select name from storage.objects where bucket_id=$1 and name=$2",
+                  [bucket, name],
+                );
+                if (!allowed.length) throw Error("Photo access denied");
+                result = {
+                  signedURL: `/object/authenticated/${bucket}/${name}`,
+                };
+              } else if (req.method === "POST" && ep.startsWith(prefix)) {
                 await db.query(
-                  "insert into storage.objects(bucket_id,name) values('place-photos',$1)",
-                  [name],
+                  "insert into storage.objects(bucket_id,name) values($1,$2)",
+                  [bucket, name],
                 );
                 images.set(name, { bytes, mime: req.headers["content-type"] });
-                result = { Key: "place-photos/" + name };
+                result = { Key: bucket + "/" + name };
               } else if (req.method === "GET") {
                 const allowed = await rows(
-                  "select name from storage.objects where bucket_id='place-photos' and name=$1",
-                  [name],
+                  "select name from storage.objects where bucket_id=$1 and name=$2",
+                  [bucket, name],
                 );
                 if (!allowed.length) throw Error("Photo access denied");
                 const img = images.get(name);
@@ -246,6 +467,31 @@ async function main() {
             res.end(JSON.stringify(result));
             return;
           }
+          if (url.pathname === "/__phone") {
+            const phoneWidth = [320, 375, 393].includes(
+              Number(url.searchParams.get("width")),
+            )
+              ? Number(url.searchParams.get("width"))
+              : 393;
+            const phoneScreen = footballPreview
+              ? url.searchParams.get("screen") === "activity"
+                ? "/activity/local-football"
+                : "/summary"
+              : [
+                    "/notifications",
+                    "/settings/notifications",
+                    "/settings/privacy",
+                    "/edit-profile",
+                    "/people",
+                  ].includes(url.searchParams.get("screen"))
+                ? url.searchParams.get("screen")
+                : "/track";
+            res.setHeader("Content-Type", "text/html; charset=utf-8");
+            res.end(
+              `<!doctype html><html lang="nb"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VYRO · mobilkontroll</title><style>body{margin:0;background:#e8ebe7;display:grid;place-items:center;min-height:100vh}iframe{width:${phoneWidth}px;height:min(852px,100vh);border:0;background:white;max-width:100vw}</style><iframe title="VYRO i mobilstørrelse" src="${phoneScreen}"></iframe></html>`,
+            );
+            return;
+          }
           let file = path.resolve(root, "." + decodeURIComponent(url.pathname));
           if (
             !file.startsWith(root + path.sep) ||
@@ -268,7 +514,12 @@ async function main() {
             ext === ".html"
               ? fs
                   .readFileSync(file, "utf8")
-                  .replace("<head>", "<head>" + script)
+                  .replace(
+                    "<head>",
+                    "<head>" +
+                      script +
+                      `<script>navigator.serviceWorker?.register('/fixture-worker.js').catch(()=>{});</script>`,
+                  )
               : fs.readFileSync(file),
           );
         } catch (e) {

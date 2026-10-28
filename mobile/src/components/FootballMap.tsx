@@ -4,27 +4,7 @@ import LiveMap from "./LiveMap";
 import { Txt, useTheme } from "./ui";
 import { routeSegments, type RoutePoint } from "../features/tracking/gps";
 import { footballHeatmap } from "../features/football/heatmap";
-import { validMaxSpeed } from "../features/football/speed";
-
-export function FootballSpeed({ value }: { value?: number | null }) {
-  return (
-    <View style={{ gap: 4 }}>
-      <Txt weight="700" size={24}>
-        {validMaxSpeed(value)
-          ? `${value.toLocaleString("nb-NO", { maximumFractionDigits: 1 })} km/t`
-          : "—"}
-      </Txt>
-      <Txt muted size={12}>
-        Maksfart · GPS over 5 sekunder
-      </Txt>
-      {!validMaxSpeed(value) && (
-        <Txt muted size={12}>
-          Ikke nok nøyaktige målinger i denne økten.
-        </Txt>
-      )}
-    </View>
-  );
-}
+export { FootballSpeed } from "./FootballSpeed";
 
 export default function FootballMap({
   points,

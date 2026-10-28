@@ -1,4 +1,6 @@
-import { TextInput, TextInputProps, Pressable, View } from "react-native";
+import { TextInput, TextInputProps, Pressable, View, Image } from "react-native";
+import { useAvatar } from "../features/social/avatar";
+import { useState } from "react";
 import { router } from "expo-router";
 import { Icon, IconName, Txt, styles, useTheme } from "./ui";
 
@@ -98,14 +100,18 @@ export function Field(props: TextInputProps) {
 }
 export function Avatar({
   name,
+  path,
   club = false,
   size = 46,
 }: {
   name: string;
+  path?: string | null;
   club?: boolean;
   size?: number;
 }) {
   const c = useTheme();
+  const uri = useAvatar(path);
+  const [failedUri,setFailedUri]=useState<string|null>(null);
   return (
     <View
       style={{
@@ -117,7 +123,7 @@ export function Avatar({
         justifyContent: "center",
       }}
     >
-      {club ? (
+      {uri && uri!==failedUri && !club ? <Image source={{uri}} onError={()=>setFailedUri(uri)} accessibilityLabel={`Profilbilde: ${name}`} style={{width:size,height:size,borderRadius:size/2}}/> : club ? (
         <Icon name="club" color={c.accent} />
       ) : (
         <Txt size={size * 0.43} weight="700">

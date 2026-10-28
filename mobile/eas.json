@@ -2,7 +2,7 @@
   "cli": {
     "version": ">= 25.3.0",
     "appVersionSource": "remote",
-    "promptToConfigurePushNotifications": false
+    "promptToConfigurePushNotifications": true
   },
   "build": {
     "production": {

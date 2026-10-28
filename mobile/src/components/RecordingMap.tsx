@@ -13,6 +13,7 @@ import { Button, Icon, IconName, Txt } from "./ui";
 import { Recording, demoRoute } from "../features/tracking/simulator";
 import { GpsFix } from "../features/tracking/gps";
 import { duration, km, pace } from "../features/activities/model";
+import { sportInfo } from "../features/activities/sports";
 import { MapKind } from "../features/maps/config";
 
 import { useTrackingStatus } from "../stores/useTrackingStatus";
@@ -26,6 +27,8 @@ export default function RecordingMap({
   pause,
   resume,
   finish,
+  start,
+  chooseSport,
 }: {
   recording: Recording;
   position: GpsFix | null;
@@ -33,6 +36,8 @@ export default function RecordingMap({
   pause: () => void;
   resume: () => void;
   finish: () => void;
+  start?: () => void;
+  chooseSport?: () => void;
 }) {
   const { width, fontScale } = useWindowDimensions();
   const narrow = width < 360 || fontScale > 1.2;
@@ -54,6 +59,9 @@ export default function RecordingMap({
     return () => clearInterval(timer);
   }, []);
   const gps = r.mode === "gps";
+  const idle = r.status === "idle";
+  const timerOnly = r.mode === "timer";
+  const info = sportInfo(r.sport);
   const paused = r.status === "paused";
   const fresh =
     gps &&
@@ -98,10 +106,16 @@ export default function RecordingMap({
     [insets.top, panelHeight],
   );
   const simulation = useMemo(() => [demoRoute], []);
-  const status = !gps
-    ? "Simulering · ikke GPS"
-    : error ||
-      (!fresh ? "Venter på presist GPS-signal" : "GPS aktiv · privat opptak");
+  const status = timerOnly
+    ? "Tidtaking · uten GPS"
+    : idle
+      ? "Klar til start"
+      : !gps
+        ? "Simulering · ikke GPS"
+        : error ||
+          (!fresh
+            ? "Venter på presist GPS-signal"
+            : "GPS aktiv · privat opptak");
   function control(
     label: string,
     action: () => void,
@@ -130,34 +144,55 @@ export default function RecordingMap({
       style={s.root}
       onLayout={(e) => setHeight(e.nativeEvent.layout.height)}
     >
-      <LiveMap
-        height={height}
-        attributionBottom={panelHeight + 4}
-        explorer
-        route={gps ? r.route : simulation}
-        overlays={overlays}
-        position={fresh}
-        follow={follow}
-        recenter={recenter}
-        padding={padding}
-        onPan={() => setFollow(false)}
-        mapKind={kind}
-        threeD={threeD}
-        north={north}
-        contours={false}
-      />
+      {timerOnly ? (
+        <View style={[s.timerBackdrop, { paddingBottom: panelHeight }]}>
+          <View style={s.sportEmblem}>
+            <Icon name={info.icon} size={48} color={brand.route} />
+          </View>
+          <Txt size={30} weight="700" style={{ color: "#11182C" }}>
+            {r.sport}
+          </Txt>
+          <Txt size={15} style={{ color: "#596579", textAlign: "center" }}>
+            Din tid. Ditt tempo.
+          </Txt>
+        </View>
+      ) : (
+        <LiveMap
+          height={height}
+          attributionBottom={panelHeight + 4}
+          explorer
+          route={gps ? r.route : simulation}
+          overlays={overlays}
+          position={fresh}
+          follow={follow}
+          recenter={recenter}
+          padding={padding}
+          onPan={() => setFollow(false)}
+          mapKind={kind}
+          threeD={threeD}
+          north={north}
+          contours={false}
+        />
+      )}
       <View style={[s.top, { top: insets.top + 12 }]}>
-        {control("Minimer økten", () => router.replace("/(tabs)/map"), "back")}
+        {control(
+          idle ? "Til kartet" : "Minimer økten",
+          () => router.replace("/(tabs)/map"),
+          "back",
+        )}
         <View style={s.pill}>
           <View
             style={[
               s.dot,
               {
-                backgroundColor: paused
-                  ? brand.lavender
-                  : fresh
+                backgroundColor:
+                  idle || timerOnly
                     ? brand.route
-                    : brand.coral,
+                    : paused
+                      ? brand.lavender
+                      : fresh
+                        ? brand.route
+                        : brand.coral,
               },
             ]}
           />
@@ -169,6 +204,12 @@ export default function RecordingMap({
             {status}
           </Txt>
         </View>
+        <View style={{ flex: 1 }} />
+        {control(
+          "Treningsinnstillinger",
+          () => router.push("/training-settings"),
+          "settings",
+        )}
       </View>
       {!!(r.challenge || r.guide) && (
         <View style={[s.challenge, { top: insets.top + 70 }]}>
@@ -185,9 +226,21 @@ export default function RecordingMap({
               {r.guide.attribution}
             </Txt>
           )}
+          {idle && (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Fjern valgt rute"
+              onPress={() => useAppStore.getState().event("discard")}
+              style={{ minHeight: 44, justifyContent: "center" }}
+            >
+              <Txt size={13} weight="700" style={{ color: "#4F3593" }}>
+                Fjern rute
+              </Txt>
+            </Pressable>
+          )}
         </View>
       )}
-      {!expanded && (
+      {!expanded && !timerOnly && (
         <View
           style={[
             s.controls,
@@ -241,13 +294,19 @@ export default function RecordingMap({
           <View
             style={[
               s.metricHeader,
-              { backgroundColor: paused ? "#EDE7FF" : "#11182C" },
+              {
+                backgroundColor: paused
+                  ? "#EDE7FF"
+                  : idle
+                    ? "white"
+                    : "#11182C",
+              },
             ]}
           >
             <Txt
               size={13}
               weight="700"
-              style={{ color: paused ? "#4F3593" : "white" }}
+              style={{ color: paused ? "#4F3593" : idle ? "#11182C" : "white" }}
             >
               {paused ? "Satt på pause" : r.sport}
             </Txt>
@@ -263,7 +322,7 @@ export default function RecordingMap({
               <Icon
                 name={expanded ? "collapse" : "expand"}
                 size={22}
-                color={paused ? "#4F3593" : "white"}
+                color={paused ? "#4F3593" : idle ? "#11182C" : "white"}
               />
             </Pressable>
           </View>
@@ -274,17 +333,26 @@ export default function RecordingMap({
               expanded && { flexDirection: "column" },
             ]}
           >
-            {[
-              [duration(r.seconds), "Tid"],
-              [
-                r.distance >= 0.1 ? pace(r.distance, r.seconds) : "—",
-                "Snitt /km",
-              ],
-              [km(r.distance), "Distanse · km"],
-            ].map(([value, label]) => (
+            {(timerOnly
+              ? [[duration(r.seconds), "Tid"]]
+              : [
+                  [duration(r.seconds), "Tid"],
+                  [
+                    r.distance >= 0.1
+                      ? info.metric === "speed"
+                        ? ((r.distance / Math.max(1, r.seconds)) * 3600)
+                            .toFixed(1)
+                            .replace(".", ",")
+                        : pace(r.distance, r.seconds)
+                      : "—",
+                    info.metric === "speed" ? "Snitt · km/t" : "Snitt /km",
+                  ],
+                  [km(r.distance), "Distanse · km"],
+                ]
+            ).map(([value, label]) => (
               <View key={label} style={s.metric}>
                 <Txt
-                  size={expanded ? 36 : 26}
+                  size={expanded || timerOnly ? 36 : narrow ? 22 : 26}
                   weight="700"
                   style={{
                     color: "#11182C",
@@ -301,9 +369,97 @@ export default function RecordingMap({
             ))}
           </ScrollView>
         </View>
-        <View style={[s.dock, { paddingBottom: Math.max(16, insets.bottom) }]}>
+        <View
+          style={[
+            s.dock,
+            { paddingBottom: idle ? 16 : Math.max(16, insets.bottom) },
+          ]}
+        >
           <View style={s.handle} />
-          {paused ? (
+          {idle ? (
+            <>
+              {!!error && (
+                <Txt
+                  accessibilityRole="alert"
+                  size={13}
+                  style={{ color: "#8A342C", textAlign: "center" }}
+                >
+                  {error}
+                </Txt>
+              )}
+              <View style={s.startActions}>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`Velg idrett, ${r.sport}`}
+                  disabled={tracking.starting}
+                  onPress={chooseSport}
+                  style={s.sideAction}
+                >
+                  <View
+                    style={[s.actionCircle, { backgroundColor: "#EDF5E6" }]}
+                  >
+                    <Icon name={info.icon} color={brand.route} size={25} />
+                  </View>
+                  <Txt
+                    size={12}
+                    weight="600"
+                    style={{ color: "#11182C", textAlign: "center" }}
+                  >
+                    {r.sport}
+                  </Txt>
+                </Pressable>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={
+                    tracking.starting ? "Starter økten" : "Start"
+                  }
+                  accessibilityState={{
+                    disabled: tracking.starting,
+                    busy: tracking.starting,
+                  }}
+                  disabled={tracking.starting}
+                  onPress={start}
+                  style={({ pressed }) => [
+                    s.startAction,
+                    { opacity: tracking.starting || pressed ? 0.6 : 1 },
+                  ]}
+                >
+                  <View style={s.startCircle}>
+                    <Icon name="play" size={30} color="#11182C" />
+                  </View>
+                  <Txt size={16} weight="700" style={{ color: "#11182C" }}>
+                    {tracking.starting ? "Starter …" : "Start"}
+                  </Txt>
+                </Pressable>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={
+                    gps ? "Velg rute" : "Treningsinnstillinger"
+                  }
+                  disabled={tracking.starting}
+                  onPress={() =>
+                    router.push(gps ? "/routes" : "/training-settings")
+                  }
+                  style={s.sideAction}
+                >
+                  <View style={s.actionCircle}>
+                    <Icon
+                      name={gps ? "map" : "settings"}
+                      size={25}
+                      color="#11182C"
+                    />
+                  </View>
+                  <Txt
+                    size={12}
+                    weight="600"
+                    style={{ color: "#11182C", textAlign: "center" }}
+                  >
+                    {gps ? "Velg rute" : "Innstillinger"}
+                  </Txt>
+                </Pressable>
+              </View>
+            </>
+          ) : paused ? (
             <View style={[s.actions, narrow && { flexDirection: "column" }]}>
               <View style={!narrow && { flex: 1 }}>
                 <Button
@@ -333,16 +489,20 @@ export default function RecordingMap({
           ) : (
             <Button title="Pause" icon="pause" large onPress={pause} />
           )}
-          <Txt size={10} style={{ textAlign: "center", color: "#596579" }}>
-            {gps
-              ? tracking.starting
-                ? "Starter GPS-opptak … hold appen åpen et øyeblikk"
-                : tracking.backgroundActive
-                  ? "GPS fortsetter med låst skjerm og i andre apper"
-                  : "Hold appen åpen · opptaket pauser i bakgrunnen"
-              : "Eksempelfart og illustrert rute · lagres aldri som GPS"}
-          </Txt>
-          {gps && tracking.liveActivityError && (
+          {!idle && (
+            <Txt size={10} style={{ textAlign: "center", color: "#596579" }}>
+              {timerOnly
+                ? "Tid måles også når skjermen er låst"
+                : gps
+                  ? tracking.starting
+                    ? "Starter GPS-opptak … hold appen åpen et øyeblikk"
+                    : tracking.backgroundActive
+                      ? "GPS fortsetter med låst skjerm og i andre apper"
+                      : "Hold appen åpen · opptaket pauser i bakgrunnen"
+                  : "Eksempelfart og illustrert rute · lagres aldri som GPS"}
+            </Txt>
+          )}
+          {!idle && tracking.liveActivityError && (
             <View accessibilityRole="alert">
               <Txt size={12} style={{ color: "#596579" }}>
                 {tracking.liveActivityError}
@@ -356,6 +516,46 @@ export default function RecordingMap({
 }
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: "#E5EDE4" },
+  timerBackdrop: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 16,
+    backgroundColor: "#F4F6F0",
+  },
+  sportEmblem: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: "#E5EFDA",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  startActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-around",
+    gap: 12,
+    paddingVertical: 4,
+  },
+  sideAction: { flex: 1, alignItems: "center", gap: 8, minHeight: 88 },
+  actionCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "#F2F4F1",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  startAction: { flex: 1.2, alignItems: "center", gap: 8 },
+  startCircle: {
+    width: 76,
+    height: 76,
+    borderRadius: 38,
+    backgroundColor: "#B4FF72",
+    alignItems: "center",
+    justifyContent: "center",
+  },
   top: {
     position: "absolute",
     left: 16,

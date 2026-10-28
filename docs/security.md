@@ -1,5 +1,9 @@
 # Sikkerhet og personvernstatus — 20. oktober 2026
 
+## Endret skjerming for treningsinnlegg — 28. oktober 2026
+
+Etter brukerens uttrykkelige valg er radius for nye delinger av økter redusert fra 500 til 200 meter rundt start og slutt, inkludert senere passeringer. Kartforhåndsvisning og opplasting bruker samme verdi. Original, tid og total distanse endres ikke; eksisterende innlegg omskrives bare hvis eieren deler på nytt. Senere 28. oktober er samme radius også innført for nye soneforsøk; serverens krav om minst 200 meter sammenhengende synlig løype beholdes. Egne bidrag til rutebibliotek beholder 500 meter. Eldre beskrivelser nedenfor er historisk status.
+
 ## Tillegg fra skymiljøet, 22. oktober 2026
 
 Gamle GPS-utkast krypteres nå med verifisert migrering. Lese-/dekodingsfeil blokkerer overskriving og kan prøves igjen. Profilredigering bruker eksisterende RLS, og mellomlagret profil tømmes ved kontobytte. GPX-eksport krever bekreftelse og eierkontroll; den inneholder den originale ruten, men ingen private notater. Eksporterte filer er ukrypterte og må kunne leses av valgt mottaker. Native mellomfiler ryddes etter 24 timer ved neste oppstart/eksport. Se [presis oppførsel](app-reliability.md).

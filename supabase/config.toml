@@ -3,3 +3,7 @@ project_id = "vyro"
 # Keep the gateway JWT check as well as the handler's Auth /user verification.
 [functions.route-suggestions]
 verify_jwt = true
+
+# Authenticated only by a random, server-only scheduler secret in the handler.
+[functions.follower-notifications]
+verify_jwt = false

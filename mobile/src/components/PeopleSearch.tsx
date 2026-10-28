@@ -4,6 +4,8 @@ import { useFocusEffect } from "expo-router";
 import { client, Profile, socialError } from "../features/social/api";
 import { Button, Txt, styles } from "./ui";
 import { Avatar, Field } from "./SocialUi";
+import { changeFollow } from "../features/social/profiles";
+import { visibleUsername } from "../features/social/display";
 
 export function cleanPeopleQuery(value: string) {
   return value
@@ -24,6 +26,7 @@ export function PeopleSearch({
 }) {
   const [people, setPeople] = useState<Profile[]>([]);
   const [following, setFollowing] = useState<string[]>([]);
+  const [requested, setRequested] = useState<string[]>([]);
   const [term, setTerm] = useState(cleanPeopleQuery(initialQuery));
   const [query, setQuery] = useState(cleanPeopleQuery(initialQuery));
   const [revision, setRevision] = useState(0);
@@ -44,7 +47,7 @@ export function PeopleSearch({
         try {
           let q = client()
             .from("profiles")
-            .select("id,username,display_name")
+            .select("id,username,display_name,is_private,avatar_path")
             .neq("id", userId)
             .order("display_name")
             .order("id")
@@ -66,9 +69,20 @@ export function PeopleSearch({
                 .abortSignal(controller.signal)
             : { data: [], error: null };
           if (follows.error) throw follows.error;
+          const requests = await client()
+            .from("follow_requests")
+            .select("recipient_id")
+            .eq("requester_id", userId)
+            .in(
+              "recipient_id",
+              rows.map((p) => p.id),
+            )
+            .abortSignal(controller.signal);
+          if (requests.error) throw requests.error;
           if (live) {
             setPeople(rows);
             setFollowing((follows.data ?? []).map((p) => p.following_id));
+            setRequested((requests.data ?? []).map((p) => p.recipient_id));
           }
         } catch (e) {
           if (live) setError(socialError(e));
@@ -95,25 +109,19 @@ export function PeopleSearch({
     try {
       if (onChoose) await onChoose(person);
       else {
-        const present = following.includes(person.id);
-        const result = present
-          ? await client()
-              .from("follows")
-              .delete()
-              .eq("follower_id", userId)
-              .eq("following_id", person.id)
-          : await client().from("follows").upsert(
-              { follower_id: userId, following_id: person.id },
-              {
-                onConflict: "follower_id,following_id",
-                ignoreDuplicates: true,
-              },
-            );
-        if (result.error) throw result.error;
-        if (alive.current)
-          setFollowing((v) =>
-            present ? v.filter((id) => id !== person.id) : [...v, person.id],
-          );
+        const present =
+          following.includes(person.id) || requested.includes(person.id);
+        const state = await changeFollow(userId, person.id, !present);
+        if (alive.current) {
+          setFollowing((v) => [
+            ...v.filter((id) => id !== person.id),
+            ...(state === "following" ? [person.id] : []),
+          ]);
+          setRequested((v) => [
+            ...v.filter((id) => id !== person.id),
+            ...(state === "requested" ? [person.id] : []),
+          ]);
+        }
       }
     } catch (e) {
       if (alive.current) setError(socialError(e));
@@ -152,12 +160,19 @@ export function PeopleSearch({
       )}
       {visible.map((person) => (
         <View key={person.id} style={[styles.row, { gap: 12 }]}>
-          <Avatar name={person.display_name} />
+          <Avatar name={person.display_name} path={person.avatar_path} />
           <View style={{ flex: 1, gap: 3 }}>
             <Txt weight="700">{person.display_name}</Txt>
-            <Txt muted size={12} numberOfLines={1}>
-              @{person.username}
-            </Txt>
+            {visibleUsername(person.username) && (
+              <Txt muted size={12} numberOfLines={1}>
+                {visibleUsername(person.username)}
+              </Txt>
+            )}
+            {!!person.is_private && (
+              <Txt muted size={12}>
+                Privat konto
+              </Txt>
+            )}
           </View>
           <Button
             title={
@@ -167,7 +182,9 @@ export function PeopleSearch({
                   ? "Inviter"
                   : following.includes(person.id)
                     ? "Følger"
-                    : "Følg"
+                    : requested.includes(person.id)
+                      ? "Avbryt forespørsel"
+                      : "Følg"
             }
             secondary
             disabled={!!busy}

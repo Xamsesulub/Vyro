@@ -18,7 +18,7 @@ export function BackupSettings({ owner }: { owner: string }) {
     (s) =>
       s.workouts.filter(
         (w) =>
-          w.source === "gps" &&
+          (w.source === "gps" || w.source === "timer") &&
           w.ownerId === owner &&
           !s.backupReceipts[backupKey(owner, w.id)],
       ).length,
@@ -46,10 +46,10 @@ export function BackupSettings({ owner }: { owner: string }) {
     >
       <Txt weight="700">Privat sikkerhetskopi</Txt>
       <Txt muted size={14}>
-        Ta vare på GPS-økter ved bytte av telefon. Når du aktiverer dette,
-        lagres hele rutene, tidene og notatene privat på kontoen din, og
-        tidligere sikkerhetskopierte økter hentes til denne enheten. Dette
-        publiserer ingen innlegg. Konkurransebevis kopieres ikke.
+        Ta vare på økter ved bytte av telefon. Når du aktiverer dette, lagres
+        hele rutene, tidene og notatene privat på kontoen din, og tidligere
+        sikkerhetskopierte økter hentes til denne enheten. Dette publiserer
+        ingen innlegg. Konkurransebevis kopieres ikke.
       </Txt>
       <Txt size={14}>
         {enabled

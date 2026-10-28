@@ -4,7 +4,7 @@ import { Pressable, TextInput, View } from "react-native";
 import { router } from "expo-router";
 import { AccountGate } from "../components/AccountGate";
 import { Page, SettingsGroup } from "../components/SettingsUi";
-import { Avatar } from "../components/SocialUi";
+import ProfilePhotoEditor from "../components/ProfilePhotoEditor";
 import { Button, Chip, Txt, useTheme } from "../components/ui";
 import { useAuthStore } from "../stores/useAuthStore";
 import { useOwnProfile } from "../features/auth/useOwnProfile";
@@ -14,6 +14,7 @@ import {
   saveProfileDetails,
   validateProfileDetails,
 } from "../features/auth/profileDetails";
+import SportPicker from "../components/SportPicker";
 import { sports } from "../features/activities/model";
 
 export default function EditProfileScreen() {
@@ -53,6 +54,7 @@ function ProfileForm({ user }: { user: User }) {
   const [draft, setDraft] = useState(() =>
     profileDetails(user, profile?.display_name),
   );
+  const [selectSports, setSelectSports] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const lock = useRef(false);
@@ -148,9 +150,7 @@ function ProfileForm({ user }: { user: User }) {
         </Pressable>
       }
     >
-      <View style={{ alignItems: "center", paddingTop: 28, paddingBottom: 8 }}>
-        <Avatar name={draft.displayName || "V"} size={86} />
-      </View>
+      <ProfilePhotoEditor owner={user.id} name={draft.displayName || "V"}/>
       {!!error && (
         <View
           accessibilityLiveRegion="polite"
@@ -189,24 +189,32 @@ function ProfileForm({ user }: { user: User }) {
               if (!busy) setDraft({ ...draft, selectedSports: [...sports] });
             }}
           />
-          {sports.map((sport) => (
-            <Chip
-              key={sport}
-              title={sport}
-              selected={draft.selectedSports.includes(sport)}
-              onPress={() => {
-                if (!busy)
-                  setDraft({
-                    ...draft,
-                    selectedSports: draft.selectedSports.includes(sport)
-                      ? draft.selectedSports.filter((item) => item !== sport)
-                      : [...draft.selectedSports, sport],
-                  });
-              }}
-            />
-          ))}
+          <Button
+            title={`Velg idretter (${draft.selectedSports.length})`}
+            secondary
+            disabled={busy}
+            onPress={() => setSelectSports(true)}
+          />
+          <Txt muted size={13}>
+            {draft.selectedSports.join(" · ") || "Ingen valgt"}
+          </Txt>
         </View>
       </SettingsGroup>
+      {selectSports && (
+        <SportPicker
+          multiple
+          selected={draft.selectedSports}
+          onSelect={(sport) =>
+            setDraft((d) => ({
+              ...d,
+              selectedSports: d.selectedSports.includes(sport)
+                ? d.selectedSports.filter((s) => s !== sport)
+                : [...d.selectedSports, sport],
+            }))
+          }
+          onClose={() => setSelectSports(false)}
+        />
+      )}
       <View style={{ padding: 22 }}>
         <Button
           title={busy ? "Lagrer profil …" : "Lagre profil"}

@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { Pressable, TextInput, View } from "react-native";
 import { Button, Chip, Txt, styles, useTheme } from "./ui";
-import { sports } from "../features/activities/model";
+import SportPicker from "./SportPicker";
 import type { HistoryFilter } from "../features/activities/training";
 export const initialHistoryFilter: HistoryFilter = {
   search: "",
   sport: "Alle",
   period: "all",
-  source: "gps",
+  source: "recorded",
 };
 export function TrainingHistoryFilters({
   filter,
@@ -18,6 +18,7 @@ export function TrainingHistoryFilters({
   change: (value: HistoryFilter) => void;
   count: number;
 }) {
+  const [selectSport, setSelectSport] = useState(false);
   const [open, setOpen] = useState(false);
   const c = useTheme();
   return (
@@ -54,14 +55,16 @@ export function TrainingHistoryFilters({
       {open && (
         <>
           <View style={styles.wrap}>
-            {(["Alle", ...sports] as const).map((sport) => (
-              <Chip
-                key={sport}
-                title={sport}
-                selected={filter.sport === sport}
-                onPress={() => change({ ...filter, sport })}
-              />
-            ))}
+            <Chip
+              title="Alle idretter"
+              selected={filter.sport === "Alle"}
+              onPress={() => change({ ...filter, sport: "Alle" })}
+            />
+            <Chip
+              title={filter.sport === "Alle" ? "Velg idrett" : filter.sport}
+              selected={filter.sport !== "Alle"}
+              onPress={() => setSelectSport(true)}
+            />
           </View>
           <View style={styles.wrap}>
             {(
@@ -88,9 +91,16 @@ export function TrainingHistoryFilters({
           />
         </>
       )}
+      {selectSport && (
+        <SportPicker
+          selected={filter.sport === "Alle" ? [] : [filter.sport]}
+          onSelect={(sport) => change({ ...filter, sport })}
+          onClose={() => setSelectSport(false)}
+        />
+      )}
       <Txt muted size={12}>
         {count} økter ·{" "}
-        {filter.source === "gps"
+        {["recorded", "gps", "timer"].includes(filter.source)
           ? "privat treningshistorikk"
           : "teller ikke i mål eller milepæler"}
       </Txt>

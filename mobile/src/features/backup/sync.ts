@@ -53,7 +53,7 @@ export function syncBackup(owner: string): Promise<void> {
         .workouts.filter(
           (w) =>
             w.ownerId === owner &&
-            w.source === "gps" &&
+            (w.source === "gps" || w.source === "timer") &&
             !useAppStore.getState().backupReceipts[backupKey(owner, w.id)],
         );
       for (const workout of pending.slice(0, 40)) {

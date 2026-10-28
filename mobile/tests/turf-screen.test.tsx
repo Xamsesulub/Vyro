@@ -192,7 +192,7 @@ test("short recordings show the reason and cannot publish; changing workout clea
   ];
   mockParams = { mode: "new", workoutId: "short" };
   await render(<TurfScreen />);
-  expect(screen.getByRole("alert")).toHaveTextContent(/500 meter/);
+  expect(screen.getByRole("alert")).toHaveTextContent(/200 meter/);
   expect(screen.getByRole("button", { name: "Legg ut sone" })).toBeDisabled();
   await press("Velg en annen løpetur");
   await press("Velg Langs elva");

@@ -28,7 +28,9 @@ export function observeWorkoutActivity() {
       const s = useAppStore.getState();
       return {
         ready: s.ready && useAuthStore.getState().ready,
-        enabled: s.workoutLiveActivity && s.backgroundRecording,
+        enabled:
+          s.workoutLiveActivity &&
+          (s.backgroundRecording || s.recording.mode === "timer"),
         foreground: AppState.currentState === "active",
         userId: useAuthStore.getState().session?.user.id,
         recording: s.recording,

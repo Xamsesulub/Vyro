@@ -37,7 +37,7 @@ Eksempel: Henos eier 3 km på 18 minutter. Xamse passerer samme løype på 17 mi
 - En lås og unik kvittering per bruker/lokal økt gjør gjentatt innsending idempotent. Samme økt kan brukes til ett innsendt soneforsøk; et avvist valideringsforsøk oppretter ingen kvittering.
 - Maksimalt fem godkjente innsendinger per bruker/minutt. RPC-feil ruller tilbake transaksjonen, også telleren; dette er ikke et fullstendig vern mot nettverksmisbruk.
 - Konkurranse krever nye GPS-tidsstempler. De lagres kryptert lokalt via eksisterende lagringsadapter. Eldre økter uten slike data oppgraderes ikke automatisk.
-- Før innsending skjermes 500 m rundt hele øktens start/slutt. Ingen sammenkobling gjennom skjulte områder. Flere adskilte synlige deler må tas opp på nytt som en sammenhengende tur. Korte turer kan derfor mangle konkurranseløype.
+- Fra 28. oktober skjermes 200 m rundt hele øktens start/slutt før innsending, med samme radius som øktinnlegg. Ingen sammenkobling gjennom skjulte områder. Flere adskilte synlige deler må tas opp på nytt som en sammenhengende tur. Minst 200 m synlig, sammenhengende løype må fortsatt være igjen; korte turer kan derfor mangle konkurranseløype.
 - Bare det synlige utsnittet med tidsstempler sendes til kontroll. Serveren lagrer geometri, totaltid og resultat, ikke rå nøyaktighet/tidsstempler. Den private originalen ligger fortsatt på enheten.
 - Konkurranseløypa og sonehendelser er, etter eget samtykke, synlige for innloggede løpere. Vanlige øktinnlegg beholder separat følgerpublikum og egne delingsregler.
 

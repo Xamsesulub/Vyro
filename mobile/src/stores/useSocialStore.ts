@@ -3,8 +3,18 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { ActivityPost, demoPosts, people } from "../features/social/demo";
 import { Workout } from "../features/activities/model";
+import { isSport } from "../features/activities/sports";
 type Comment = { id: string; postId: string; text: string; authorId: string };
 export function shareable(w: Workout) {
+  if (!isSport(w.sport)) return false;
+  if (w.source === "timer")
+    return (
+      Number.isFinite(w.seconds) &&
+      w.seconds >= 1 &&
+      w.distance === 0 &&
+      Array.isArray(w.route) &&
+      w.route.length === 0
+    );
   return (
     w.source === "gps" &&
     Number.isFinite(w.distance) &&

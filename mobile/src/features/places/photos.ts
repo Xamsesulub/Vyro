@@ -7,12 +7,14 @@ export type PreparedPhoto = {
   bytes: Uint8Array<ArrayBuffer>;
   preview: string;
 };
-export async function choosePhoto(): Promise<PreparedPhoto | null> {
+export async function choosePhoto(avatar = false): Promise<PreparedPhoto | null> {
   const picked = await ImagePicker.launchImageLibraryAsync({
     mediaTypes: ["images"],
     allowsMultipleSelection: false,
     exif: false,
     quality: 1,
+    allowsEditing: avatar,
+    aspect: avatar ? [1,1] : undefined,
   });
   if (picked.canceled || !picked.assets.length) return null;
   const asset = picked.assets[0];
@@ -24,6 +26,7 @@ export async function choosePhoto(): Promise<PreparedPhoto | null> {
       context.resize(
         asset.width >= asset.height ? { width: 1600 } : { height: 1600 },
       );
+    if (avatar) context.resize({width:512});
     const rendered = await context.renderAsync();
     try {
       const result = await rendered.saveAsync({

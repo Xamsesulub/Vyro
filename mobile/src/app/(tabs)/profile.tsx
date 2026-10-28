@@ -43,7 +43,7 @@ function ProfileContent({ user }: { user?: User }) {
           : "activities";
   const [filter, setFilter] = useState<typeof initialHistoryFilter>(() => ({
     ...initialHistoryFilter,
-    source: "gps",
+    source: "recorded",
   }));
   const [shareMessage, setShareMessage] = useState("");
   const [sharing, setSharing] = useState(false);
@@ -150,7 +150,7 @@ function ProfileContent({ user }: { user?: User }) {
               <View
                 style={{ flexDirection: "row", alignItems: "center", gap: 16 }}
               >
-                <Avatar name={name} size={72} />
+                <Avatar name={name} path={profile?.avatar_path} size={72} />
                 <View style={{ flex: 1, gap: 4 }}>
                   <Txt size={24} weight="800">
                     {name}
@@ -440,11 +440,11 @@ function ProfileContent({ user }: { user?: User }) {
                 filter.sport !== "Alle" ||
                 filter.period !== "all"
                   ? "Ingen økter passer filtrene. Prøv et annet søk."
-                  : filter.source === "gps"
+                  : ["recorded", "gps", "timer"].includes(filter.source)
                     ? "Din første tur starter her."
                     : "Ingen økter i denne kategorien."}
               </Txt>
-              {filter.source === "gps" && (
+              {["recorded", "gps", "timer"].includes(filter.source) && (
                 <Button
                   title="Start en økt"
                   onPress={() => router.push("/track")}

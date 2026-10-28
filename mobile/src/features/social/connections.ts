@@ -55,8 +55,8 @@ export async function loadConnections(
     .from("follows")
     .select(
       follower
-        ? "profiles!follows_follower_id_fkey(id,username,display_name)"
-        : "profiles!follows_following_id_fkey(id,username,display_name)",
+        ? "profiles!follows_follower_id_fkey(id,username,display_name,is_private,avatar_path)"
+        : "profiles!follows_following_id_fkey(id,username,display_name,is_private,avatar_path)",
     )
     .eq(follower ? "following_id" : "follower_id", owner)
     .order("created_at", { ascending: false })

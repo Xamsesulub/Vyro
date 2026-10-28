@@ -1,5 +1,7 @@
 import { metersBetween, RoutePoint } from "../tracking/gps";
 
+export const WORKOUT_SHARING_RADIUS_METERS = 200;
+
 function crossesHiddenArea(
   a: RoutePoint,
   b: RoutePoint,

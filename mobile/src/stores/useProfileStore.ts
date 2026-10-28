@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { supabase } from "../lib/supabase";
 import { useAuthStore } from "./useAuthStore";
-import type { Profile } from "../features/social/api";
+import { profileColumns, type Profile } from "../features/social/api";
 
 export const useProfileStore = create<{
   profile: Profile | null;
@@ -14,6 +14,12 @@ let readSequence = 0;
 let appliedRead = 0;
 const ownsSession = (userId: string) =>
   useAuthStore.getState().session?.user.id === userId;
+export function applyProfilePatch(userId:string,patch:Partial<Pick<Profile,"avatar_path"|"is_private">>){
+  if(!ownsSession(userId))return;
+  revision++;
+  const previous=useProfileStore.getState().profile;
+  if(previous?.id===userId)useProfileStore.setState({profile:{...previous,...patch},loadedAt:Date.now(),errorFor:null});
+}
 export async function loadOwnProfile(
   userId: string,
   signal: AbortSignal,
@@ -34,7 +40,7 @@ export async function loadOwnProfile(
   try {
     const { data, error } = await supabase
       .from("profiles")
-      .select("id,username,display_name")
+      .select(profileColumns)
       .eq("id", userId)
       .abortSignal(signal)
       .single();
@@ -74,7 +80,7 @@ export async function saveDisplayName(userId: string, name: string) {
     .from("profiles")
     .update({ display_name: value })
     .eq("id", userId)
-    .select("id,username,display_name")
+    .select(profileColumns)
     .single();
   if (error || !data)
     throw new Error(

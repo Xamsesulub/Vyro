@@ -1,7 +1,9 @@
 import { Pressable, View } from "react-native";
 import { router } from "expo-router";
-import { Workout, duration, km, pace } from "../features/activities/model";
-import { Card, Icon, Metric, Txt, styles, useTheme } from "./ui";
+import { Workout } from "../features/activities/model";
+import { Card, Icon, Txt, styles, useTheme } from "./ui";
+import WorkoutStats from "./WorkoutStats";
+import { sportInfo } from "../features/activities/sports";
 export function ActivityCard({ workout }: { workout: Workout }) {
   const c = useTheme();
   return (
@@ -36,16 +38,7 @@ export function ActivityCard({ workout }: { workout: Workout }) {
                 backgroundColor: c.raised,
               }}
             >
-              <Icon
-                name={
-                  workout.sport === "Sykling"
-                    ? "bike"
-                    : workout.sport === "Fottur"
-                      ? "mountain"
-                      : "run"
-                }
-                color={c.text}
-              />
+              <Icon name={sportInfo(workout.sport).icon} color={c.text} />
             </View>
             <View style={{ flex: 1 }}>
               <Txt weight="600">{workout.title}</Txt>
@@ -60,20 +53,21 @@ export function ActivityCard({ workout }: { workout: Workout }) {
           </View>
           <Icon name="arrow" size={18} color={c.muted} />
         </View>
-        <View style={styles.row}>
-          <Metric value={km(workout.distance)} label="kilometer" />
-          <Metric value={duration(workout.seconds)} label="minutter" />
-          <Metric
-            value={pace(workout.distance, workout.seconds)}
-            label="min/km"
-          />
-        </View>
+        <WorkoutStats
+          sport={workout.sport}
+          seconds={workout.seconds}
+          distance={workout.distance}
+          timerOnly={workout.source === "timer"}
+          maxSpeed={workout.maxSpeedKmh}
+        />
         <Txt size={10} muted>
           {workout.source === "example"
             ? "EKSEMPELDATA"
             : workout.source === "gps"
               ? "GPS-ØKT"
-              : "SIMULERT ØKT"}{" "}
+              : workout.source === "timer"
+                ? "TIDTAKING"
+                : "SIMULERT ØKT"}{" "}
           · PRIVAT
         </Txt>
       </Card>

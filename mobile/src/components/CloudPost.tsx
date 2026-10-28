@@ -1,27 +1,31 @@
 import { useEffect, useState } from "react";
-import { TextInput, View } from "react-native";
-import { client, Comment, Post, socialError } from "../features/social/api";
+import { View } from "react-native";
+import { client, Post, socialError } from "../features/social/api";
 import { FeedPost, ReactionSummary } from "../features/social/feed";
 import { km, duration, pace } from "../features/activities/model";
+import { isSport, sportInfo } from "../features/activities/sports";
 import { Button, Txt, styles, useTheme } from "./ui";
 import WorkoutMap from "./WorkoutMap";
 import FootballMap, { FootballSpeed } from "./FootballMap";
 import { Avatar } from "./SocialUi";
+import PostComments from "./PostComments";
+import { visibleUsername } from "../features/social/display";
 
 export function CloudPost({
   post,
   userId,
   onRemoved,
   onReactionsChanged,
+  initialComments = false,
 }: {
   post: FeedPost;
   userId: string;
   onRemoved: () => void;
   onReactionsChanged?: (id: string, summary: ReactionSummary) => void;
+  initialComments?: boolean;
 }) {
   const c = useTheme();
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(initialComments);
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -38,18 +42,7 @@ export function CloudPost({
       setBusy(false);
     }
   }
-  async function loadComments() {
-    const r = await client()
-      .from("comments")
-      .select(
-        "id,author_id,body,profiles!comments_author_id_fkey(id,username,display_name)",
-      )
-      .eq("post_id", post.id)
-      .order("created_at")
-      .limit(100);
-    if (r.error) throw r.error;
-    setComments(r.data as unknown as Comment[]);
-  }
+
   return (
     <View
       style={{
@@ -60,11 +53,16 @@ export function CloudPost({
       }}
     >
       <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-        <Avatar name={post.profiles.display_name} />
+        <Avatar
+          name={post.profiles.display_name}
+          path={post.profiles.avatar_path}
+        />
         <View style={{ flex: 1, gap: 3 }}>
           <Txt weight="700">{post.profiles.display_name}</Txt>
           <Txt muted size={12}>
-            @{post.profiles.username} ·{" "}
+            {visibleUsername(post.profiles.username)
+              ? `${visibleUsername(post.profiles.username)} · `
+              : ""}
             {new Date(post.recorded_at).toLocaleDateString("nb-NO")}
           </Txt>
         </View>
@@ -73,16 +71,19 @@ export function CloudPost({
         {post.title}
       </Txt>
       <View style={styles.row}>
-        {[
-          ["Distanse", `${km(Number(post.distance_km))} km`],
-          ["Tid", duration(post.seconds)],
-          post.sport === "Fotball"
-            ? [
-                "Snittfart",
-                `${post.seconds > 0 ? ((Number(post.distance_km) * 3600) / post.seconds).toFixed(1).replace(".", ",") : "—"} km/t`,
-              ]
-            : ["Tempo", `${pace(Number(post.distance_km), post.seconds)}`],
-        ].map(([label, value]) => (
+        {(Number(post.distance_km) === 0
+          ? [["Tid", duration(post.seconds)]]
+          : [
+              ["Distanse", `${km(Number(post.distance_km))} km`],
+              ["Tid", duration(post.seconds)],
+              isSport(post.sport) && sportInfo(post.sport).metric === "speed"
+                ? [
+                    "Snittfart",
+                    `${post.seconds > 0 ? ((Number(post.distance_km) * 3600) / post.seconds).toFixed(1).replace(".", ",") : "—"} km/t`,
+                  ]
+                : ["Tempo", `${pace(Number(post.distance_km), post.seconds)}`],
+            ]
+        ).map(([label, value]) => (
           <View key={label} style={{ gap: 5, flexShrink: 1 }}>
             <Txt muted size={12}>
               {label}
@@ -98,11 +99,13 @@ export function CloudPost({
           </View>
         ))}
       </View>
-      <PostMap
-        key={post.id}
-        postId={post.id}
-        football={post.sport === "Fotball"}
-      />
+      {Number(post.distance_km) > 0 && (
+        <PostMap
+          key={`${post.id}:${userId}`}
+          postId={post.id}
+          football={post.sport === "Fotball"}
+        />
+      )}
       <Txt muted size={12}>
         {post.sport} ·{" "}
         {post.audience === "followers"
@@ -125,81 +128,20 @@ export function CloudPost({
         }
       />
       <Button
-        title={expanded ? "Skjul kommentarer" : "Vis kommentarer"}
+        title="Kommentarer"
         secondary
-        disabled={busy}
-        onPress={() =>
-          action(async () => {
-            if (!expanded) await loadComments();
-            setExpanded(!expanded);
-          })
-        }
+        icon="message"
+        onPress={() => setExpanded(true)}
       />
       {expanded && (
-        <>
-          {comments.map((comment) => (
-            <View key={comment.id} style={{ gap: 8 }}>
-              <Txt>
-                <Txt weight="700">{comment.profiles.display_name}: </Txt>
-                {comment.body}
-              </Txt>
-              {comment.author_id === userId && (
-                <Button
-                  title="Slett kommentar"
-                  secondary
-                  disabled={busy}
-                  onPress={() =>
-                    action(async () => {
-                      const r = await client()
-                        .from("comments")
-                        .delete()
-                        .eq("id", comment.id)
-                        .eq("author_id", userId);
-                      if (r.error) throw r.error;
-                      await loadComments();
-                    })
-                  }
-                />
-              )}
-            </View>
-          ))}
-          {comments.length === 100 && (
-            <Txt muted size={12}>
-              Viser de første 100 kommentarene.
-            </Txt>
-          )}
-          <TextInput
-            accessibilityLabel="Skriv kommentar"
-            placeholder="Skriv en kommentar"
-            placeholderTextColor={c.muted}
-            value={text}
-            onChangeText={setText}
-            maxLength={500}
-            style={{
-              borderWidth: 1,
-              borderColor: c.border,
-              borderRadius: 12,
-              padding: 14,
-              color: c.text,
-            }}
-          />
-          <Button
-            title="Publiser kommentar"
-            disabled={busy || !text.trim()}
-            onPress={() =>
-              action(async () => {
-                const r = await client().from("comments").insert({
-                  author_id: userId,
-                  post_id: post.id,
-                  body: text.trim(),
-                });
-                if (r.error) throw r.error;
-                setText("");
-                await loadComments();
-              })
-            }
-          />
-        </>
+        <PostComments
+          key={`${post.id}:${userId}`}
+          postId={post.id}
+          userId={userId}
+          draft={text}
+          onDraftChange={setText}
+          onClose={() => setExpanded(false)}
+        />
       )}
       {post.author_id === userId && (
         <Button
@@ -233,13 +175,16 @@ export function CloudPost({
 }
 
 function PostMap({ postId, football }: { postId: string; football: boolean }) {
-  const [open, setOpen] = useState(false);
+  const [revision, setRevision] = useState(0);
   const [route, setRoute] = useState<Post["route"] | null>(null);
   const [error, setError] = useState("");
   const [maxSpeed, setMaxSpeed] = useState<number | null>(null);
   useEffect(() => {
-    if (!open) return;
     const controller = new AbortController();
+    const timeout = setTimeout(() => {
+      setError("Kartet brukte for lang tid på å laste. Prøv igjen.");
+      controller.abort();
+    }, 15000);
     void (async () => {
       try {
         const result = await client()
@@ -259,44 +204,45 @@ function PostMap({ postId, football }: { postId: string; football: boolean }) {
         }
       } catch (e) {
         if (!controller.signal.aborted) setError(socialError(e));
+      } finally {
+        clearTimeout(timeout);
       }
     })();
-    return () => controller.abort();
-  }, [postId, open, football]);
+    return () => {
+      clearTimeout(timeout);
+      controller.abort();
+    };
+  }, [postId, revision]);
   return (
-    <>
-      <Button
-        title={
-          open
-            ? "Skjul rutekart"
-            : football
-              ? "Vis rute og varmekart"
-              : "Vis rutekart"
-        }
-        secondary
-        icon="map"
-        onPress={() => {
-          setRoute(null);
-          setError("");
-          setOpen((value) => !value);
-        }}
-      />
-      {open &&
-        (error ? (
+    <View style={{ minHeight: 220, justifyContent: "center" }}>
+      {error ? (
+        <View style={{ gap: 12 }}>
           <Txt>{error}</Txt>
-        ) : route ? (
-          football ? (
-            <View style={{ gap: 16 }}>
-              <FootballMap points={route} height={260} />
-              <FootballSpeed value={maxSpeed} />
-            </View>
-          ) : (
-            <WorkoutMap points={route} height={220} />
-          )
+          <Button
+            title="Last kartet på nytt"
+            secondary
+            onPress={() => {
+              setRoute(null);
+              setError("");
+              setRevision((n) => n + 1);
+            }}
+          />
+        </View>
+      ) : route ? (
+        route.length < 2 ? (
+          <Txt muted>Dette innlegget har ikke et delt rutekart.</Txt>
+        ) : football ? (
+          <View style={{ gap: 16 }}>
+            <FootballMap points={route} height={260} />
+            <FootballSpeed value={maxSpeed} />
+          </View>
         ) : (
-          <Txt muted>Laster kart …</Txt>
-        ))}
-    </>
+          <WorkoutMap points={route} height={220} />
+        )
+      ) : (
+        <Txt muted>Laster kart …</Txt>
+      )}
+    </View>
   );
 }
 

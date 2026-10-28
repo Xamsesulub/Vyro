@@ -9,7 +9,9 @@ import {
   loadConnections,
   type ConnectionKind,
 } from "../features/social/connections";
-import { socialError, type Profile } from "../features/social/api";
+import { client, socialError, type Profile } from "../features/social/api";
+import { visibleUsername } from "../features/social/display";
+import { Avatar } from "../components/SocialUi";
 export default function Connections() {
   const id = useAuthStore((s) => s.session?.user.id);
   const params = useLocalSearchParams<{ tab?: string }>();
@@ -81,17 +83,45 @@ function ConnectionList({
     >
       <SettingsGroup>
         {people.map((p) => (
-          <SettingsRow
-            key={p.id}
-            title={p.display_name}
-            description={`@${p.username}`}
-            onPress={() =>
-              router.push({
-                pathname: "/people",
-                params: { query: p.username },
-              })
-            }
-          />
+          <View key={p.id}>
+            <SettingsRow
+              title={p.display_name}
+              description={visibleUsername(p.username) ?? undefined}
+              end={<Avatar name={p.display_name} path={p.avatar_path} />}
+              onPress={() =>
+                router.push({
+                  pathname: "/people",
+                  params: { query: p.username },
+                })
+              }
+            />
+            {kind === "followers" && (
+              <View style={{ paddingHorizontal: 22, paddingBottom: 12 }}>
+                <Button
+                  secondary
+                  title="Fjern følger"
+                  disabled={busy}
+                  onPress={async () => {
+                    setBusy(true);
+                    setError("");
+                    try {
+                      const result = await client()
+                        .from("follows")
+                        .delete()
+                        .eq("following_id", owner)
+                        .eq("follower_id", p.id);
+                      if (result.error) throw result.error;
+                      await load();
+                    } catch (e) {
+                      setError(socialError(e));
+                    } finally {
+                      setBusy(false);
+                    }
+                  }}
+                />
+              </View>
+            )}
+          </View>
         ))}
       </SettingsGroup>
       <View style={{ padding: 22, gap: 14 }}>

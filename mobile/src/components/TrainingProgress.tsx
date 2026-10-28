@@ -134,7 +134,7 @@ export function TrainingProgress({
         <Txt size={13}>De siste 12 ukene</Txt>
         <WeeklyChart weeks={data.weeks} />
         <Txt muted size={11}>
-          Bare dine egne GPS-økter teller.
+          Bare dine egne økter teller.
         </Txt>
       </View>
       <View style={card}>
@@ -177,7 +177,7 @@ export function TrainingProgress({
                 }}
               >
                 <View
-                  accessibilityLabel={`${d.day}.: ${d.active ? "GPS-økt" : d.today ? "i dag" : "ingen økt"}`}
+                  accessibilityLabel={`${d.day}.: ${d.active ? "økt" : d.today ? "i dag" : "ingen økt"}`}
                   style={{
                     width: 15,
                     height: 15,

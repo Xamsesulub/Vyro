@@ -59,6 +59,23 @@ test("Start is busy before permission resolves; repeated taps start exactly one 
   expect(useAppStore.getState().recording.distance).toBe(0);
 });
 
+test("indoor time-only training starts and resumes without location permission", async () => {
+  useAppStore.getState().sport("Styrketrening");
+  useAppStore.setState({ backgroundRecording: true });
+  await beginRecording("start");
+  expect(requestForegroundPermission).not.toHaveBeenCalled();
+  expect(useAppStore.getState().recording).toMatchObject({
+    status: "recording",
+    mode: "timer",
+    ownerId: "runner",
+    distance: 0,
+  });
+  useAppStore.getState().event("pause");
+  await beginRecording("resume");
+  expect(requestForegroundPermission).not.toHaveBeenCalled();
+  expect(useAppStore.getState().recording.status).toBe("recording");
+});
+
 test("a timeout is visible, releases Start, and permits a successful retry", async () => {
   jest
     .mocked(requestForegroundPermission)

@@ -1,7 +1,7 @@
 import { Sport } from "../activities/model";
 import type { Coord, GpsFix } from "./gps";
 import type { Sample } from "../turf/rules";
-export type RecordingMode = "gps" | "simulation";
+export type RecordingMode = "gps" | "simulation" | "timer";
 export type RecordingChallenge = { id: string; name: string; route: Coord[] };
 export type Recording = {
   challenge?: RecordingChallenge;
@@ -37,7 +37,7 @@ export const initialRecording: Recording = {
   route: [],
   lastFix: null,
 };
-const speeds: Record<Sport, number> = {
+const speeds: Partial<Record<Sport, number>> = {
   Løping: 10,
   Gange: 4.8,
   Sykling: 22,
@@ -54,16 +54,18 @@ export function snapshot(state: Recording, now: number): Recording {
     // GPS distance comes from real fixes in gps.ts, never from an assumed speed.
     distance:
       state.mode === "simulation"
-        ? state.distance + (elapsed * speeds[state.sport]) / 3600
+        ? state.distance + (elapsed * (speeds[state.sport] ?? 0)) / 3600
         : state.distance,
     startedAt: now,
   };
 }
 export function transition(
   state: Recording,
-  event: "start" | "pause" | "resume" | "finish" | "discard",
+  event: "start" | "pause" | "resume" | "finish" | "discard" | "return",
   now = Date.now(),
 ): Recording {
+  if (event === "return" && state.status === "finishing")
+    return { ...state, status: "paused", startedAt: null };
   if (event === "discard")
     return { ...initialRecording, sport: state.sport, mode: state.mode };
   if (event === "start" && state.status === "idle")

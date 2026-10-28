@@ -1,5 +1,5 @@
 import type { Workout } from "../activities/model";
-import { sharedRoute } from "../social/routePrivacy";
+import { sharedRoute, WORKOUT_SHARING_RADIUS_METERS } from "../social/routePrivacy";
 
 // Callers must obtain fresh, explicit consent for the chosen football workout.
 // Never retain this flag as an account-wide setting. Only coordinates leave
@@ -10,7 +10,7 @@ export function publicationRoute(
 ) {
   if (!workout || workout.source !== "gps") return [];
   if (!wholeFootballRoute || workout.sport !== "Fotball")
-    return sharedRoute(workout.route);
+    return sharedRoute(workout.route, WORKOUT_SHARING_RADIUS_METERS);
   const route = workout.route ?? [];
   if (
     route.length > 20000 ||

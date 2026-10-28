@@ -118,8 +118,8 @@ test("publishing only uploads the reviewed interior and records the server's res
   expect(
     points.every(
       (p) =>
-        metersBetween(p, w.turfTrace![0]) > 500 &&
-        metersBetween(p, w.turfTrace!.at(-1)!) > 500,
+        metersBetween(p, w.turfTrace![0]) > 200 &&
+        metersBetween(p, w.turfTrace!.at(-1)!) > 200,
     ),
   ).toBe(true);
   expect(Object.keys(points[0]).sort()).toEqual([
@@ -139,6 +139,43 @@ test("a lost publication response is recovered without submitting a new zone, ev
   expect(requests).toHaveLength(1);
   expect(requests[0].url.searchParams.get("actor_id")).toBe("eq.owner");
   expect(requests[0].url.searchParams.get("local_id")).toBe("eq.gps-zone");
+});
+
+test("a continuous 650 m run can create a zone after 200 m endpoint shielding", async () => {
+  respond = (u) => (u.pathname.endsWith("submit_turf_run") ? turfResult : []);
+  const trace = Array.from({ length: 66 }, (_, i) => ({
+    latitude: 59.9 + (i * 10) / 111195,
+    longitude: 10.7,
+    accuracy: 5,
+    timestamp: Date.now() - 3600000 + i * 5000,
+  }));
+  const workout = turfWorkout({
+    turfTrace: trace,
+    distance: 0.65,
+    seconds: 325,
+  });
+  const preview = turfPreview(workout);
+  expect(preview.samples.length).toBeGreaterThan(20);
+  expect(
+    preview.samples.every(
+      (p) =>
+        metersBetween(p, trace[0]) > 200 &&
+        metersBetween(p, trace.at(-1)!) > 200,
+    ),
+  ).toBe(true);
+  expect(metersBetween(preview.samples[0], trace[0])).toBeLessThan(500);
+  await submitTurf(workout, "owner", null, false, "Kort sone");
+  const body = requests.find(({ url }) =>
+    url.pathname.endsWith("submit_turf_run"),
+  )!.body!;
+  expect(body.p_samples).toEqual(
+    preview.samples.map(({ latitude, longitude, timestamp, accuracy }) => ({
+      latitude,
+      longitude,
+      timestamp,
+      accuracy,
+    })),
+  );
 });
 test("invalid GPS, foreign accounts and simulations never reach the publish RPC", async () => {
   await expect(
@@ -163,8 +200,8 @@ test("invalid GPS, foreign accounts and simulations never reach the publish RPC"
 test("eligibility explains short, old, future, missing and interrupted recordings before sending", () => {
   const w = turfWorkout();
   expect(() =>
-    turfPreview({ ...w, turfTrace: w.turfTrace!.slice(0, 20) }),
-  ).toThrow("500 meter");
+    turfPreview({ ...w, turfTrace: w.turfTrace!.slice(0, 10) }),
+  ).toThrow("200 meter");
   expect(() => turfPreview({ ...w, turfTrace: [] })).toThrow(
     "mangler GPS-data",
   );

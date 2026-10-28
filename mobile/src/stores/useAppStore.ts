@@ -1,6 +1,12 @@
 import { isSuggestedRoute } from "../features/routes/model";
 import { workoutStorage } from "../lib/workoutStorage";
 import { create } from "zustand";
+import {
+  isSport,
+  sportInfo,
+  validWorkoutDetails,
+  type WorkoutDetails,
+} from "../features/activities/sports";
 import { persist } from "zustand/middleware";
 import { bufferedStorage } from "../lib/bufferedStorage";
 import { Sport, Workout } from "../features/activities/model";
@@ -84,7 +90,11 @@ type State = {
   gpsFix: (fix: GpsFix) => void;
   event: (event: Parameters<typeof transition>[1]) => void;
   tick: () => void;
-  save: (title: string, notes: string) => string | null;
+  save: (
+    title: string,
+    notes: string,
+    details?: WorkoutDetails,
+  ) => string | null;
   remove: (id: string) => void;
 };
 type SavedState = Pick<
@@ -182,11 +192,21 @@ export const useAppStore = create<State>()(
       setReady: (error) => set({ ready: !error, storageError: error ?? null }),
       preferences: (patch) => set(patch),
       sport: (sport) => {
-        if (get().recording.status === "idle")
+        if (get().recording.status === "idle" && isSport(sport))
           set({
             recording: {
               ...get().recording,
               sport,
+              mode:
+                get().recording.mode === "simulation"
+                  ? "simulation"
+                  : sportInfo(sport).gps
+                    ? "gps"
+                    : "timer",
+              guide:
+                get().recording.sport === sport
+                  ? get().recording.guide
+                  : undefined,
               challenge:
                 sport === "Løping" ? get().recording.challenge : undefined,
             },
@@ -286,9 +306,19 @@ export const useAppStore = create<State>()(
         });
       },
       tick: () => set({ recording: snapshot(get().recording, Date.now()) }),
-      save: (title, notes) => {
+      save: (title, notes, details = {}) => {
         const r = get().recording;
-        if (r.status !== "finishing" || r.seconds < 1) return null;
+        if (
+          r.status !== "finishing" ||
+          r.seconds < 1 ||
+          !validWorkoutDetails(details)
+        )
+          return null;
+        if (
+          r.mode !== "simulation" &&
+          (!r.ownerId || r.ownerId !== useAuthStore.getState().session?.user.id)
+        )
+          return null;
         const gps = r.mode === "gps";
         const route = storedRoute(r.route);
         if (
@@ -299,7 +329,7 @@ export const useAppStore = create<State>()(
               r.ownerId !== useAuthStore.getState().session?.user.id))
         )
           return null;
-        const id = `${gps ? "gps" : "sim"}-${Date.now()}-${Math.random().toString(36).slice(2, 12)}`;
+        const id = `${gps ? "gps" : r.mode === "timer" ? "timer" : "sim"}-${Date.now()}-${Math.random().toString(36).slice(2, 12)}`;
         set({
           workouts: [
             {
@@ -307,10 +337,17 @@ export const useAppStore = create<State>()(
               title: title.trim() || r.sport,
               notes: notes.trim(),
               sport: r.sport,
-              distance: r.distance,
+              distance: r.mode === "timer" ? 0 : r.distance,
               seconds: r.seconds,
               date: new Date().toISOString(),
-              source: gps ? "gps" : "simulation",
+              source: r.mode,
+              ...(details.workoutType
+                ? { workoutType: details.workoutType }
+                : {}),
+              ...(details.effort !== undefined
+                ? { effort: details.effort }
+                : {}),
+              ...(r.mode === "timer" ? { ownerId: r.ownerId, route: [] } : {}),
               ...(gps
                 ? {
                     route,

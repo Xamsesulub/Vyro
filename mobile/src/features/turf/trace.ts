@@ -1,6 +1,9 @@
 import { Workout } from "../activities/model";
 import { GpsFix, metersBetween } from "../tracking/gps";
-import { sharedRoute } from "../social/routePrivacy";
+import {
+  sharedRoute,
+  WORKOUT_SHARING_RADIUS_METERS,
+} from "../social/routePrivacy";
 import { Sample } from "./rules";
 
 // Separate evidence for competitions; never changes Henos' distance calculation.
@@ -31,7 +34,7 @@ export function appendTurfFix(trace: Sample[], fix: GpsFix, resumed: boolean) {
   ];
 }
 
-// Never upload the private first/last 500 m. Preserve timestamps only for the
+// Apply the same endpoint privacy radius as workout posts. Preserve timestamps only for the
 // selected continuous interior; privacy gaps must never be bridged.
 export function competitionTrace(workout: Workout): Sample[] {
   if (workout.source !== "gps" || workout.sport !== "Løping") return [];
@@ -41,7 +44,7 @@ export function competitionTrace(workout: Workout): Sample[] {
     ...p,
     breakBefore: !!p.breakBefore && i > 0 && metersBetween(raw[i - 1], p) > 10,
   }));
-  const visible = sharedRoute(continuous);
+  const visible = sharedRoute(continuous, WORKOUT_SHARING_RADIUS_METERS);
   const segments: Sample[][] = [];
   let cursor = 0;
   for (const point of visible) {

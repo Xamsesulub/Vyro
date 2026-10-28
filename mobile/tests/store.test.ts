@@ -1,3 +1,5 @@
+import type { Session } from "@supabase/supabase-js";
+import { useAuthStore } from "../src/stores/useAuthStore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 // State/persistence payload tests; cipher/migration failures are tested separately.
 jest.mock("../src/lib/workoutStorage", () => ({
@@ -45,6 +47,7 @@ test("old developer recordings reset to empty GPS without changing real workout 
         workouts,
         recording: {
           ...initialRecording,
+          ownerId: "runner",
           mode: "simulation",
           status: "paused",
           distance: 5,
@@ -94,6 +97,10 @@ test("selected turf survives pause and recovery, cannot change mid-run, and stay
 });
 
 beforeEach(async () => {
+  useAuthStore.setState({
+    session: { user: { id: "runner" } } as Session,
+    ready: true,
+  });
   jest.mocked(AsyncStorage.setItem).mockImplementation(originalWrite);
   await appPersistence.flush();
   await AsyncStorage.clear();
@@ -145,6 +152,7 @@ test("save is private and idempotent, and clears the pending session", () => {
   useAppStore.setState({
     recording: {
       ...initialRecording,
+      ownerId: "runner",
       status: "finishing",
       seconds: 60,
       route: [
@@ -178,6 +186,7 @@ test("saving a real football recording stores conservative GPS speed and leaves 
   useAppStore.setState({
     recording: {
       ...initialRecording,
+      ownerId: "runner",
       sport: "Fotball",
       status: "finishing",
       seconds: 10,
@@ -192,6 +201,7 @@ test("saving a real football recording stores conservative GPS speed and leaves 
   useAppStore.setState({
     recording: {
       ...initialRecording,
+      ownerId: "runner",
       sport: "Løping",
       status: "finishing",
       seconds: 10,
@@ -207,6 +217,7 @@ test("saving and reloading preserve unrounded distance and time for average pace
   useAppStore.setState({
     recording: {
       ...initialRecording,
+      ownerId: "runner",
       status: "finishing",
       seconds: 358.25,
       distance: 0.5455,
@@ -232,7 +243,7 @@ test("sport cannot change while recording and empty sessions cannot save", () =>
   useAppStore.getState().sport("Sykling");
   expect(useAppStore.getState().recording.sport).toBe("Løping");
   useAppStore.setState({
-    recording: { ...initialRecording, status: "finishing" },
+    recording: { ...initialRecording, ownerId: "runner", status: "finishing" },
   });
   expect(useAppStore.getState().save("", "")).toBeNull();
 });
@@ -247,6 +258,7 @@ test("a simulated session is saved as a simulation, never as GPS", () => {
   useAppStore.setState({
     recording: {
       ...initialRecording,
+      ownerId: "runner",
       mode: "simulation",
       status: "finishing",
       seconds: 60,
@@ -272,6 +284,7 @@ test("GPS routes survive local persistence for recovery and sharing", async () =
   useAppStore.setState({
     recording: {
       ...initialRecording,
+      ownerId: "runner",
       status: "paused",
       seconds: 30,
       distance: 0.1,
@@ -289,6 +302,7 @@ test("persists an interrupted simulation as paused with no background time", asy
   useAppStore.setState({
     recording: {
       ...initialRecording,
+      ownerId: "runner",
       status: "recording",
       startedAt: Date.now(),
       seconds: 30,
@@ -331,6 +345,7 @@ test("saved GPS routes keep pause boundaries after rehydration", async () => {
   useAppStore.setState({
     recording: {
       ...initialRecording,
+      ownerId: "runner",
       status: "finishing",
       seconds: 60,
       distance: 0.2,

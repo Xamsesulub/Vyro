@@ -23,7 +23,7 @@ export default function FeedSettings() {
         />
         <ChoiceRow
           title="Mine økter"
-          description="Dine private GPS-økter på denne enheten."
+          description="Dine private økter på denne enheten."
           selected={feed === "own"}
           onPress={() => preferences({ homeFeed: "own" })}
         />

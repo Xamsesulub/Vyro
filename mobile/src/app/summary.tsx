@@ -1,39 +1,31 @@
-import { useShallow } from "zustand/react/shallow";
 import { useMemo, useState } from "react";
-import { TextInput, View } from "react-native";
+import { Pressable, TextInput, View } from "react-native";
 import { router } from "expo-router";
 import {
-  Badge,
   Button,
   Card,
-  Header,
+  Chip,
   Icon,
-  Metric,
   Screen,
   Txt,
   styles,
   useTheme,
 } from "../components/ui";
-
 import LiveMap from "../components/LiveMap";
-import FootballMap, { FootballSpeed } from "../components/FootballMap";
+import FootballMap from "../components/FootballMap";
+import WorkoutStats from "../components/WorkoutStats";
 import { storedRoute } from "../features/tracking/gps";
 import { footballMaxSpeed } from "../features/football/speed";
+import { workoutTypes, type WorkoutType } from "../features/activities/sports";
 import { useAppStore } from "../stores/useAppStore";
-import { duration, km, pace } from "../features/activities/model";
 import { useAuthStore } from "../stores/useAuthStore";
-import { FinishStamp, Reveal } from "../components/motion";
+
 export default function Summary() {
-  const s = useAppStore(
-    useShallow((s) => ({
-      recording: s.recording,
-      save: s.save,
-      event: s.event,
-    })),
-  );
+  const r = useAppStore((s) => s.recording);
+  const save = useAppStore((s) => s.save);
+  const event = useAppStore((s) => s.event);
   const c = useTheme();
-  const r = s.recording;
-  const footballRoute = useMemo(() => storedRoute(r.route), [r.route]);
+  const route = useMemo(() => storedRoute(r.route), [r.route]);
   const maxSpeed = useMemo(
     () =>
       r.mode === "gps" && r.sport === "Fotball"
@@ -44,18 +36,30 @@ export default function Summary() {
   const userId = useAuthStore((s) => s.session?.user.id);
   const [title, setTitle] = useState("");
   const [notes, setNotes] = useState("");
+  const [workoutType, setType] = useState<WorkoutType>("Vanlig økt");
+  const [effort, setEffort] = useState<number>();
+  const [openType, setOpenType] = useState(false);
+  const [openEffort, setOpenEffort] = useState(false);
   const [discard, setDiscard] = useState(false);
+  const [saveError, setSaveError] = useState("");
   const input = {
     color: c.text,
-    backgroundColor: c.raised,
+    backgroundColor: c.surface,
+    borderColor: c.border,
+    borderWidth: 1,
     borderRadius: 14,
     padding: 16,
     fontSize: 16,
   };
+  const valid =
+    r.seconds >= 1 &&
+    (r.mode !== "gps" || (route.length >= 2 && r.distance > 0));
   if (r.status !== "finishing" || (r.ownerId && r.ownerId !== userId))
     return (
       <Screen>
-        <Header eyebrow="Øktoppsummering" title="Ingen avsluttet økt" />
+        <Txt size={24} weight="700">
+          Ingen avsluttet økt
+        </Txt>
         <Button
           title="Til treningen"
           onPress={() => router.replace("/(tabs)/track")}
@@ -63,120 +67,220 @@ export default function Summary() {
       </Screen>
     );
   return (
-    <Screen>
-      <Reveal>
-        <View style={{ gap: 18 }}>
-          <FinishStamp />
-          <View style={{ gap: 6 }}>
-            <Txt muted size={11} weight="600" style={{ letterSpacing: 2 }}>
-              ØKTOPPSUMMERING
+    <Screen
+      footer={
+        discard ? (
+          <>
+            <Txt weight="700" accessibilityRole="alert">
+              Forkaste økten uten å lagre?
             </Txt>
-            <Txt size={36} weight="800" style={{ letterSpacing: -1.2 }}>
-              {r.mode === "gps" ? "En tur videre." : "Simulering fullført."}
-            </Txt>
-            <Txt muted>Ta et pust. Her er økten din.</Txt>
-          </View>
-        </View>
-      </Reveal>
-      <Badge
-        text={
-          r.mode === "gps"
-            ? "GPS-økt · privat"
-            : "Simulert økt · ikke et GPS-opptak"
-        }
-      />
-      {r.mode === "gps" && r.route.flat().length > 1 && (
-        <View style={{ borderRadius: 16, overflow: "hidden" }}>
+            <Button
+              title="Bekreft: forkast økten"
+              danger
+              onPress={() => {
+                event("discard");
+                router.replace("/(tabs)/track");
+              }}
+            />
+            <Button
+              title="Behold økten"
+              secondary
+              onPress={() => setDiscard(false)}
+            />
+          </>
+        ) : (
+          <>
+            {!valid && (
+              <Txt muted size={13}>
+                {r.seconds < 1
+                  ? "Økten er for kort til å lagres."
+                  : "Ingen GPS-strekning ble registrert. Fortsett økten og vent på posisjon."}
+              </Txt>
+            )}
+            {!!saveError && (
+              <Txt accessibilityRole="alert" size={13}>
+                {saveError}
+              </Txt>
+            )}
+            <Button
+              title="Lagre økten"
+              icon="check"
+              large
+              disabled={!valid}
+              onPress={() => {
+                const id = save(title, notes, { workoutType, effort });
+                if (id)
+                  router.replace({
+                    pathname: "/activity/[id]",
+                    params: { id },
+                  });
+                else
+                  setSaveError(
+                    "Økten kunne ikke lagres. Kontroller at du er innlogget med samme konto.",
+                  );
+              }}
+            />
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => setDiscard(true)}
+              style={{
+                minHeight: 44,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Txt weight="600" style={{ color: c.text }}>
+                Forkast økten
+              </Txt>
+            </Pressable>
+          </>
+        )
+      }
+    >
+      <View style={styles.row}>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => {
+            event("return");
+            router.replace("/(tabs)/track");
+          }}
+          style={{ minHeight: 44, justifyContent: "center" }}
+        >
+          <Txt style={{ color: c.accent }}>Tilbake</Txt>
+        </Pressable>
+        <Txt size={22} weight="700">
+          Lagre aktivitet
+        </Txt>
+        <Icon name="lock" size={20} color={c.muted} />
+      </View>
+      <View style={{ gap: 6 }}>
+        <Txt size={14} muted>
+          {r.sport} · {new Date().toLocaleDateString("nb-NO")}
+        </Txt>
+        <WorkoutStats
+          sport={r.sport}
+          seconds={r.seconds}
+          distance={r.distance}
+          timerOnly={r.mode === "timer"}
+          maxSpeed={maxSpeed}
+        />
+      </View>
+      {r.mode === "gps" && route.length > 1 && (
+        <View style={{ borderRadius: 18, overflow: "hidden" }}>
           {r.sport === "Fotball" ? (
-            <FootballMap points={footballRoute} />
+            <FootballMap points={route} />
           ) : (
-            <LiveMap height={200} route={r.route} />
+            <LiveMap height={180} route={r.route} />
           )}
         </View>
       )}
+      <View style={{ gap: 8 }}>
+        <Txt weight="600">Navn på økten</Txt>
+        <TextInput
+          accessibilityLabel="Navn på økten"
+          maxLength={80}
+          value={title}
+          onChangeText={setTitle}
+          placeholder={`${r.sport} i dag`}
+          placeholderTextColor={c.muted}
+          style={input}
+        />
+      </View>
+      <View style={{ gap: 12 }}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ expanded: openType }}
+          onPress={() => setOpenType(!openType)}
+          style={[input, styles.row]}
+        >
+          <View style={{ gap: 4 }}>
+            <Txt muted size={12}>
+              Type økt
+            </Txt>
+            <Txt weight="600">{workoutType}</Txt>
+          </View>
+          <Icon name={openType ? "chevronUp" : "chevronDown"} color={c.muted} />
+        </Pressable>
+        {openType && (
+          <View style={styles.wrap}>
+            {workoutTypes.map((type) => (
+              <Chip
+                key={type}
+                title={type}
+                selected={type === workoutType}
+                onPress={() => {
+                  setType(type);
+                  setOpenType(false);
+                }}
+              />
+            ))}
+          </View>
+        )}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ expanded: openEffort }}
+          onPress={() => setOpenEffort(!openEffort)}
+          style={[input, styles.row]}
+        >
+          <View style={{ flex: 1, gap: 4 }}>
+            <Txt muted size={12}>
+              Hvordan føltes aktiviteten?
+            </Txt>
+            <Txt weight="600">
+              {effort
+                ? `Anstrengelse: ${effort} av 10`
+                : "Velg anstrengelse (valgfritt)"}
+            </Txt>
+          </View>
+          <Icon
+            name={openEffort ? "chevronUp" : "chevronDown"}
+            color={c.muted}
+          />
+        </Pressable>
+        {openEffort && (
+          <View style={{ gap: 10 }}>
+            <Txt muted size={13}>
+              1 er svært lett · 10 er maksimal innsats
+            </Txt>
+            <View style={styles.wrap}>
+              {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+                <Chip
+                  key={n}
+                  title={String(n)}
+                  selected={effort === n}
+                  onPress={() => setEffort(effort === n ? undefined : n)}
+                />
+              ))}
+            </View>
+          </View>
+        )}
+      </View>
+      <View style={{ gap: 8 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+          <Icon name="lock" size={16} color={c.muted} />
+          <Txt weight="600">Private notater</Txt>
+        </View>
+        <TextInput
+          accessibilityLabel="Notater om økten"
+          maxLength={1000}
+          multiline
+          value={notes}
+          onChangeText={setNotes}
+          placeholder="Skriv noe du vil huske fra økten …"
+          placeholderTextColor={c.muted}
+          style={[input, { minHeight: 100, textAlignVertical: "top" }]}
+        />
+      </View>
       <Card>
         <View style={styles.row}>
-          <Metric value={km(r.distance)} label="kilometer" />
-          <Metric value={duration(r.seconds)} label="aktiv tid" />
+          <Txt weight="700">Synlighet</Txt>
+          <Txt>Kun deg</Txt>
         </View>
-        <View style={styles.row}>
-          {r.sport === "Fotball" ? (
-            <FootballSpeed value={maxSpeed} />
-          ) : (
-            <Metric value={pace(r.distance, r.seconds)} label="snitt min/km" />
-          )}
-          <Metric
-            value={
-              r.seconds > 0 ? ((r.distance / r.seconds) * 3600).toFixed(1) : "—"
-            }
-            label="snitt km/t"
-          />
-        </View>
+        <Txt muted size={13}>
+          Økten lagres privat. Du kan dele den etterpå. Notater og anstrengelse
+          deles aldri i strømmen.
+        </Txt>
       </Card>
-      <TextInput
-        accessibilityLabel="Navn på økten"
-        maxLength={80}
-        value={title}
-        onChangeText={setTitle}
-        placeholder="Navn på økten (valgfritt)"
-        placeholderTextColor={c.muted}
-        style={input}
-      />
-      <TextInput
-        accessibilityLabel="Notater om økten"
-        maxLength={1000}
-        multiline
-        value={notes}
-        onChangeText={setNotes}
-        placeholder="Hvordan føltes det? (valgfritt)"
-        placeholderTextColor={c.muted}
-        style={[input, { minHeight: 90, textAlignVertical: "top" }]}
-      />
-      <View style={styles.row}>
-        <Icon name="lock" size={18} />
-        <Txt size={12} muted style={{ flex: 1 }}>
-          {r.mode === "gps"
-            ? "Privat · kart, tid og distanse lagres på denne enheten. Du velger selv om økten skal deles."
-            : "Privat · lagres på denne enheten · ingen opplasting"}
-        </Txt>
-      </View>
-      <Button
-        title={r.mode === "gps" ? "Lagre økten" : "Lagre simulert økt"}
-        disabled={
-          r.seconds < 1 ||
-          (r.mode === "gps" && (r.route.flat().length < 2 || r.distance <= 0))
-        }
-        icon="check"
-        onPress={() => {
-          const id = s.save(title, notes);
-          if (id)
-            router.replace({ pathname: "/activity/[id]", params: { id } });
-        }}
-      />
-      {r.seconds < 1 && (
-        <Txt muted size={12}>
-          Økten er for kort til å lagres.
-        </Txt>
-      )}
-      <Button
-        title={discard ? "Bekreft: forkast økten" : "Forkast økten"}
-        secondary={!discard}
-        danger={discard}
-        onPress={() => {
-          if (!discard) setDiscard(true);
-          else {
-            s.event("discard");
-            router.replace("/(tabs)/track");
-          }
-        }}
-      />
-      {discard && (
-        <Button
-          title="Behold økten"
-          secondary
-          onPress={() => setDiscard(false)}
-        />
-      )}
     </Screen>
   );
 }

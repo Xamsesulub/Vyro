@@ -1,3 +1,4 @@
+import { preparePushSignOut } from "../features/social/push";
 import { useRef, useState } from "react";
 import { TextInput, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
@@ -192,6 +193,7 @@ export default function Account() {
               disabled={!!busy}
               onPress={() =>
                 void run("Logger ut …", async () => {
+                  await preparePushSignOut(useAuthStore.getState().session!.user.id);
                   const result = await supabase!.auth.signOut({
                     scope: "local",
                   });

@@ -51,22 +51,26 @@ export function WorkoutActivity(
           />
         )}
       </VStack>
-      <VStack
-        alignment="leading"
-        spacing={2}
-        modifiers={[frame({ maxWidth: Infinity, alignment: "leading" })]}
-      >
-        <Text modifiers={label}>Distanse · km</Text>
-        <Text modifiers={number}>{props.distance}</Text>
-      </VStack>
-      <VStack
-        alignment="leading"
-        spacing={2}
-        modifiers={[frame({ maxWidth: Infinity, alignment: "leading" })]}
-      >
-        <Text modifiers={label}>Snitt /km</Text>
-        <Text modifiers={number}>{props.pace}</Text>
-      </VStack>
+      {!props.timerOnly && (
+        <>
+          <VStack
+            alignment="leading"
+            spacing={2}
+            modifiers={[frame({ maxWidth: Infinity, alignment: "leading" })]}
+          >
+            <Text modifiers={label}>Distanse · km</Text>
+            <Text modifiers={number}>{props.distance}</Text>
+          </VStack>
+          <VStack
+            alignment="leading"
+            spacing={2}
+            modifiers={[frame({ maxWidth: Infinity, alignment: "leading" })]}
+          >
+            <Text modifiers={label}>{props.paceLabel ?? "Snitt /km"}</Text>
+            <Text modifiers={number}>{props.pace}</Text>
+          </VStack>
+        </>
+      )}
     </HStack>
   );
   return {
@@ -125,7 +129,7 @@ export function WorkoutActivity(
         >
           {props.mapTime
             ? "Kart kl. " + props.mapTime + " · Trykk for økten"
-            : "Trykk for kart og pause"}
+            : "Trykk for økten og pause"}
         </Text>
       </VStack>
     ),
@@ -135,17 +139,28 @@ export function WorkoutActivity(
         color="#B4FF72"
       />
     ),
-    compactTrailing: (
-      <Text
-        modifiers={[
-          foregroundStyle("#FFFFFF"),
-          font({ size: 12, weight: "semibold" }),
-          lineLimit(1),
-        ]}
-      >
-        {props.distance} km
-      </Text>
-    ),
+    compactTrailing:
+      props.timerOnly && !props.paused && !stale ? (
+        <Text
+          date={new Date(props.timerStart)}
+          dateStyle="timer"
+          modifiers={[
+            foregroundStyle("#FFFFFF"),
+            font({ size: 12, weight: "semibold" }),
+            lineLimit(1),
+          ]}
+        />
+      ) : (
+        <Text
+          modifiers={[
+            foregroundStyle("#FFFFFF"),
+            font({ size: 12, weight: "semibold" }),
+            lineLimit(1),
+          ]}
+        >
+          {props.timerOnly ? props.seconds : props.distance + " km"}
+        </Text>
+      ),
     minimal: (
       <Image
         systemName={props.paused ? "pause.fill" : "figure.run"}
@@ -161,7 +176,7 @@ export function WorkoutActivity(
         <Text modifiers={[font({ size: 11 }), foregroundStyle("#BFCBDF")]}>
           {props.paused
             ? "Pauset · Trykk for økten"
-            : "Trykk for kart og pause"}
+            : "Trykk for økten og pause"}
         </Text>
       </VStack>
     ),

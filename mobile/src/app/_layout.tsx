@@ -22,6 +22,7 @@ import { WorkoutAwake } from "../components/WorkoutAwake";
 import { observeWorkoutActivity } from "../features/tracking/liveActivity";
 import { observeWatch } from "../features/watch/sync";
 import { observeRecording } from "../features/tracking/lifecycle";
+import NotificationObserver from "../components/NotificationObserver";
 export { RouteError as ErrorBoundary } from "../components/RouteError";
 
 export default function RootLayout() {
@@ -62,6 +63,7 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <LocationWatcher />
         <WorkoutAwake />
+        {ready && <NotificationObserver/>}
         <StatusBar style={c.bg === "#0B1120" ? "light" : "dark"} />
         {!ready ? (
           <View

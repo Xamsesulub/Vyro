@@ -6,6 +6,7 @@ import { AccountGate } from "../../components/AccountGate";
 import { CloudPost } from "../../components/CloudPost";
 import { PlacePost } from "../../components/PlacePost";
 import { IconButton } from "../../components/SocialUi";
+import NotificationBell from "../../components/NotificationBell";
 import { ActivityCard } from "../../components/ActivityCard";
 import { Button, Chip, Icon, Txt, styles, useTheme } from "../../components/ui";
 import { TurfEvents } from "../../components/TurfEvents";
@@ -166,6 +167,7 @@ export function Feed({ userId }: { userId: string }) {
             Hjem
           </Txt>
           <View style={{ flexDirection: "row", gap: 10 }}>
+            <NotificationBell/>
             <IconButton
               name="plus"
               label={compose ? "Lukk deling" : "Lag innlegg"}
@@ -425,7 +427,7 @@ export function Feed({ userId }: { userId: string }) {
                   style={{ textAlign: "center", maxWidth: 330 }}
                 >
                   {tab === "own"
-                    ? "GPS-øktene dine vises her når du lagrer dem. De er private til du velger å dele."
+                    ? "Øktene dine vises her når du lagrer dem. De er private til du velger å dele."
                     : tab === "reposted"
                       ? "Innlegg du deler videre fra strømmen, dukker opp her."
                       : "Følg venner for å se turene og stedene de deler. Du bestemmer når du vil dele noe selv."}

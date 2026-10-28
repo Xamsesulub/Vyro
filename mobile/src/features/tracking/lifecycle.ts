@@ -30,6 +30,7 @@ export function observeRecording() {
       backgroundSupported;
     if (
       recording.status === "recording" &&
+      recording.mode !== "timer" &&
       !useTrackingStatus.getState().backgroundActive &&
       !backgroundStarting
     ) {

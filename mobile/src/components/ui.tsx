@@ -65,6 +65,9 @@ export function Txt({
   );
 }
 const paths = {
+  ball: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18M12 8l4 3-2 5h-4l-2-5 4-3ZM12 8V3m4 8 5-2m-7 7 3 4m-7-4-3 4m1-9L3 9",
+  strength: "M3 8v8m3-10v12m12-12v12m3-10v8M6 12h12",
+  waves: "M2 7q3-4 6 0t6 0 6 0M2 12q3-4 6 0t6 0 6 0M2 17q3-4 6 0t6 0 6 0",
   refresh: "M20 7v5h-5M4 17v-5h5M6 6a8 8 0 0 1 14 6M18 18A8 8 0 0 1 4 12",
   more: "M4 6h16M4 12h16M4 18h16",
   chevronRight: "m9 5 7 7-7 7",

@@ -1,26 +1,13 @@
 import { useState } from "react";
-import { Pressable, View, useWindowDimensions } from "react-native";
 import { router } from "expo-router";
-import {
-  Button,
-  Chip,
-  Screen,
-  Txt,
-  styles,
-  useTheme,
-} from "../../components/ui";
+import { Button, Screen, Txt } from "../../components/ui";
 import RecordingMap from "../../components/RecordingMap";
-import LiveMap from "../../components/LiveMap";
+import SportPicker from "../../components/SportPicker";
 import { useAppStore } from "../../stores/useAppStore";
-import { useLiveLocation } from "../../features/tracking/useLiveLocation";
-import { sports } from "../../features/activities/model";
-import { brand } from "../../theme/tokens";
 import { useAuthStore } from "../../stores/useAuthStore";
-
+import { useLiveLocation } from "../../features/tracking/useLiveLocation";
 import { beginRecording } from "../../features/tracking/controls";
-import { backgroundSupported } from "../../features/tracking/background";
 import { useTrackingStatus } from "../../stores/useTrackingStatus";
-import { BackgroundRecordingSetting } from "../../components/BackgroundRecordingSetting";
 
 export default function Track() {
   const r = useAppStore((s) => s.recording);
@@ -28,57 +15,13 @@ export default function Track() {
   const event = useAppStore((s) => s.event);
   const setSport = useAppStore((s) => s.sport);
   const tracking = useTrackingStatus();
-  const background = useAppStore((s) => s.backgroundRecording);
-  const { height } = useWindowDimensions();
-  const mapHeight = Math.max(300, Math.min(520, height * 0.49));
-  const gps = r.mode === "gps";
-  const loc = useLiveLocation(gps);
-
+  const loc = useLiveLocation(r.mode === "gps");
   const [chooseSport, setChooseSport] = useState(false);
-  const c = useTheme();
-  const status = {
-    idle: "Klar til start",
-    recording: "Økt pågår",
-    paused: "Økten er pauset",
-    finishing: "Økten er avsluttet",
-  }[r.status];
-  const primary = {
-    idle: {
-      title: gps ? "Start" : "Start simulering",
-      icon: "play" as const,
-      action: async () => {
-        if (gps && !userId) {
-          router.push("/account");
-          return;
-        }
-        await beginRecording("start");
-      },
-    },
-    recording: {
-      title: "Pause",
-      icon: "pause" as const,
-      action: () => event("pause"),
-    },
-    paused: {
-      title: "Fortsett",
-      icon: "play" as const,
-      action: () => {
-        void beginRecording("resume");
-      },
-    },
-    finishing: {
-      title: "Se oppsummering",
-      icon: "arrow" as const,
-      action: () => router.push("/summary"),
-    },
-  }[r.status];
   if (r.ownerId && r.ownerId !== userId)
     return (
       <Screen>
         <Txt>
-          {r.status === "idle"
-            ? "En valgt rute tilhører en annen konto på enheten."
-            : "En privat økt tilhører en annen konto på enheten."}
+          En privat økt eller valgt rute tilhører en annen konto på enheten.
         </Txt>
         {r.status === "idle" && (
           <Button
@@ -93,12 +36,17 @@ export default function Track() {
         />
       </Screen>
     );
-  if (r.status !== "idle")
-    return (
+  return (
+    <>
       <RecordingMap
         recording={r}
         position={loc.position}
-        error={tracking.error ?? loc.error}
+        error={tracking.error ?? (r.mode === "gps" ? loc.error : null)}
+        start={() => {
+          if (r.mode !== "simulation" && !userId) router.push("/account");
+          else void beginRecording("start");
+        }}
+        chooseSport={() => setChooseSport(true)}
         pause={() => event("pause")}
         resume={() => {
           void beginRecording("resume");
@@ -108,162 +56,16 @@ export default function Track() {
           router.push("/summary");
         }}
       />
-    );
-  return (
-    <Screen
-      footer={
-        <>
-          <Txt size={14} muted style={{ textAlign: "center" }}>
-            {tracking.starting ? "Klargjør opptak …" : status}
-          </Txt>
-          {!!tracking.error && (
-            <View
-              accessibilityRole="alert"
-              style={{
-                borderLeftWidth: 3,
-                borderLeftColor: brand.coral,
-                paddingLeft: 10,
-              }}
-            >
-              <Txt size={14}>{tracking.error}</Txt>
-            </View>
-          )}
-          {gps && <BackgroundRecordingSetting compact />}
-          <Button
-            title={tracking.starting ? "Starter …" : primary.title}
-            disabled={tracking.starting}
-            icon={primary.icon}
-            large
-            onPress={primary.action}
-          />
-        </>
-      }
-    >
-      <View style={styles.row}>
-        <Txt size={24} weight="700">
-          {r.sport}
-        </Txt>
-        <Txt size={12} muted>
-          {gps ? "GPS · live posisjon" : "Simulering · ingen GPS"}
-        </Txt>
-      </View>
-      {r.status === "idle" && (
-        <View style={{ gap: 16 }}>
-          <View style={{ borderRadius: 16, overflow: "hidden" }}>
-            <LiveMap
-              height={mapHeight}
-              position={gps ? loc.position : null}
-              follow={gps && !r.challenge && !r.guide}
-              overlays={
-                r.challenge
-                  ? [
-                      {
-                        id: r.challenge.id,
-                        name: r.challenge.name,
-                        owner: "Sone · start",
-                        points: r.challenge.route,
-                        color: brand.competition,
-                      },
-                    ]
-                  : r.guide
-                    ? [
-                        {
-                          id: "guide",
-                          name: r.guide.name,
-                          owner: "Din tidligere rute",
-                          points: r.guide.route,
-                          color: brand.competition,
-                        },
-                      ]
-                    : []
-              }
-            />
-          </View>
-          <Txt size={12} muted>
-            {!gps
-              ? "Simulering"
-              : loc.permission !== "granted"
-                ? r.challenge
-                  ? "Valgt løype"
-                  : "Start økten for å finne posisjonen din"
-                : (tracking.error ??
-                  loc.error ??
-                  (loc.position
-                    ? background && backgroundSupported
-                      ? "GPS · bakgrunnsopptak"
-                      : "GPS"
-                    : "Leter etter GPS-signal …"))}
-          </Txt>
-          {!!r.guide && (
-            <View style={{ gap: 8 }}>
-              <Txt weight="700">Følg ruten: {r.guide.name}</Txt>
-              <Txt muted size={12}>
-                Lilla viser den valgte løypa. Grønt viser ditt nye spor. Ingen
-                svingvarsler.
-              </Txt>
-              {!!r.guide.attribution && (
-                <Txt muted size={11}>
-                  {r.guide.attribution}
-                </Txt>
-              )}
-              <Button
-                title="Fjern rute"
-                secondary
-                onPress={() =>
-                  useAppStore.setState({
-                    recording: { ...r, guide: undefined, ownerId: undefined },
-                  })
-                }
-              />
-            </View>
-          )}
-          {!!r.challenge && (
-            <View style={{ gap: 8 }}>
-              <Txt weight="700">Valgt sone: {r.challenge.name}</Txt>
-              <Txt size={12} muted>
-                Løypa vises i lilla. Start opptaket og følg løypa. Ingen
-                svingvarsler.
-              </Txt>
-              <Button
-                title="Fjern valgt sone"
-                secondary
-                onPress={() => useAppStore.getState().selectTurf()}
-              />
-            </View>
-          )}
-          <Pressable
-            accessibilityRole="button"
-            accessibilityState={{ expanded: chooseSport }}
-            onPress={() => setChooseSport(!chooseSport)}
-            style={{
-              minHeight: 56,
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-              borderBottomWidth: 1,
-              borderColor: c.border,
-            }}
-          >
-            <Txt>Aktivitet</Txt>
-            <Txt weight="600">{r.sport} · Endre</Txt>
-          </Pressable>
-        </View>
+      {chooseSport && r.status === "idle" && (
+        <SportPicker
+          selected={[r.sport]}
+          onSelect={(sport) => {
+            useTrackingStatus.setState({ error: null });
+            setSport(sport);
+          }}
+          onClose={() => setChooseSport(false)}
+        />
       )}
-      {r.status === "idle" && chooseSport && (
-        <View style={styles.wrap}>
-          {sports.map((sport) => (
-            <Chip
-              key={sport}
-              title={sport}
-              selected={r.sport === sport}
-              onPress={() => {
-                setSport(sport);
-                setChooseSport(false);
-              }}
-            />
-          ))}
-        </View>
-      )}
-    </Screen>
+    </>
   );
 }

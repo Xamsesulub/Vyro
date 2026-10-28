@@ -1,11 +1,5 @@
-export type Sport = "Løping" | "Gange" | "Sykling" | "Fottur" | "Fotball";
-export const sports: Sport[] = [
-  "Løping",
-  "Gange",
-  "Sykling",
-  "Fottur",
-  "Fotball",
-];
+import type { Sport, WorkoutDetails } from "./sports";
+export { sports, type Sport } from "./sports";
 export type Workout = {
   id: string;
   title: string;
@@ -15,14 +9,16 @@ export type Workout = {
   maxSpeedKmh?: number;
   date: string;
   notes: string;
-  source: "example" | "simulation" | "gps";
+  source: "example" | "simulation" | "gps" | "timer";
   route?: { latitude: number; longitude: number; breakBefore?: boolean }[];
   visibility: "private";
   ownerId?: string;
   turfId?: string;
   turfTrace?: import("../turf/rules").Sample[];
   splits?: import("../tracking/splits").KilometerSplit[];
-};
+} & WorkoutDetails;
+export const isRecordedWorkout = (w: Workout) =>
+  w.source === "gps" || w.source === "timer";
 export function duration(seconds: number) {
   const total = Math.max(0, Math.floor(seconds));
   return `${Math.floor(total / 60)

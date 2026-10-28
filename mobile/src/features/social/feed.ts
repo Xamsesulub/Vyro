@@ -75,7 +75,7 @@ async function legacyFeed(
   let query = client()
     .from("posts")
     .select(
-      "id,author_id,title,sport,distance_km,seconds,recorded_at,created_at,audience,profiles!posts_author_id_fkey(id,username,display_name)",
+      "id,author_id,title,sport,distance_km,seconds,recorded_at,created_at,audience,profiles!posts_author_id_fkey(id,username,display_name,is_private,avatar_path)",
     )
     .in(follows ? "author_id" : "id", ids)
     .order("created_at", { ascending: false })

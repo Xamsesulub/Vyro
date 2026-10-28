@@ -20,11 +20,11 @@ const questions = [
   ],
   [
     "Hvor finner jeg øktene mine?",
-    "Åpne Du → Aktiviteter for dine egne GPS-økter. Ved bytte av telefon kan du hente økter som du har aktivert privat sikkerhetskopiering for.",
+    "Åpne Du → Aktiviteter for dine egne økter. Ved bytte av telefon kan du hente økter som du har aktivert privat sikkerhetskopiering for.",
   ],
   [
     "Hvorfor er Hjem tom?",
-    "Hjem viser det du og personene du følger har delt. En lagret økt publiseres ikke automatisk. Finn venner, eller del din egen fullførte GPS-økt.",
+    "Hjem viser det du og personene du følger har delt. En lagret økt publiseres ikke automatisk. Finn venner, eller del din egen fullførte økt.",
   ],
   [
     "Hvordan fjerner jeg et innlegg?",

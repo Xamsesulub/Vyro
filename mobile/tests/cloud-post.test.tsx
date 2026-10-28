@@ -1,4 +1,9 @@
-import { fireEvent, render, screen } from "@testing-library/react-native";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react-native";
 import { CloudPost } from "../src/components/CloudPost";
 import { client } from "../src/features/social/api";
 import { FeedPost } from "../src/features/social/feed";
@@ -46,6 +51,10 @@ jest.mock("../src/components/ui", () => {
       ),
   };
 });
+const route = [
+  { latitude: 59.9, longitude: 10.7 },
+  { latitude: 59.9005, longitude: 10.7005 },
+];
 const post: FeedPost = {
   id: "post",
   author_id: "runner",
@@ -62,31 +71,38 @@ const post: FeedPost = {
   reposted: false,
 };
 beforeEach(() => jest.clearAllMocks());
-test("feed summaries show reactions without extra reads; routes load only on demand and can be hidden", async () => {
+test("feed maps load automatically; reactions use the feed summary and route reads are aborted when recycled", async () => {
   const chain = {
     select: jest.fn().mockReturnThis(),
     eq: jest.fn().mockReturnThis(),
     abortSignal: jest.fn().mockReturnThis(),
-    single: jest.fn().mockResolvedValue({ data: { route: [] }, error: null }),
+    single: jest.fn().mockResolvedValue({ data: { route }, error: null }),
   };
   const from = jest.fn(() => chain);
   (client as jest.Mock).mockReturnValue({ from });
-  await render(<CloudPost post={post} userId="viewer" onRemoved={() => {}} />);
+  const view = await render(
+    <CloudPost post={post} userId="viewer" onRemoved={() => {}} />,
+  );
   expect(screen.getByRole("button", { name: "Lik · 2" })).toBeTruthy();
-  expect(from).not.toHaveBeenCalled();
-  expect(screen.queryByText("Rutekart lastet")).toBeNull();
-  await fireEvent.press(screen.getByRole("button", { name: "Vis rutekart" }));
-  expect(screen.getByText("Rutekart lastet")).toBeTruthy();
+  expect(await screen.findByText("Rutekart lastet")).toBeTruthy();
+  expect(screen.queryByRole("button", { name: "Vis rutekart" })).toBeNull();
   expect(from).toHaveBeenCalledTimes(1);
   expect(from).toHaveBeenCalledWith("posts");
   expect(chain.select).toHaveBeenCalledWith("route,max_speed_kmh");
-  await fireEvent.press(screen.getByRole("button", { name: "Skjul rutekart" }));
-  expect(screen.queryByText("Rutekart lastet")).toBeNull();
+  await view.unmount();
   expect(chain.abortSignal.mock.calls[0][0].aborted).toBe(true);
 });
 test("a successful reaction updates the feed snapshot for recycled list rows, while failed writes do not", async () => {
   const upsert = jest.fn().mockResolvedValue({ error: null });
-  (client as jest.Mock).mockReturnValue({ from: () => ({ upsert }) });
+  const chain = {
+    select: jest.fn().mockReturnThis(),
+    eq: jest.fn().mockReturnThis(),
+    abortSignal: jest.fn().mockReturnThis(),
+    single: jest.fn().mockResolvedValue({ data: { route }, error: null }),
+  };
+  (client as jest.Mock).mockReturnValue({
+    from: (table: string) => (table === "posts" ? chain : { upsert }),
+  });
   const changed = jest.fn();
   await render(
     <CloudPost
@@ -109,7 +125,7 @@ test("a successful reaction updates the feed snapshot for recycled list rows, wh
   expect(changed).not.toHaveBeenCalled();
   expect(screen.getByRole("button", { name: "Del på nytt" })).toBeTruthy();
 });
-test("football posts expose both maps and GPS speed only after opening the authorized post details", async () => {
+test("football posts automatically expose both map choices and the authorized GPS speed", async () => {
   const chain = {
     select: jest.fn().mockReturnThis(),
     eq: jest.fn().mockReturnThis(),
@@ -134,11 +150,52 @@ test("football posts expose both maps and GPS speed only after opening the autho
       onRemoved={() => {}}
     />,
   );
-  expect(from).not.toHaveBeenCalled();
-  await fireEvent.press(
-    screen.getByRole("button", { name: "Vis rute og varmekart" }),
-  );
-  expect(screen.getByRole("tab", { name: "Varmekart" })).toBeTruthy();
+  expect(await screen.findByRole("tab", { name: "Varmekart" })).toBeTruthy();
   expect(screen.getByText(/Maksfart · GPS/)).toBeTruthy();
   expect(screen.getByText(/21.6 km\/t|21,6 km\/t/)).toBeTruthy();
+});
+
+test("timer posts need no map read and generated handles stay hidden", async () => {
+  const from = jest.fn();
+  (client as jest.Mock).mockReturnValue({ from });
+  await render(
+    <CloudPost
+      post={{
+        ...post,
+        sport: "Yoga",
+        distance_km: 0,
+        profiles: {
+          ...post.profiles,
+          username: "runner_e85ffea8a1e7416c834b2c79e9d65617",
+        },
+      }}
+      userId="viewer"
+      onRemoved={() => {}}
+    />,
+  );
+  expect(from).not.toHaveBeenCalled();
+  expect(screen.getByText("Løper")).toBeTruthy();
+  expect(screen.queryByText(/runner_/)).toBeNull();
+  expect(screen.queryByText("Laster kart …")).toBeNull();
+});
+
+test("a failed map read is retryable without changing reactions", async () => {
+  const single = jest
+    .fn()
+    .mockResolvedValueOnce({ error: { code: "42501" } })
+    .mockResolvedValue({ data: { route }, error: null });
+  const chain = {
+    select: jest.fn().mockReturnThis(),
+    eq: jest.fn().mockReturnThis(),
+    abortSignal: jest.fn().mockReturnThis(),
+    single,
+  };
+  (client as jest.Mock).mockReturnValue({ from: () => chain });
+  await render(<CloudPost post={post} userId="viewer" onRemoved={() => {}} />);
+  await fireEvent.press(
+    await screen.findByRole("button", { name: "Last kartet på nytt" }),
+  );
+  await waitFor(() => expect(screen.getByText("Rutekart lastet")).toBeTruthy());
+  expect(screen.getByRole("button", { name: "Lik · 2" })).toBeTruthy();
+  expect(single).toHaveBeenCalledTimes(2);
 });

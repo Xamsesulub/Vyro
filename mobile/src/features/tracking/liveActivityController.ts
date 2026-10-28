@@ -118,7 +118,9 @@ export function createWorkoutActivityController(
           try {
             activity = port.start(
               workoutActivityProps(s.recording, stamp, null, 0),
-              new Date(stamp + 45000),
+              new Date(
+                stamp + (s.recording.mode === "timer" ? 8 * 3600000 : 45000),
+              ),
             );
             activityEpoch = epoch;
             allowPausedStart = false;
@@ -134,7 +136,9 @@ export function createWorkoutActivityController(
         if (stamp - lastUpdate >= 15000 || lastStatus !== s.recording.status) {
           await activity.update(
             workoutActivityProps(s.recording, stamp, mapUri, mapAt),
-            new Date(stamp + 45000),
+            new Date(
+              stamp + (s.recording.mode === "timer" ? 8 * 3600000 : 45000),
+            ),
           );
           lastUpdate = stamp;
           lastStatus = s.recording.status;
@@ -143,6 +147,7 @@ export function createWorkoutActivityController(
           continue;
         if (
           !mapPending &&
+          s.recording.mode === "gps" &&
           s.recording.route !== lastRoute &&
           stamp - mapAttempt >= 30000
         ) {

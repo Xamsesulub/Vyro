@@ -15,6 +15,7 @@ import { duration, km } from "../activities/model";
 import { turfPreview } from "./eligibility";
 import { loadTurfReceipt, submitTurf, turfError, type TurfResult } from "./api";
 import { useTurf } from "./TurfDetail";
+import { WORKOUT_SHARING_RADIUS_METERS } from "../social/routePrivacy";
 
 export function TurfComposer({
   userId,
@@ -369,8 +370,8 @@ export function TurfComposer({
                   Synlig løype · totaltid med pauser
                 </Txt>
                 <Txt muted size={14}>
-                  500 meter rundt turens start og slutt er skjermet. Bare
-                  kartutsnittet over deles.
+                  {WORKOUT_SHARING_RADIUS_METERS} meter rundt turens start og
+                  slutt er skjermet. Bare kartutsnittet over deles.
                 </Txt>
                 {turf && (
                   <Txt>

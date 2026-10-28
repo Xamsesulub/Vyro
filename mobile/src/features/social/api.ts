@@ -4,7 +4,14 @@ import { shareable } from "../../stores/useSocialStore";
 import { hasVisibleSegment } from "./routePrivacy";
 import { publicationRoute } from "../football/sharing";
 import { validMaxSpeed } from "../football/speed";
-export type Profile = { id: string; username: string; display_name: string };
+export type Profile = {
+  id: string;
+  username: string;
+  display_name: string;
+  is_private?: boolean;
+  avatar_path?: string | null;
+};
+export const profileColumns = "id,username,display_name,is_private,avatar_path";
 export type Post = {
   audience?: "followers" | "everyone";
   id: string;
@@ -46,9 +53,9 @@ export async function publish(
   wholeFootballRoute = false,
 ) {
   if (!shareable(workout) || workout.ownerId !== userId)
-    throw new Error("Only your own GPS workouts can be shared.");
+    throw new Error("Only your own recorded workouts can be shared.");
   const route = publicationRoute(workout, wholeFootballRoute);
-  if (!hasVisibleSegment(route))
+  if (workout.source !== "timer" && !hasVisibleSegment(route))
     throw new Error(
       "Ruten er for kort til å deles med skjermet start og slutt.",
     );

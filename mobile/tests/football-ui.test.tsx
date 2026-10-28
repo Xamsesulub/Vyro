@@ -138,3 +138,4 @@ test("whole pitch sharing requires fresh consent after switching workouts", asyn
     true,
   );
 });
+jest.mock("../src/features/auth/useOwnProfile",()=>({useOwnProfile:()=>({profile:{id:"owner",is_private:false},failed:false})}));

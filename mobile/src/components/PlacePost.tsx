@@ -70,7 +70,7 @@ export function PlacePost({
       }}
     >
       <View style={{ flexDirection: "row", gap: 12, alignItems: "center" }}>
-        <Avatar name={post.profiles.display_name} />
+        <Avatar name={post.profiles.display_name} path={post.profiles.avatar_path} />
         <View style={{ flex: 1 }}>
           <Txt weight="700">{post.profiles.display_name}</Txt>
           <Txt muted size={12}>

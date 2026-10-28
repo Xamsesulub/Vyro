@@ -122,12 +122,13 @@ test("GPS watcher requests browser high accuracy, reports errors and rejects cal
   });
   const [position, error] = geo.watchPosition.mock.calls[0];
   const sample = {
-    coords: { latitude: 59, longitude: 10, accuracy: 5 },
+    coords: { latitude: 59, longitude: 10, accuracy: 5, speed: 22 },
     timestamp: 100,
   };
   position(sample);
   error();
   expect(fix).toHaveBeenCalledTimes(1);
+  expect(fix).toHaveBeenCalledWith({ ...sample.coords, timestamp: 100 });
   expect(failed).toHaveBeenCalledTimes(1);
   sub.remove();
   position(sample);

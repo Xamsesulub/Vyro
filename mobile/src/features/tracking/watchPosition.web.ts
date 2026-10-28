@@ -14,6 +14,7 @@ export async function watchPosition(
           latitude: coords.latitude,
           longitude: coords.longitude,
           accuracy: coords.accuracy,
+          speed: coords.speed,
           timestamp,
         });
     },

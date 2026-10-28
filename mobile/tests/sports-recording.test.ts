@@ -30,6 +30,29 @@ beforeEach(() => {
   });
 });
 
+test("the reported football trip shows 5.6 km/h; the same distance and time running show 10:43 min/km", () => {
+  const r = {
+    ...initialRecording,
+    status: "paused" as const,
+    seconds: 425,
+    distance: 0.66,
+  };
+  expect(
+    workoutActivityProps({ ...r, sport: "Fotball" }, 0, null, 0),
+  ).toMatchObject({
+    pace: "5,6",
+    paceLabel: "Snitt km/t",
+    seconds: "07:05",
+    distance: "0,66",
+  });
+  expect(
+    workoutActivityProps({ ...r, sport: "Løping" }, 0, null, 0),
+  ).toMatchObject({
+    pace: "10:43",
+    paceLabel: "Snitt /km",
+  });
+});
+
 test.each(sports)(
   "%s can select, record, save and privately back up with its actual measurement mode",
   async (sport) => {

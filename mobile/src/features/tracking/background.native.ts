@@ -151,6 +151,7 @@ if (!TaskManager.isTaskDefined(TASK))
           latitude: coords.latitude,
           longitude: coords.longitude,
           accuracy: coords.accuracy,
+          speed: coords.speed,
           timestamp,
         };
         useAppStore.getState().gpsFix(fix);

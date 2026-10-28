@@ -113,6 +113,46 @@ beforeEach(async () => {
     } as Location.LocationPermissionResponse);
 });
 
+test("batched background GPS retains corroborated fast movement across foreground handover", async () => {
+  const start = Date.now() - 60_000;
+  useAppStore.setState({
+    recording: {
+      ...initialRecording,
+      status: "recording",
+      ownerId: "runner",
+      startedAt: start,
+      segmentStartedAt: start,
+      segmentSeconds: 0,
+    },
+  });
+  const task = jest.mocked(TaskManager.defineTask).mock.calls[0][1];
+  const location = (i: number) => ({
+    coords: {
+      latitude: 59.9 + i * 0.0002,
+      longitude: 10.75,
+      accuracy: 5,
+      speed: 22.2,
+    },
+    timestamp: start + i * 1000,
+  });
+  // First two fixes come from the foreground watcher.
+  for (const i of [0, 1]) {
+    const sample = location(i);
+    useAppStore
+      .getState()
+      .gpsFix({ ...sample.coords, timestamp: sample.timestamp });
+  }
+  AppState.currentState = "background";
+  await task({
+    data: { locations: Array.from({ length: 60 }, (_, i) => location(60 - i)) },
+  } as never);
+  const r = useAppStore.getState().recording;
+  expect(r.route).toHaveLength(1);
+  expect(r.route[0]).toHaveLength(61); // duplicate t=1 counted only once
+  expect(r.distance).toBeCloseTo(1.334, 2);
+  expect(r.lastFix?.speed).toBe(22.2);
+});
+
 test("iOS When In Use starts and resumes locked-screen recording without requesting Always", async () => {
   jest.mocked(Location.requestBackgroundPermissionsAsync).mockResolvedValue({
     granted: false,
@@ -219,11 +259,9 @@ test("When In Use GPS and the lock-screen activity receive distance/time while l
     });
   AppState.currentState = "active";
   useAppStore.setState({ workoutLiveActivity: true });
-  jest
-    .mocked(Location.getBackgroundPermissionsAsync)
-    .mockResolvedValue({
-      granted: false,
-    } as Location.LocationPermissionResponse);
+  jest.mocked(Location.getBackgroundPermissionsAsync).mockResolvedValue({
+    granted: false,
+  } as Location.LocationPermissionResponse);
   mockStartActivity.mockClear();
   mockActivity.update.mockClear();
   const stopActivity = observeWorkoutActivity();

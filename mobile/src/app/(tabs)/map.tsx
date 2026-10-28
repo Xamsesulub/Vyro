@@ -20,6 +20,7 @@ import { router, useFocusEffect } from "expo-router";
 import { Txt, Icon } from "../../components/ui";
 import { MapRouteSheet } from "../../components/MapRouteSheet";
 import { MapSearch } from "../../components/MapSearch";
+import { MapLengthFilter } from "../../components/MapLengthFilter";
 import LiveMap from "../../components/LiveMap";
 import { useAppStore } from "../../stores/useAppStore";
 import { useLiveLocation } from "../../features/tracking/useLiveLocation";
@@ -414,19 +415,13 @@ export default function Maps() {
                   Ruteforslag ↗
                 </MapText>
               </Pressable>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Filtrer på lengde"
-                onPress={() => {
-                  setLength((v) => (v + 1) % 4);
+              <MapLengthFilter
+                value={length}
+                onChange={(value) => {
+                  setLength(value);
                   setIndex(0);
                 }}
-                style={s.chip}
-              >
-                <MapText size={13} weight="600">
-                  {["Lengde", "Under 3 km", "3–10 km", "Over 10 km"][length]}
-                </MapText>
-              </Pressable>
+              />
             </ScrollView>
           )}
         </View>

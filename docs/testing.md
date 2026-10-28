@@ -1,5 +1,18 @@
 # Testing
 
+## GPS-fart og lengdemeny — 28. oktober 2026
+
+- Hele Jest-pakken: **510 tester i 79 suiter** består. 89 målrettede tester omfatter GPS, native/web-inndata, bakgrunnsopptak, idrettsmålinger, kart og lengdemeny.
+- Syntetisk GPS-replay ved ca. 80 km/t beholder 91 av 91 målte punkter i ett segment og korrekt geometrisk distanse. Et bakgrunnsreplay med omvendt batchrekkefølge og overlappende foregrunnspunkt sorteres og telles uten duplikater. Dette er testdata, ikke en fysisk busstur.
+- Null, negativ, manglende, uendelig og avvikende fart kan ikke overstyre det gamle hoppfilteret. Upresise koordinater, stillstand, ugyldige tidsstempler og signalbrudd testes fortsatt. Native fart brukes aldri til å beregne ekstra distanse. Eksisterende pause-, låseskjerm-, sone- og klokketester består.
+- Brukerens Fotball-måling er korrekt: 425 sekunder / 0,66 km gir 5,6 km/t; samme tall for Løping vises som 10:43 min/km. Ingen endring i beregningen. [Stravas egen forklaring](https://support.strava.com/en-us/articles/15401804-moving-time-speed-and-pace-calculations) beskriver at GPS-distanse, tid og pausebehandling kan gi forskjellige gjennomsnitt. Uten rådata fra begge opptak kan ikke hele avviket på bussturen fastslås.
+- Lokal, isolert visuell test ved 393 × 852 og 320 × 568: alle menyvalg får plass. Valg av 3–10 km skjuler den korte testruten; Alle lengder viser den igjen. Ingen ekte konto eller treningsdata brukes.
+- Etter siste menyjustering består typecheck, lint, web-eksport og begge kart-UI-suitene (7 tester). Stedssøket åpner også etter at lengdemenyen lukkes. Skjermbilde: `mobile/.expo/map-length-menu-verified.png`.
+- En eksisterende stedssøktest nådde tidsgrensen i enkelte kjøringer. Hele pakken og en ny kjøring av begge kart-UI-suitene bestod med den opprinnelige tidsgrensen og uten feilsøkingskode. Den varierende testtiden er ikke forklart; ingen testkrav er svekket.
+- [Preview 14](https://expo.dev/accounts/xamse10/projects/vyro/builds/d92f8d6b-17cc-4eb0-b951-c0d0f418a538), versjon 0.1.0 (14), er **FINISHED** 28. oktober kl. 20:34:40 UTC med installasjonsfil. Eksisterende signering for iPhone, widget og Watch er brukt. Den isolerte testserveren er stoppet. Ingen databaseendring eller Git-push utført.
+
+Fysisk akseptanse gjenstår: Installer preview 14 og sammenlign samtidig tur med samme idrett, start/slutt og pauser. Kontroller gang/løping, stopp, inn/ut av bakgrunn og låst skjerm. Rask bevegelse skal beholde faktiske punkter når GPS-farten bekrefter dem; dårlig signal skal fortsatt gi avbrudd uten oppdiktede veilinjer. Sjekk lengdemeny på iPhone, lukking uten valg og uendret kartkamera.
+
 ## Feedkart, kommentarpanel og 200-meterssoner — 28. oktober 2026
 
 - Hele Jest-pakken består: **494 tester i 77 suiter**. Typecheck og lint består. Etter siste justering av kommentarlistens rulleflate består også 10 målrettede UI-tester.

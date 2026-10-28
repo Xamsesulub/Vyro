@@ -1,5 +1,15 @@
 # Leveranseplan
 
+## Fart, GPS-filter og lengdemeny — 28. oktober 2026
+
+Brukeren bekreftet at sammenligningsturen var registrert som Fotball. 0,66 km på 07:05 gir 5,6 km/t, tilsvarende omtrent 10:43 min/km. Fotballens fart og løpingens tempo beholdes. Strava-bildet viser litt annen tid og distanse; skjermbildene alene beviser ikke en beregningsfeil.
+
+GPS-filterets faste grense på 15 m/s kunne avvise en sammenhengende, rask bevegelse, beholde et gammelt referansepunkt og til slutt dele sporet ved 30-sekundersgrensen. Foregrunn, bakgrunn og web sender nå også telefonens målte fart til filteret. Over 15 m/s kreves en gyldig fartsmåling som samsvarer med koordinatbevegelsen (maksimalt 3 m/s eller 25 % avvik), med en absolutt grense på 55 m/s. Distansen beregnes fortsatt bare fra faktiske koordinater. Nøyaktighet, små bevegelser, tidsrekkefølge, pausegrenser og faktiske signalhull beholder sine tidligere regler. Sonekonkurransenes separate fartsvalidering er uendret. Gamle spor omskrives ikke.
+
+«Lengde» åpner en kompakt meny med Alle lengder, Under 3 km, 3–10 km og Over 10 km. Åpning endrer ikke filteret. Valg, lukking uten valg og nullstilling beholder kartet og den eksisterende filtreringen. Se [teststatus](testing.md); fysisk iPhone-test av nye GPS-målinger gjenstår.
+
+[Preview 14](https://expo.dev/accounts/xamse10/projects/vyro/builds/d92f8d6b-17cc-4eb0-b951-c0d0f418a538), versjon 0.1.0 (14), er **FINISHED** 28. oktober kl. 20:34:40 UTC med installasjonsfil bekreftet av EAS. Typecheck, lint, 510 Jest-tester og visuell kontroll av lengdemenyen består. Ingen databaseendring eller Git-push utført.
+
 ## Feedkart, kommentarpanel og soner — 28. oktober 2026
 
 GPS-innlegg viser nå sitt autoriserte, allerede skjermede rutekart direkte. Kartfeil kan prøves på nytt; tidtakingsøkter uten GPS får ikke et kart. Automatiske `runner_<32 hex>`-brukernavn skjules i innlegg, personsøk, følgerlister og følgeforespørsler. Valgte brukernavn, søk og profillenker beholdes.

@@ -2,14 +2,34 @@ import type { Recording } from "./simulator";
 export type Coord = { latitude: number; longitude: number };
 export type Fix = Coord & { accuracy: number; timestamp: number };
 export type RoutePoint = Coord & { breakBefore?: boolean };
-export type GpsFix = Coord & { accuracy: number | null; timestamp: number };
+export type GpsFix = Coord & {
+  accuracy: number | null;
+  timestamp: number;
+  // Native GPS speed in m/s; null/negative means unavailable. Never use it
+  // to manufacture distance or coordinates, only to corroborate a fast fix.
+  speed?: number | null;
+};
 
 // Fixes worse than this are too uncertain to draw or count.
 export const MAX_ACCURACY_M = 30;
 // Smaller steps are mostly jitter while standing still.
 export const MIN_STEP_M = 3;
-// About 54 km/t: faster jumps are signal errors for these sports.
+// Without independent speed evidence, retain the conservative jump filter.
 export const MAX_SPEED_MS = 15;
+const MAX_CORROBORATED_SPEED_MS = 55;
+
+function plausibleSpeed(metersPerSecond: number, fix: GpsFix) {
+  if (metersPerSecond <= MAX_SPEED_MS) return true;
+  const speed = fix.speed;
+  return (
+    typeof speed === "number" &&
+    Number.isFinite(speed) &&
+    speed >= 0 &&
+    speed <= MAX_CORROBORATED_SPEED_MS &&
+    metersPerSecond <= MAX_CORROBORATED_SPEED_MS &&
+    Math.abs(metersPerSecond - speed) <= Math.max(3, speed * 0.25)
+  );
+}
 
 const R = 6371000;
 const rad = (deg: number) => (deg * Math.PI) / 180;
@@ -51,7 +71,8 @@ export function addFix(state: Recording, fix: GpsFix): Recording {
     return { ...state, route: [...route, [point]], lastFix: fix };
   const meters = metersBetween(last, fix);
   // Keep lastFix on tiny steps so slow movement still adds up.
-  if (meters < MIN_STEP_M || meters / seconds > MAX_SPEED_MS) return state;
+  if (meters < MIN_STEP_M || !plausibleSpeed(meters / seconds, fix))
+    return state;
   return {
     ...state,
     route: append(),

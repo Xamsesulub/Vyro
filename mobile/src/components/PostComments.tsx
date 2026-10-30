@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useRef, useState, type ComponentRef } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ComponentRef,
+} from "react";
 import {
   ActivityIndicator,
   ScrollView,
@@ -15,6 +21,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { client, type Comment, socialError } from "../features/social/api";
 import { requireOwner } from "../features/social/profiles";
 import { Avatar } from "./SocialUi";
+import SafetyActions from "./SafetyActions";
 import { Button, Icon, Txt, useTheme } from "./ui";
 
 /** Separate from the feed so the composer always sits above the keyboard/tab bar. */
@@ -283,9 +290,30 @@ export default function PostComments({
               <View key={item.id} style={{ flexDirection: "row", gap: 12 }}>
                 <Avatar name={item.profiles.display_name} size={34} />
                 <View style={{ flex: 1, gap: 5 }}>
-                  <Txt size={14} weight="700">
-                    {item.profiles.display_name}
-                  </Txt>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <Txt size={14} weight="700">
+                      {item.profiles.display_name}
+                    </Txt>
+                    <SafetyActions
+                      owner={userId}
+                      target={item.author_id}
+                      name={item.profiles.display_name}
+                      onBlocked={() => {
+                        setComments((items) =>
+                          items.filter(
+                            (row) => row.author_id !== item.author_id,
+                          ),
+                        );
+                        refresh();
+                      }}
+                    />
+                  </View>
                   <Txt size={15}>{item.body}</Txt>
                   {item.author_id === userId && (
                     <View style={{ flexDirection: "row", gap: 20 }}>

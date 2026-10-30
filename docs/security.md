@@ -1,4 +1,23 @@
-# Sikkerhet og personvernstatus — 20. oktober 2026
+# Sikkerhet og personvernstatus
+
+## Gjeldende kontroll — 28. oktober 2026
+
+Denne delen erstatter de eldre statuslistene nedenfor. Brukeren opplyser at tidligere delte nøkler er byttet. Nøkkelbytte er ikke utført eller uavhengig kontrollert i denne leveransen.
+
+- **Privat sikkerhetskopi:** eksplisitt aktivering med tilfeldig 256-bits gjenopprettingskode. Hele økten krypteres med AES-GCM på enheten før opplasting. Konto, økt-ID, nøkkel-ID og formatversjon bindes kryptografisk til kopien. Serveren får kryptert innhold og nødvendig metadata, aldri koden. Lokalt lagres koden gjennom den eksisterende krypterte lagringen. Ny telefon krever både innlogging og riktig kode. Mistet telefon og kode betyr at kopien ikke kan åpnes av VYRO. Delte innlegg er fortsatt lesbare for valgt publikum.
+- **Eldre kopier:** konverteres i begrensede grupper når brukeren aktiverer og appen er åpen. En eldre kopi slettes først etter nedlasting, dekryptering og innholdskontroll av den nye. Samtidig aktivering på to enheter kan ikke erstatte hverandres nøkkel. Produksjon hadde ingen gammel backup-tabell eller private skyøkter ved aktivering; kompatibilitetstabellen er tom og tillater ikke nye klartekstkopier.
+- **Blokkering og rapportering:** gjensidig serverkontroll for sosiale lesinger, relasjoner og nye handlinger. Blokkering fjerner følgerforhold, følgeforespørsler, ventende klubbinvitasjoner og aktuelle varsler med usendte pushjobber. Rapporter kan bare gjelde synlige mål, er begrenset og kan ikke leses av vanlige brukere. Administrativ behandling er fortsatt manuell. Allerede viste opplysninger eller leverte telefonvarsler kan ikke trekkes tilbake.
+- **Kontosletting:** egen bekreftelsesskjerm krever `SLETT` og en innlogging opprettet de siste 15 minuttene. Et fornyet token alene teller ikke som ny innlogging. Serveren utleder eier fra verifisert innlogging, sperrer nye skriver og fjerner bare eierens bilder før auth-konto og tilknyttede data slettes. Delvis feil kan prøves på nytt. Klienten rydder bare den slettede kontoens lokale økter og nøkkel, også ved kontobytte underveis. Ingen ekte konto er slettet som test.
+- **Passord:** minimum åtte tegn og ekstra kontroll ved passordbytte er lagret og visuelt kontrollert i Supabase. E-postbekreftelse og sikkert e-postbytte er på. Anonym innlogging og manuell identitetskobling er av. Eksisterende innloggingsgrenser er kontrollert. Vern mot kjente lekkede passord krever Pro i gjeldende prosjekt, og er ikke aktivert.
+- **Avhengigheter:** tilgjengelige rettelser er lagt inn uten å nedgradere Expo. Siste audit hadde ingen moderate, høye eller kritiske funn. 16 lave treff peker på samme `deepmerge`-advarsel uten tilgjengelig upstream-rettelse. En avgrenset, versjons- og hashkontrollert installasjonsrettelse avviser farlige prototype-nøkler; angreps- og kompatibilitetstester kjøres i CI. Audit-varselet skjules ikke.
+
+Migreringene `202610280005_encrypted_backups`, `202610280006_safety` og `202610280007_account_deletion`, samt Edge-funksjonen `delete-account`, er aktivert i Supabase. Etterkontroll bekrefter RLS, avviste klientrettigheter og skrivevern ved sletting. Uinnlogget kall til sletting gir 401. Se [kontrollresultatet](evidence/security-hardening-2026-10-28.json), [tester](testing.md) og [driftsrutiner](security-operations.md).
+
+**Gjenstår:** nytt signert iPhone-bygg og fysisk test, full database-/Storage-backup med øvd gjenoppretting, CAPTCHA med fungerende native flyt, full kontoeksport utover GPX og en uavhengig sikkerhetsgjennomgang. Supabase viste ingen tilgjengelige databasebackuper og PITR var av. Brukerens krypterte øktkopi erstatter ikke driftsbackup. Ingen betalt oppgradering, Git-push eller nytt iPhone-bygg er gjort i denne leveransen.
+
+## Historisk gjennomgang — 20.–28. oktober 2026
+
+Følgende daterte notater dokumenterer tidligere tilstand, ikke en oppdatert liste over uløste feil.
 
 ## Endret skjerming for treningsinnlegg — 28. oktober 2026
 

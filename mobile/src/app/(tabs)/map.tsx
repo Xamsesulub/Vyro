@@ -16,7 +16,10 @@ import {
   Platform,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { router, useFocusEffect } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
+import { ClubZones } from "../../features/turf/ClubZones";
+import { AccountGate } from "../../components/AccountGate";
+import { useAuthStore } from "../../stores/useAuthStore";
 import { Txt, Icon } from "../../components/ui";
 import { MapRouteSheet } from "../../components/MapRouteSheet";
 import { MapSearch } from "../../components/MapSearch";
@@ -46,6 +49,12 @@ function MapText({ style, muted, ...props }: ComponentProps<typeof Txt>) {
 }
 
 export default function Maps() {
+  const { view, clubId } = useLocalSearchParams<{ view?: string; clubId?: string }>();
+  const userId = useAuthStore(s => s.session?.user.id);
+  if (view === "zones") return <AccountGate>{userId && <ClubZones key={`${userId}:${clubId ?? ""}`} userId={userId} initialClubId={clubId} />}</AccountGate>;
+  return <RoutesMap />;
+}
+function RoutesMap() {
   const saved = useSavedRoutes();
   const workouts = useVisibleWorkouts();
   const [length, setLength] = useState(0);

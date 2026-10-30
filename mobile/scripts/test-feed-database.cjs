@@ -71,6 +71,10 @@ async function main() {
       insert into public.reposts(user_id,post_id) values('${a}',md5('workout-1')::uuid);
       insert into public.turfs(id,name,owner_id,route,distance_m,seconds)
         values(md5('turf')::uuid,'Test','${b}','[{"latitude":59.9,"longitude":10.7},{"latitude":59.91,"longitude":10.71}]',1000,300);
+      select set_config('request.jwt.claim.sub','${b}',true);
+      insert into public.clubs(id,owner_id,name) values(md5('feed-club')::uuid,'${b}','Testklubb');
+      insert into public.club_members(club_id,user_id) values(md5('feed-club')::uuid,'${a}'),(md5('feed-club')::uuid,'${b}');
+      update public.turfs set club_id=md5('feed-club')::uuid where id=md5('turf')::uuid;
       insert into public.turf_events(turf_id,actor_id,revision,extended,distance_m,seconds,created_at)
         select md5('turf')::uuid,case when i<=5 then '${b}'::uuid else '${c}'::uuid end,
           1,false,1000,300,now() from generate_series(1,1000) i;
@@ -151,6 +155,9 @@ async function main() {
       [a, b],
     );
     check((await db.query("select * from public.vyro_feed()")).rows.length, 0);
+    // Unfollowing does not leave the club or hide its competition events.
+    check((await db.query("select * from public.vyro_turf_events()")).rows.length, 3);
+    await db.query("select leave_club(md5('feed-club')::uuid)");
     check(
       (await db.query("select * from public.vyro_feed('reposted')")).rows
         .length,

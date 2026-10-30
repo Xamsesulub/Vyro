@@ -13,7 +13,7 @@ async function main() {
     c = "33333333-3333-4333-8333-333333333333";
   await db.exec(`create role anon; create role authenticated; create role service_role; create schema auth;
  create table auth.users(id uuid primary key,raw_user_meta_data jsonb default '{}');
- create table auth.sessions(id uuid primary key,user_id uuid references auth.users);
+ create table auth.sessions(id uuid primary key,user_id uuid references auth.users,created_at timestamptz default now());
 create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
  grant usage on schema auth,public to anon,authenticated;
  insert into auth.users values('${a}','{"display_name":"Alex (test)"}'),('${b}','{"display_name":"Mina (test)"}'),('${c}','{"display_name":"Noah (test)"}');
@@ -98,6 +98,24 @@ create function auth.uid() returns uuid language sql stable as $$select nullif(c
       );
     }
   }
+  if (process.env.VYRO_UI_SCENARIO === "club-zones") {
+    await as(a);
+    const demoClub = (await db.query("select create_club('Bislett løpeklubb','Kun lokal visningstest','open') id")).rows[0].id;
+    const members = [a, b, c];
+    for (let i = 4; i <= 20; i++) {
+      const id = `44444444-4444-4444-8444-${String(i).padStart(12, '0')}`;
+      await db.query("insert into auth.users(id,raw_user_meta_data) values($1,$2::jsonb)", [id, JSON.stringify({display_name:`Medlem ${i} (test)`})]);
+      members.push(id);
+    }
+    for (const member of members.slice(1)) await db.query("insert into club_members(club_id,user_id) values($1,$2)", [demoClub, member]);
+    const courses = [
+      ['St. Hanshaugen', b, [[59.925,10.742],[59.927,10.742],[59.928,10.745],[59.928,10.747],[59.926,10.749],[59.924,10.746]]],
+      ['Bislett', a, [[59.923,10.734],[59.925,10.733],[59.926,10.731],[59.925,10.728],[59.923,10.728],[59.922,10.731]]],
+      ['Slottsparken', c, [[59.917,10.725],[59.918,10.723],[59.920,10.724],[59.921,10.727],[59.920,10.730],[59.918,10.728]]],
+      ['Langs Akerselva', members[3], [[59.919,10.754],[59.921,10.753],[59.923,10.755],[59.925,10.756],[59.927,10.755]]],
+    ];
+    for (const [name, owner, points] of courses) await db.query("insert into turfs(name,owner_id,club_id,route,distance_m,seconds) values($1,$2,$3,$4::jsonb,1200,360)", [name, owner, demoClub, JSON.stringify(points.map(([latitude,longitude])=>({latitude,longitude})))]);
+  }
   await as(a);
   await db.exec("set role authenticated");
   let current = a;
@@ -122,6 +140,7 @@ create function auth.uid() returns uuid language sql stable as $$select nullif(c
     },
   });
   const footballPreview = process.env.VYRO_UI_SCENARIO === "football-summary";
+  const securityPreview = process.env.VYRO_UI_SCENARIO === "security";
   const sampleRoute = [
     { latitude: 59.914, longitude: 10.75 },
     { latitude: 59.916, longitude: 10.751 },
@@ -133,7 +152,7 @@ create function auth.uid() returns uuid language sql stable as $$select nullif(c
       name: "Alex (test)",
       examplesVisible: false,
       theme: "light",
-      workouts: footballPreview
+      workouts: footballPreview || securityPreview
         ? [
             {
               id: "local-football",
@@ -169,7 +188,7 @@ create function auth.uid() returns uuid language sql stable as $$select nullif(c
   };
   const fixtureMarker = footballPreview
     ? "football-summary-fixture"
-    : "social-fixture-v2";
+    : securityPreview ? "security-fixture-v1" : "social-fixture-v2";
   const script = `<script>if(!sessionStorage.getItem(${JSON.stringify(fixtureMarker)})){localStorage.clear();localStorage.setItem('sb-diviitenhbidwrcpmkxr-auth-token',${JSON.stringify(JSON.stringify(session(a)))});localStorage.setItem('sb-127-auth-token',localStorage.getItem('sb-diviitenhbidwrcpmkxr-auth-token'));localStorage.setItem('vyro-prototype-v1',${JSON.stringify(JSON.stringify(fixtureState))});sessionStorage.setItem(${JSON.stringify(fixtureMarker)},'yes');}const originalFetch=window.fetch.bind(window);window.fetch=(input,init)=>{const url=typeof input==='string'?input:input.url||String(input);if(url.includes('.supabase.co/')){const u=new URL(url);return originalFetch('/fixture-api'+u.pathname+u.search,init);}return originalFetch(input,init);};document.addEventListener('DOMContentLoaded',()=>{const b=document.createElement('div');b.textContent='LOKAL TEST · INGEN EKTE BRUKERE';b.style='position:fixed;bottom:0;right:0;background:#11182C;color:white;z-index:99999;font:8px sans-serif;padding:2px;pointer-events:none';document.body.appendChild(b);});</script>`;
   const root = path.resolve(__dirname, process.env.VYRO_UI_ROOT || "../dist");
   const images = new Map();
@@ -213,6 +232,22 @@ create function auth.uid() returns uuid language sql stable as $$select nullif(c
             const filter = (field) =>
               url.searchParams.get(field)?.replace(/^eq\./, "");
             if (ep === "/auth/v1/user") result = session(current).user;
+            else if (["/rest/v1/backup_vaults", "/rest/v1/encrypted_workout_backups", "/rest/v1/workout_backups"].includes(ep)) {
+              const table = ep.split("/").at(-1);
+              if (req.method === "POST" && table === "backup_vaults")
+                await db.query("insert into backup_vaults(owner_id,key_id,verifier) values($1,$2,$3) on conflict do nothing", [current,body.key_id,body.verifier]);
+              if (req.method === "POST" && table === "encrypted_workout_backups")
+                await db.query("insert into encrypted_workout_backups(owner_id,key_id,local_id,ciphertext) values($1,$2,$3,$4) on conflict do nothing", [current,body.key_id,body.local_id,body.ciphertext]);
+              if (req.method === "DELETE" && table !== "backup_vaults")
+                await db.query(`delete from ${table} where owner_id=$1`, [current]);
+              result = await rows(`select * from ${table} where owner_id=$1 order by ${table === 'backup_vaults' ? 'owner_id' : 'local_id'}`, [current]);
+              if (url.searchParams.get("local_id")?.startsWith("eq.")) result=result.filter(r=>r.local_id===filter("local_id"));
+              if (url.searchParams.get("local_id")?.startsWith("gt.")) result=result.filter(r=>r.local_id>url.searchParams.get("local_id").slice(3));
+              if (url.searchParams.get("local_id")?.startsWith("in.(")) {
+                const ids=url.searchParams.get("local_id").slice(4,-1).split(',');result=result.filter(r=>ids.includes(r.local_id));
+              }
+              if (req.headers.accept?.includes("vnd.pgrst.object")) result=result[0] ?? null;
+            }
             else if (ep === "/rest/v1/profiles") {
               if (req.method === "PATCH") {
                 if (typeof body.is_private === "boolean")
@@ -320,12 +355,21 @@ create function auth.uid() returns uuid language sql stable as $$select nullif(c
                 result = result.find((x) => x.id === filter("id")) ?? null;
             } else if (ep === "/rest/v1/club_members") {
               result = await rows(
-                "select m.*,to_jsonb(p) profiles from club_members m join profiles p on p.id=m.user_id",
+                "select m.*,to_jsonb(p) profiles,to_jsonb(c) clubs from club_members m join profiles p on p.id=m.user_id join clubs c on c.id=m.club_id",
               );
               if (filter("club_id"))
                 result = result.filter((x) => x.club_id === filter("club_id"));
               if (filter("user_id"))
                 result = result.filter((x) => x.user_id === filter("user_id"));
+              res.setHeader("Content-Range", `0-${Math.max(0,result.length-1)}/${result.length}`);
+              if (req.method === "HEAD") { res.end(); return; }
+              if (req.headers.accept?.includes("vnd.pgrst.object")) result=result[0]??null;
+            } else if (ep === "/rest/v1/turfs") {
+              result = await rows("select t.*,jsonb_build_object('display_name',p.display_name,'avatar_path',p.avatar_path) profiles from turfs t join profiles p on p.id=t.owner_id where t.id=$1", [filter("id")]);
+              if (req.headers.accept?.includes("vnd.pgrst.object")) result=result[0]??null;
+            } else if (ep === "/rest/v1/turf_attempts") {
+              result = await rows("select * from turf_attempts where actor_id=$1 and local_id=$2", [current,filter("local_id")]);
+              if (req.headers.accept?.includes("vnd.pgrst.object")) result=result[0]??null;
             } else if (ep === "/rest/v1/club_invitations") {
               result = await rows(
                 "select i.*,to_jsonb(c) clubs from club_invitations i join clubs c on c.id=i.club_id",
@@ -359,6 +403,11 @@ create function auth.uid() returns uuid language sql stable as $$select nullif(c
             else if (ep.startsWith("/rest/v1/rpc/")) {
               const name = ep.split("/").at(-1);
               const rpc = {
+                vyro_club_turfs: ["p_club_id", "p_before_updated", "p_before_id"],
+                vyro_club_turf_results: ["p_club_id", "p_offset"],
+                vyro_block: ["p_target", "p_block"],
+                vyro_report: ["p_target", "p_reason", "p_details", "p_post", "p_place"],
+                vyro_my_blocks: [],
                 vyro_follow: ["p_target", "p_follow"],
                 vyro_respond_follow: ["p_requester", "p_accept"],
                 vyro_set_avatar: ["p_path"],
@@ -402,6 +451,8 @@ create function auth.uid() returns uuid language sql stable as $$select nullif(c
                   "vyro_respond_follow",
                   "vyro_set_avatar",
                   "vyro_notification_target",
+                  "vyro_block",
+                  "vyro_report",
                 ].includes(name)
                   ? await rows(`select * from ${q}`, args)
                   : (await rows(`select ${q} result`, args))[0].result;
@@ -455,7 +506,7 @@ create function auth.uid() returns uuid language sql stable as $$select nullif(c
                 }
                 result = [];
               }
-            } else if (ep === "/rest/v1/activities" || ep === "/rest/v1/turfs")
+            } else if (ep === "/rest/v1/activities")
               result = [];
             else {
               res.statusCode = 404;
@@ -477,7 +528,7 @@ create function auth.uid() returns uuid language sql stable as $$select nullif(c
               ? url.searchParams.get("screen") === "activity"
                 ? "/activity/local-football"
                 : "/summary"
-              : [
+              : process.env.VYRO_UI_SCENARIO === "club-zones" ? "/map?view=zones" : [
                     "/notifications",
                     "/settings/notifications",
                     "/settings/privacy",

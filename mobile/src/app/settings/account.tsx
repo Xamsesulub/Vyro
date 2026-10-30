@@ -123,6 +123,11 @@ function AccountForm({ user }: { user: User }) {
       )}
       <SettingsGroup title="Profil og data">
         <SettingsRow
+          title="Slett konto"
+          description="Slett kontoen og tilhørende data permanent."
+          onPress={() => router.push("/settings/delete-account")}
+        />
+        <SettingsRow
           title="Rediger profil"
           onPress={() => router.push("/edit-profile")}
         />

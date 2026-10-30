@@ -7,3 +7,7 @@ verify_jwt = true
 # Authenticated only by a random, server-only scheduler secret in the handler.
 [functions.follower-notifications]
 verify_jwt = false
+
+# Handler verifies every user JWT against Auth before using any admin operation.
+[functions.delete-account]
+verify_jwt = false

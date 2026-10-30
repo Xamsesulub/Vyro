@@ -34,6 +34,14 @@ export default function PrivacySettings() {
         her publiserer øktene dine automatisk.
       </PageNote>
       {userId && <ProfilePrivacy key={userId} />}
+      {userId && (
+        <SettingsGroup title="Trygghet">
+          <SettingsRow
+            title="Blokkerte brukere"
+            onPress={() => router.push("/settings/blocked")}
+          />
+        </SettingsGroup>
+      )}
       <SettingsGroup
         title="Når du velger å dele"
         note="Dette er et forvalg for nye innlegg på denne enheten. Du bekrefter publikum før publisering. Gamle innlegg endres ikke."

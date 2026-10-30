@@ -72,7 +72,8 @@ export function TurfDetail({ userId, id }: { userId: string; id: string }) {
               {owner
                 ? "Du eier denne sonen"
                 : `${turf.profiles?.display_name ?? "Løper"} eier sonen`}{" "}
-              · Synlig for alle løpere
+              ·{" "}
+              {turf.club_id ? "Klubbens sone" : "Privat arkiv · tidligere sone"}
             </Txt>
             <WorkoutMap points={turf.route} height={230} />
             <Txt size={22} weight="700">
@@ -100,7 +101,7 @@ export function TurfDetail({ userId, id }: { userId: string; id: string }) {
                 router.push("/(tabs)/track");
               }}
             />
-            {!owner && (
+            {!owner && !!turf.club_id && (
               <Button
                 title="Bruk en lagret løpetur"
                 secondary
@@ -114,10 +115,15 @@ export function TurfDetail({ userId, id }: { userId: string; id: string }) {
               />
             )}
             <Button
-              title="Se alle mine og vennenes soner"
+              title="Til klubbens soner"
               secondary
               disabled={busy}
-              onPress={() => router.replace("/turf")}
+              onPress={() =>
+                router.replace({
+                  pathname: "/(tabs)/map",
+                  params: { view: "zones", clubId: turf.club_id ?? undefined },
+                })
+              }
             />
             {owner && (
               <>

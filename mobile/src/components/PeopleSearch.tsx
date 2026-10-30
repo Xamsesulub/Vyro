@@ -6,6 +6,7 @@ import { Button, Txt, styles } from "./ui";
 import { Avatar, Field } from "./SocialUi";
 import { changeFollow } from "../features/social/profiles";
 import { visibleUsername } from "../features/social/display";
+import SafetyActions from "./SafetyActions";
 
 export function cleanPeopleQuery(value: string) {
   return value
@@ -190,6 +191,16 @@ export function PeopleSearch({
             disabled={!!busy}
             onPress={() => void choose(person)}
           />
+          {!onChoose && (
+            <SafetyActions
+              owner={userId}
+              target={person.id}
+              name={person.display_name}
+              onBlocked={() =>
+                setPeople((p) => p.filter((row) => row.id !== person.id))
+              }
+            />
+          )}
         </View>
       ))}
       {people.length === 50 && (

@@ -1,0 +1,46 @@
+{
+  "date": "2026-10-28",
+  "scope": "Metadata verification only; no production account deletion or private route export",
+  "database": {
+    "migrations_applied": ["202610280005", "202610280006", "202610280007"],
+    "tables_with_rls": ["backup_vaults", "encrypted_workout_backups", "workout_backups", "user_blocks", "safety_reports", "account_deletions"],
+    "anonymous_backup_read": false,
+    "authenticated_report_read": false,
+    "authenticated_deletion_rpc": false,
+    "service_role_deletion_rpc": true,
+    "plaintext_backup_insert": false,
+    "vault_update": false,
+    "account_deletion_guarded_tables": 32,
+    "storage_deletion_guards": 2,
+    "blocking_policies": 9,
+    "encrypted_backup_rows_at_activation": 0,
+    "legacy_backup_rows_at_activation": 0
+  },
+  "edge": {"delete_account_deployed": true, "unauthenticated_post_status": 401},
+  "auth": {
+    "minimum_password_length": 8,
+    "secure_password_change": true,
+    "email_confirmation": true,
+    "secure_email_change": true,
+    "anonymous_signin": false,
+    "manual_linking": false,
+    "leaked_password_protection": false,
+    "captcha": false
+  },
+  "service_backup": {"available_database_backups": 0, "pitr_enabled": false, "restore_drill_completed": false},
+  "validation": {
+    "typecheck": "passed",
+    "lint": "passed",
+    "jest_suites": 84,
+    "jest_tests": 539,
+    "database_checks": 621,
+    "security_database_checks": 44,
+    "dependency_regression_tests": "passed",
+    "web_export": "passed",
+    "ios_javascript_export": "passed",
+    "isolated_browser_backup_sync": "passed",
+    "physical_ios_security_test": "not performed",
+    "new_signed_ios_build": "not created",
+    "git_push": "not performed"
+  }
+}

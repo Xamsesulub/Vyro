@@ -104,15 +104,17 @@ test("all zones need one paged request and deep links load their exact id", asyn
   await expect(loadTurf("deleted")).rejects.toThrow("finnes ikke");
 });
 test("publishing only uploads the reviewed interior and records the server's result", async () => {
-  respond = (u) => (u.pathname.endsWith("submit_turf_run") ? turfResult : []);
+  respond = (u) =>
+    u.pathname.endsWith("submit_club_turf_run") ? turfResult : [];
   const w = turfWorkout();
   await expect(
-    submitTurf(w, "owner", null, false, " Ny sone "),
+    submitTurf(w, "owner", null, false, " Ny sone ", undefined, "club"),
   ).resolves.toEqual({ result: turfResult, existing: false });
   const body = requests.find(({ url }) =>
-    url.pathname.endsWith("submit_turf_run"),
+    url.pathname.endsWith("submit_club_turf_run"),
   )!.body!;
   expect(body.p_name).toBe("Ny sone");
+  expect(body.p_club_id).toBe("club");
   const points = body.p_samples as NonNullable<typeof w.turfTrace>;
   expect(points.length).toBeLessThan(w.turfTrace!.length);
   expect(
@@ -142,7 +144,8 @@ test("a lost publication response is recovered without submitting a new zone, ev
 });
 
 test("a continuous 650 m run can create a zone after 200 m endpoint shielding", async () => {
-  respond = (u) => (u.pathname.endsWith("submit_turf_run") ? turfResult : []);
+  respond = (u) =>
+    u.pathname.endsWith("submit_club_turf_run") ? turfResult : [];
   const trace = Array.from({ length: 66 }, (_, i) => ({
     latitude: 59.9 + (i * 10) / 111195,
     longitude: 10.7,
@@ -164,9 +167,17 @@ test("a continuous 650 m run can create a zone after 200 m endpoint shielding", 
     ),
   ).toBe(true);
   expect(metersBetween(preview.samples[0], trace[0])).toBeLessThan(500);
-  await submitTurf(workout, "owner", null, false, "Kort sone");
+  await submitTurf(
+    workout,
+    "owner",
+    null,
+    false,
+    "Kort sone",
+    undefined,
+    "club",
+  );
   const body = requests.find(({ url }) =>
-    url.pathname.endsWith("submit_turf_run"),
+    url.pathname.endsWith("submit_club_turf_run"),
   )!.body!;
   expect(body.p_samples).toEqual(
     preview.samples.map(({ latitude, longitude, timestamp, accuracy }) => ({
@@ -191,7 +202,15 @@ test("invalid GPS, foreign accounts and simulations never reach the publish RPC"
     ),
   ).rejects.toThrow("GPS");
   await expect(
-    submitTurf(turfWorkout({ turfTrace: [] }), "owner", null, false, "x"),
+    submitTurf(
+      turfWorkout({ turfTrace: [] }),
+      "owner",
+      null,
+      false,
+      "x",
+      undefined,
+      "club",
+    ),
   ).rejects.toThrow("mangler GPS-data");
   expect(requests.some(({ url }) => url.pathname.includes("/rpc/"))).toBe(
     false,

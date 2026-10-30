@@ -49,6 +49,7 @@
     "@testing-library/react-native": "^14.1.0",
     "@types/jest": "30.0.0",
     "@types/react": "~19.3.0",
+    "@types/react-dom": "^19.3.0",
     "eslint": "^9.39.5",
     "eslint-config-expo": "~58.0.4",
     "jest": "~30.5.2",
@@ -58,6 +59,8 @@
     "typescript": "~6.0.3"
   },
   "scripts": {
+    "postinstall": "node scripts/patch-deepmerge.cjs",
+    "test:security-dependencies": "node scripts/test-dependency-security.cjs",
     "brand:generate": "node scripts/generate-brand.cjs",
     "map:check": "node scripts/check-mapbox.cjs",
     "start": "expo start",
@@ -68,7 +71,7 @@
     "lint": "expo lint",
     "test": "jest --runInBand",
     "export:web": "expo export --platform web",
-    "test:database": "node scripts/test-database.cjs && node scripts/test-turf-database.cjs && node scripts/test-feed-database.cjs && node scripts/test-backup-database.cjs && node scripts/test-clubs-places-database.cjs && node scripts/test-routes-database.cjs && node scripts/test-profile-repair.cjs && node scripts/test-sports-database.cjs && node scripts/test-social-profiles.cjs && node scripts/test-post-notifications.cjs",
+    "test:database": "node scripts/test-database.cjs && node scripts/test-turf-database.cjs && node scripts/test-club-turf-database.cjs && node scripts/test-feed-database.cjs && node scripts/test-backup-database.cjs && node scripts/test-clubs-places-database.cjs && node scripts/test-routes-database.cjs && node scripts/test-profile-repair.cjs && node scripts/test-sports-database.cjs && node scripts/test-social-profiles.cjs && node scripts/test-post-notifications.cjs && node scripts/test-security-database.cjs",
     "export:native": "expo export --platform ios --output-dir .expo/native-export",
     "release:check": "node scripts/check-release-env.cjs",
     "eas-build-pre-install": "node scripts/check-release-env.cjs",
@@ -77,6 +80,19 @@
     "ios:submit": "npx eas-cli@latest submit --platform ios --profile testflight"
   },
   "overrides": {
+    "@expo/cli": {
+      "zod": "4.6.7"
+    },
+    "eslint-plugin-react-hooks": {
+      "zod": "4.6.7"
+    },
+    "node-forge": "1.4.2",
+    "@bacons/xcode": {
+      "uuid": "11.1.1"
+    },
+    "@expo/plist@0.0.18": {
+      "@xmldom/xmldom": "0.8.15"
+    },
     "xcode": {
       "uuid": "11.1.1"
     }

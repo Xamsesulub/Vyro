@@ -123,6 +123,7 @@ function ClubDetail({ id, userId }: { id: string; userId: string }) {
               ? "Åpen klubb"
               : "Privat klubb · kun inviterte"}
           </Txt>
+          {joined && <Button title="Klubbens soner" icon="map" onPress={() => router.push({ pathname: "/(tabs)/map", params: { view: "zones", clubId: id } })} />}
           {!joined && club.visibility === "open" && (
             <Button
               title={busy ? "Blir med …" : "Bli med"}

@@ -42,6 +42,10 @@ async function main() {
     await db.exec(`set role ${id ? "authenticated" : "anon"}`);
   }
   const stamp = Date.now() - 3600000;
+  await as(a);
+  const club = (await db.query("select create_club('Testklubb','','open') as id")).rows[0].id;
+  await as(b);
+  await db.query("select join_open_club($1)", [club]);
   const trace = (count, step) =>
     Array.from({ length: count }, (_, i) => ({
       latitude: 59.9 + i * 0.0002,
@@ -59,8 +63,8 @@ async function main() {
   ) =>
     (
       await db.query(
-        "select public.submit_turf_run($1,'Testløypa',$2,'Løping',$3::jsonb,$4,$5,$6) as result",
-        [local, source, JSON.stringify(samples), id, revision, extend],
+        "select public.submit_club_turf_run($7,$1,'Testløypa',$2,'Løping',$3::jsonb,$4,$5,$6) as result",
+        [local, source, JSON.stringify(samples), id, revision, extend, club],
       )
     ).rows[0].result;
   await as(null);

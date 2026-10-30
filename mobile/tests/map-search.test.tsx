@@ -11,9 +11,13 @@ jest.mock("react-native-safe-area-context", () => ({
 }));
 jest.mock("expo-router", () => ({
   router: { push: jest.fn() },
+  useLocalSearchParams: () => ({}),
   useFocusEffect: (effect: () => void) =>
     require("react").useEffect(effect, [effect]),
 }));
+// This suite covers the existing private-route map. Club zones are exercised
+// separately with their own controlled map adapter in club-zones.test.tsx.
+jest.mock("../src/features/turf/ClubZones", () => ({ ClubZones: () => null }));
 jest.mock("../src/components/ui", () => ({
   Txt: require("react-native").Text,
   Icon: () => null,

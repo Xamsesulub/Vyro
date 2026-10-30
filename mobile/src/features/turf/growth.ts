@@ -10,7 +10,8 @@ export type GrowingTurf = {
   route: MapPoint[];
   distance_m: number;
   seconds: number;
-  profiles?: { display_name: string };
+  club_id?: string | null;
+  profiles?: { display_name: string; avatar_path?: string | null };
 };
 export type GrowthPreview = {
   route: MapPoint[];

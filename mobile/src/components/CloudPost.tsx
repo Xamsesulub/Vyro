@@ -10,6 +10,7 @@ import FootballMap, { FootballSpeed } from "./FootballMap";
 import { Avatar } from "./SocialUi";
 import PostComments from "./PostComments";
 import { visibleUsername } from "../features/social/display";
+import SafetyActions from "./SafetyActions";
 
 export function CloudPost({
   post,
@@ -66,6 +67,13 @@ export function CloudPost({
             {new Date(post.recorded_at).toLocaleDateString("nb-NO")}
           </Txt>
         </View>
+        <SafetyActions
+          owner={userId}
+          target={post.author_id}
+          name={post.profiles.display_name}
+          postId={post.id}
+          onBlocked={onRemoved}
+        />
       </View>
       <Txt size={24} weight="700">
         {post.title}

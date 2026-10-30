@@ -18,7 +18,7 @@ export type TurfCursor = Pick<TurfSummary, "updated_at" | "id">;
 export type TurfPage = { items: TurfSummary[]; next: TurfCursor | null };
 const PAGE_SIZE = 20;
 const summary = "id,name,owner_id,revision,distance_m,seconds,updated_at";
-const profile = "profiles!turfs_owner_id_fkey(display_name)";
+const profile = "profiles!turfs_owner_id_fkey(display_name,avatar_path)";
 // PostgreSQL retains microseconds; Date.parse alone collapses distinct updates.
 const timeKey = (value: string) =>
   `${new Date(value).toISOString().slice(0, 19)}.${(value.match(/\.(\d+)/)?.[1] ?? "").padEnd(6, "0")}`;
@@ -119,6 +119,7 @@ export async function submitTurf(
   extend: boolean,
   name: string,
   signal?: AbortSignal,
+  clubId?: string,
 ): Promise<{ result: TurfResult; existing: boolean }> {
   if (
     workout.ownerId !== userId ||
@@ -130,10 +131,13 @@ export async function submitTurf(
   const receipt = await loadTurfReceipt(userId, workout.id, signal);
   if (signal?.aborted) throw new Error("VYRO_REQUEST_CANCELLED");
   if (receipt) return { result: receipt, existing: true };
+  const selectedClub = turf?.club_id ?? clubId;
+  if (!selectedClub) throw new Error("Velg klubben som skal konkurrere om sonen.");
   if (!turf && (!name.trim() || name.trim().length > 80))
     throw new Error("Gi sonen et navn på mellom 1 og 80 tegn.");
   const { samples } = turfPreview(workout, turf, extend);
-  let query = client().rpc("submit_turf_run", {
+  let query = client().rpc("submit_club_turf_run", {
+    p_club_id: selectedClub,
     p_local_id: workout.id,
     p_name: name.trim(),
     p_source: workout.source,
@@ -175,6 +179,8 @@ export async function withdrawTurf(id: string, userId: string) {
 
 export function turfError(error: unknown) {
   const message = (error as { message?: string })?.message ?? "";
+  if (message.includes("TURF_CLUB_MEMBERSHIP")) return "Du må være medlem av klubben for å se eller utfordre sonene. Velg en av klubbene dine.";
+  if (message.includes("TURF_WORKOUT_OTHER_CLUB")) return "Denne løpeturen er allerede brukt i en annen klubb. Velg en ny løpetur.";
   if (message.includes("TURF_CHANGED"))
     return "Sonen er endret. Åpne sonen på nytt for å se den nye løypa før du sender forsøket.";
   if (message.includes("TURF_NOT_FOUND"))

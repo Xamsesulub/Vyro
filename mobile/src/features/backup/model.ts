@@ -99,6 +99,21 @@ export function validBackup(
   );
 }
 export const backupKey = (owner: string, id: string) => `${owner}:${id}`;
+// PostgreSQL JSONB may reorder object keys. Compare the full JSON values, not
+// insertion order, while retaining array order and every stored field.
+export function sameBackup(a: Workout, b: Workout) {
+  const canonical = (value: Workout) =>
+    JSON.stringify(value, (_key, item) =>
+      item && typeof item === "object" && !Array.isArray(item)
+        ? Object.fromEntries(
+            Object.keys(item)
+              .sort()
+              .map((key) => [key, item[key]]),
+          )
+        : item,
+    );
+  return canonical(a) === canonical(b);
+}
 export function mergeBackups(
   local: Workout[],
   remote: Workout[],

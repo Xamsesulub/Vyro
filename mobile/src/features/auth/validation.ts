@@ -56,6 +56,8 @@ export function authErrorMessage(error: unknown): string {
       return "Velg et sterkere passord med minst 8 tegn.";
     case "same_password":
       return "Velg et annet passord enn det gamle.";
+    case "reauthentication_needed":
+      return "Logg inn på nytt før du endrer passordet, eller be om en ny passordlenke.";
     case "otp_expired":
     case "flow_state_expired":
     case "flow_state_not_found":

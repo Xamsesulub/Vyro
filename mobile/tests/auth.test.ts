@@ -46,6 +46,9 @@ test("shows useful safe errors without exposing raw server messages", () => {
     "e-posttjeneste",
   );
   expect(authErrorMessage({ code: "flow_state_expired" })).toContain("utløpt");
+  expect(authErrorMessage({ code: "reauthentication_needed" })).toContain(
+    "Logg inn på nytt",
+  );
   expect(authErrorMessage({ message: "VYRO_REQUEST_TIMEOUT" })).toContain(
     "lang tid",
   );

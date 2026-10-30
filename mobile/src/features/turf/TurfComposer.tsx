@@ -16,17 +16,40 @@ import { turfPreview } from "./eligibility";
 import { loadTurfReceipt, submitTurf, turfError, type TurfResult } from "./api";
 import { useTurf } from "./TurfDetail";
 import { WORKOUT_SHARING_RADIUS_METERS } from "../social/routePrivacy";
+import type { Club } from "../clubs/api";
+import { loadClubContext } from "./clubApi";
+import { ClubPicker } from "./ClubPicker";
 
 export function TurfComposer({
   userId,
   turfId,
   workoutId,
+  clubId,
 }: {
   userId: string;
   turfId?: string;
   workoutId?: string;
+  clubId?: string;
 }) {
   const c = useTheme();
+  const [club, setClub] = useState<Club | null>(null);
+  const [clubError, setClubError] = useState("");
+  const [clubLoading, setClubLoading] = useState(!!clubId);
+  useEffect(() => {
+    const abort = new AbortController();
+    if (!clubId) return;
+    void loadClubContext(clubId, userId, abort.signal)
+      .then((value) => {
+        if (!abort.signal.aborted) setClub(value);
+      })
+      .catch((e) => {
+        if (!abort.signal.aborted) setClubError(turfError(e));
+      })
+      .finally(() => {
+        if (!abort.signal.aborted) setClubLoading(false);
+      });
+    return () => abort.abort();
+  }, [clubId, userId]);
   const all = useAppStore((s) => s.workouts);
   const workouts = useMemo(
     () =>
@@ -102,13 +125,18 @@ export function TurfComposer({
   }, [workout, turfId, turf, extend, loading, loadError]);
   const openResult = (id: string) =>
     router.replace({ pathname: "/turf", params: { turfId: id } });
+  const openClubZones = () =>
+    router.replace({
+      pathname: "/(tabs)/map",
+      params: { view: "zones", clubId: turf?.club_id ?? club?.id },
+    });
   if (saved)
     return (
       <Page
         key="saved"
         title={saved.existing ? "Allerede lagret" : "Bekreftet"}
         fallback="/turf"
-        onBack={() => router.replace("/turf")}
+        onBack={openClubZones}
       >
         <View style={{ padding: 24, gap: 22 }}>
           <Txt size={30} weight="700">
@@ -124,7 +152,7 @@ export function TurfComposer({
             {saved.existing
               ? "Denne økten er allerede brukt i et soneforsøk. Åpne sonen for å se dagens eier og løype."
               : saved.result.won
-                ? "Andre løpere kan nå se sonen og utfordre tiden. Du finner den under Soner."
+                ? "Medlemmene i klubben kan nå se sonen og utfordre tiden. Du finner den under Soner."
                 : "Du slo ikke tiden denne gangen. Sonen beholder eieren."}
           </Txt>
           <Txt weight="700">
@@ -135,15 +163,28 @@ export function TurfComposer({
             title="Se sonen"
             onPress={() => openResult(saved.result.turf_id)}
           />
-          <Button
-            title="Til sonene"
-            secondary
-            onPress={() => router.replace("/turf")}
-          />
+          <Button title="Til sonene" secondary onPress={openClubZones} />
         </View>
       </Page>
     );
   const blockedTarget = !!turfId && (loading || !!loadError || !turf);
+  if (!turfId && !club)
+    return (
+      <Page title="Velg klubb" fallback="/turf">
+        <View style={{ padding: 22, gap: 18 }}>
+          <Txt size={24} weight="700">
+            Hvem skal konkurrere?
+          </Txt>
+          <Txt muted>Sonen deles bare med medlemmene i klubben du velger.</Txt>
+          {clubLoading ? (
+            <ActivityIndicator accessibilityLabel="Henter klubben" />
+          ) : (
+            <ClubPicker selected={club} onSelect={setClub} />
+          )}
+          {!!clubError && <Txt accessibilityRole="alert">{clubError}</Txt>}
+        </View>
+      </Page>
+    );
   if (!selected)
     return (
       <Page
@@ -163,6 +204,7 @@ export function TurfComposer({
           }}
           ListHeaderComponent={
             <View style={{ padding: 22, gap: 12 }}>
+              {!turfId && <ClubPicker selected={club} onSelect={setClub} />}
               <Txt size={24} weight="700">
                 Velg en løpetur
               </Txt>
@@ -247,7 +289,8 @@ export function TurfComposer({
             {!message && (
               <Txt muted size={12}>
                 Når du trykker «{turfId ? "Send soneforsøk" : "Legg ut sone"}»,
-                deler du løypa og resultatet med alle innloggede løpere.
+                deler du løypa og resultatet med{" "}
+                {club?.name ?? "medlemmene i denne klubben"}.
               </Txt>
             )}
             <Button
@@ -287,6 +330,7 @@ export function TurfComposer({
                     extend,
                     name,
                     publishing.current?.signal,
+                    club?.id,
                   );
                   if (alive.current) setSaved(result);
                 } catch (e) {
@@ -305,6 +349,7 @@ export function TurfComposer({
       }
     >
       <View style={{ padding: 20, gap: 16 }}>
+        {!turfId && !busy && <ClubPicker selected={club} onSelect={setClub} />}
         {loading && <ActivityIndicator accessibilityLabel="Henter sonen" />}
         {receipt ? (
           <>

@@ -5,6 +5,7 @@ import { removePlace } from "../features/places/api";
 import { client, socialError } from "../features/social/api";
 import { Avatar } from "./SocialUi";
 import { Button, Txt, useTheme } from "./ui";
+import SafetyActions from "./SafetyActions";
 export function PlacePost({
   post,
   userId,
@@ -70,13 +71,23 @@ export function PlacePost({
       }}
     >
       <View style={{ flexDirection: "row", gap: 12, alignItems: "center" }}>
-        <Avatar name={post.profiles.display_name} path={post.profiles.avatar_path} />
+        <Avatar
+          name={post.profiles.display_name}
+          path={post.profiles.avatar_path}
+        />
         <View style={{ flex: 1 }}>
           <Txt weight="700">{post.profiles.display_name}</Txt>
           <Txt muted size={12}>
             {new Date(post.created_at).toLocaleDateString("nb-NO")} · Stedsbilde
           </Txt>
         </View>
+        <SafetyActions
+          owner={userId}
+          target={post.author_id}
+          name={post.profiles.display_name}
+          placeId={post.id}
+          onBlocked={onRemoved}
+        />
       </View>
       {uri ? (
         <Image

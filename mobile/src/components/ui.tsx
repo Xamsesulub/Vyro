@@ -37,6 +37,7 @@ export function Txt({
   style,
   numberOfLines,
   accessibilityRole,
+  selectable,
 }: PropsWithChildren<{
   size?: number;
   muted?: boolean;
@@ -44,10 +45,12 @@ export function Txt({
   style?: TextStyle;
   numberOfLines?: number;
   accessibilityRole?: TextProps["accessibilityRole"];
+  selectable?: boolean;
 }>) {
   const c = useTheme();
   return (
     <Text
+      selectable={selectable}
       numberOfLines={numberOfLines}
       accessibilityRole={accessibilityRole}
       style={[

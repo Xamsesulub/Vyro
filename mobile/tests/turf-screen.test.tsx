@@ -12,13 +12,26 @@ import {
   type TurfPage,
 } from "../src/features/turf/api";
 import { turfWorkout, turfResult } from "./turf-fixtures";
+import { loadClubContext } from "../src/features/turf/clubApi";
 let mockParams: { mode?: string; workoutId?: string; turfId?: string } = {};
 let mockWorkouts = [turfWorkout()];
 jest.mock("expo-router", () => ({
   router: { push: jest.fn(), replace: jest.fn(), canGoBack: () => false },
-  useLocalSearchParams: () => mockParams,
+  useLocalSearchParams: () => ({ clubId: "club", ...mockParams }),
+  Redirect: ({ href }: { href: unknown }) => {
+    jest.requireActual("react").useEffect(() => {
+      jest.requireMock("expo-router").router.replace(href);
+    }, [href]);
+    return null;
+  },
   useFocusEffect: (cb: () => void) =>
     jest.requireActual("react").useEffect(cb, [cb]),
+}));
+jest.mock("../src/features/turf/clubApi", () => ({
+  loadClubContext: jest.fn(),
+}));
+jest.mock("../src/features/turf/ClubPicker", () => ({
+  ClubPicker: () => null,
 }));
 jest.mock("../src/lib/supabase", () => ({ supabase: null }));
 jest.mock("../src/components/AccountGate", () => ({
@@ -131,24 +144,24 @@ beforeEach(() => {
   });
   jest.mocked(loadTurfs).mockResolvedValue(page("Min gamle sone"));
   jest.mocked(loadTurfReceipt).mockResolvedValue(null);
+  jest.mocked(loadClubContext).mockResolvedValue({
+    id: "club",
+    name: "Testklubb",
+    description: "",
+    owner_id: "owner",
+    created_at: "",
+    visibility: "private",
+  });
 });
 const press = (name: string) =>
   fireEvent.press(screen.getByRole("button", { name }));
-test("Soner opens personal/friends list, shows creation immediately and preserves zones when refresh fails", async () => {
+test("Soner opens the club map in the map tab", async () => {
   await render(<TurfScreen />);
-  expect(jest.mocked(loadTurfs).mock.calls[0][1]).toBe("circle");
-  expect(screen.getByText("Min gamle sone")).toBeTruthy();
-  await press("Legg ut sone");
-  expect(router.push).toHaveBeenCalledWith({
-    pathname: "/turf",
-    params: { mode: "new" },
+  expect(router.replace).toHaveBeenCalledWith({
+    pathname: "/(tabs)/map",
+    params: { view: "zones", clubId: "club" },
   });
-  jest.mocked(loadTurfs).mockRejectedValueOnce(new Error("Nettet er nede"));
-  await press("Oppdater soner");
-  expect(screen.getByText("Min gamle sone")).toBeTruthy();
-  expect(screen.getByRole("alert")).toHaveTextContent("Nettet er nede");
-  await press("Prøv igjen");
-  expect(screen.queryByRole("alert")).toBeNull();
+  expect(loadTurfs).not.toHaveBeenCalled();
 });
 test("creation reviews one workout then clearly confirms publication and opens the returned zone", async () => {
   mockParams = { mode: "new" };
@@ -157,7 +170,7 @@ test("creation reviews one workout then clearly confirms publication and opens t
     .mockResolvedValue({ result: turfResult, existing: false });
   await render(<TurfScreen />);
   await press("Velg Langs elva");
-  expect(screen.queryByRole("button", { name: "Velg Langs elva" })).toBeNull();
+  expect(screen.getByText("Se over sonen")).toBeOnTheScreen();
   expect(screen.getByRole("button", { name: "Legg ut sone" })).toBeDisabled();
   expect(screen.getByLabelText("Navn på sonen")).toHaveDisplayValue("");
   await fireEvent.changeText(
@@ -172,6 +185,7 @@ test("creation reviews one workout then clearly confirms publication and opens t
     false,
     "Elvesonen",
     expect.anything(),
+    "club",
   );
   expect(screen.getByText("Sonen er lagt ut!")).toBeTruthy();
   await press("Se sonen");
@@ -258,17 +272,30 @@ test("deep-linked zones load by id and withdrawal still requires confirmation", 
   expect(withdrawTurf).toHaveBeenCalledWith("old-zone", "owner");
   expect(router.replace).toHaveBeenCalledWith("/turf");
 });
-test("account switching discards pending personal list responses", async () => {
-  const old = deferred<TurfPage>();
-  jest.mocked(loadTurfs).mockReturnValueOnce(old.promise);
+test("account switching cancels the previous club lookup", async () => {
+  mockParams = { mode: "new" };
+  const old = deferred<Awaited<ReturnType<typeof loadClubContext>>>();
+  jest.mocked(loadClubContext).mockReturnValueOnce(old.promise);
   await render(<TurfScreen />);
-  const signal = jest.mocked(loadTurfs).mock.calls[0][3]!;
-  jest.mocked(loadTurfs).mockResolvedValueOnce(page("Annen konto"));
+  const signal = jest.mocked(loadClubContext).mock.calls[0][2]!;
   await act(() =>
     useAuthStore.setState({ session: { user: { id: "other" } } as Session }),
   );
   expect(signal.aborted).toBe(true);
-  await act(() => old.resolve(page("Tidligere konto")));
-  expect(screen.queryByText("Tidligere konto")).toBeNull();
-  expect(screen.getByText("Annen konto")).toBeTruthy();
+  await act(() =>
+    old.resolve({
+      id: "old",
+      name: "Tidligere konto",
+      description: "",
+      owner_id: "owner",
+      visibility: "private",
+      created_at: "",
+    }),
+  );
+  expect(screen.queryByText(/Tidligere konto/)).toBeNull();
+  expect(loadClubContext).toHaveBeenLastCalledWith(
+    "club",
+    "other",
+    expect.anything(),
+  );
 });

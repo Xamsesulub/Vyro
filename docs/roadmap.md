@@ -1,5 +1,23 @@
 # Leveranseplan
 
+## Klubbsoner med eiernåler — 30. oktober 2026
+
+Kart → Soner åpner nå et eget klubbkart etter den godkjente skissen: VYRO-topp, klubbvalg og medlemsantall, Soner/Resultater, fargede løypesoner, profilbilder i kartnåler og et kompakt sonekort. Bildet viser eieren av sonen, ikke personens nåværende posisjon. Manglende bilde får en initial. Klubbens side har en direkte inngang til sonene.
+
+Nye soner deles uttrykkelig med én valgt klubb. Følgertall bestemmer ikke konkurransen. Resultater viser klubbmedlemmer, også dem med null soner, rangert etter antall eide soner og deretter løypelengde. Eksisterende regler for løping, tid, retning, utvidelse og 200-metersskjerming beholdes. Kartfargene er en smal korridor langs løypa, ikke eierskap til hele bydeler.
+
+Migreringen `202610300001_club_turfs.sql` er aktiv i Supabase. Tilgang kontrolleres ved lesing og innsending; klubbbytte, blokkering og utmelding omfattes. Gammel innsending uten klubb er stengt. Gamle soner uten klubb blir bare synlige for eieren; produksjonen hadde ingen soner ved overgangen. Ingen testmedlemmer eller testsoner ble lagt inn der.
+
+Ingen skritt-/rytmekontroll eller bekreftelse av fysisk løping er lagt til. Ingen signert iPhone-app eller Git-push i denne leveransen. Nytt testbygg og fysisk kontroll av Apple-kart, profilbilder, klubbbytte og to ekte deltakeres soneforsøk gjenstår. Se [teststatus](testing.md) og [konkurransereglene](social-and-turf.md).
+
+## Sikkerhetsarbeid — 28. oktober 2026
+
+Implementert: kryptert privat skybackup med gjenopprettingskode, blokkering og rapportering, administrasjon av blokkerte kontoer og kontosletting med ny innlogging. Serverregler og slettetjenesten er aktivert i Supabase. Private sikkerhetskopier aktiveres først når brukeren har tatt vare på og bekreftet koden. Delte innlegg beholder valgt publikum. Ingen eksisterende treningsdata eller ekte testkontoer er slettet.
+
+Typecheck, lint og 539 tester i 84 suiter består. Kryptering og synkronisering er også testet i nettleseren mot en isolert database med fiktive data. Dette erstatter ikke iOS-test av SecureStore, nyinstallasjon og gjenoppretting. Ingen ny signert iPhone-app eller Git-push er gjort her.
+
+Neste leveransesteg er et signert testbygg og fysisk sikkerhetstest på iPhone, deretter driftsbackup/gjenopprettingsøvelse, CAPTCHA-oppsett, full kontoeksport og uavhengig gjennomgang før offentlig lansering. Betalt Supabase-vern mot lekkede passord er ikke kjøpt. Se [sikkerhetsstatus](security.md), [teststatus](testing.md) og [driftsrutiner](security-operations.md).
+
 ## Fart, GPS-filter og lengdemeny — 28. oktober 2026
 
 Brukeren bekreftet at sammenligningsturen var registrert som Fotball. 0,66 km på 07:05 gir 5,6 km/t, tilsvarende omtrent 10:43 min/km. Fotballens fart og løpingens tempo beholdes. Strava-bildet viser litt annen tid og distanse; skjermbildene alene beviser ikke en beregningsfeil.

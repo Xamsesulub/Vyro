@@ -3,7 +3,15 @@ import { create } from "zustand";
 import { supabase } from "../../lib/supabase";
 import { appPersistence, useAppStore } from "../../stores/useAppStore";
 import { useAuthStore } from "../../stores/useAuthStore";
-import { backupKey, backupPayload, mergeBackups, validBackup } from "./model";
+import {
+  backupKey,
+  backupPayload,
+  mergeBackups,
+  sameBackup,
+  validBackup,
+} from "./model";
+import { vaultKey } from "./vault";
+import { openBackup, sealBackup } from "./cipher";
 
 export const useBackupStatus = create<{
   owner?: string;
@@ -47,6 +55,97 @@ export function syncBackup(owner: string): Promise<void> {
   useBackupStatus.setState({ owner, busy: true, error: null });
   task.promise = (async () => {
     try {
+      const key = await vaultKey(owner);
+      if (!current()) return;
+      const receipt = `encrypted:${key.keyId}`;
+      const decrypt = async (row: {
+        local_id: string;
+        key_id: string;
+        ciphertext: string;
+      }) => {
+        if (row.key_id !== key.keyId)
+          throw new Error(
+            "Sikkerhetskopien bruker en annen gjenopprettingskode.",
+          );
+        const payload: unknown = JSON.parse(
+          await openBackup(
+            row.ciphertext,
+            key.code,
+            owner,
+            row.local_id,
+            key.keyId,
+          ),
+        );
+        if (!validBackup(payload, owner, row.local_id))
+          throw new Error(
+            "Sikkerhetskopien kunne ikke verifiseres. Lokale økter er beholdt.",
+          );
+        return backupPayload(payload, owner);
+      };
+      const upload = async (payload: ReturnType<typeof backupPayload>) => {
+        const ciphertext = await sealBackup(
+          JSON.stringify(payload),
+          key.code,
+          owner,
+          payload.id,
+          key.keyId,
+        );
+        if (!current()) return false;
+        const { error } = await client
+          .from("encrypted_workout_backups")
+          .upsert(
+            {
+              owner_id: owner,
+              local_id: payload.id,
+              key_id: key.keyId,
+              ciphertext,
+            },
+            { onConflict: "owner_id,local_id", ignoreDuplicates: true },
+          )
+          .abortSignal(abort.signal);
+        if (!current()) return false;
+        if (error) throw error;
+        const read = await client
+          .from("encrypted_workout_backups")
+          .select("local_id,key_id,ciphertext")
+          .eq("owner_id", owner)
+          .eq("local_id", payload.id)
+          .abortSignal(abort.signal)
+          .single();
+        if (!current()) return false;
+        if (read.error) throw read.error;
+        if (!sameBackup(await decrypt(read.data), payload))
+          throw new Error(
+            "Kopiene av denne økten er ulike. Begge er beholdt; ingen data er overskrevet.",
+          );
+        return current();
+      };
+      // Migrate remote-only legacy rows too. Never remove plaintext before a
+      // read-back, authenticated decryption and exact payload comparison.
+      const legacy = await client
+        .from("workout_backups")
+        .select("local_id,payload")
+        .eq("owner_id", owner)
+        .order("local_id")
+        .limit(20)
+        .abortSignal(abort.signal);
+      if (!current()) return;
+      if (legacy.error) throw legacy.error;
+      for (const row of legacy.data ?? []) {
+        if (!validBackup(row.payload, owner, row.local_id))
+          throw new Error(
+            "En eldre sikkerhetskopi kunne ikke leses. Den er beholdt.",
+          );
+        if (!(await upload(backupPayload(row.payload, owner)))) return;
+        const removed = await client
+          .from("workout_backups")
+          .delete()
+          .eq("owner_id", owner)
+          .eq("local_id", row.local_id)
+          .abortSignal(abort.signal);
+        if (!current()) return;
+        if (removed.error) throw removed.error;
+      }
       // Workouts are immutable. Conflict-ignore makes a lost response safe to retry.
       const pending = useAppStore
         .getState()
@@ -54,24 +153,17 @@ export function syncBackup(owner: string): Promise<void> {
           (w) =>
             w.ownerId === owner &&
             (w.source === "gps" || w.source === "timer") &&
-            !useAppStore.getState().backupReceipts[backupKey(owner, w.id)],
+            useAppStore.getState().backupReceipts[backupKey(owner, w.id)] !==
+              receipt,
         );
       for (const workout of pending.slice(0, 40)) {
         if (!current()) return;
         const payload = backupPayload(workout, owner);
-        const { error } = await client
-          .from("workout_backups")
-          .upsert(
-            { owner_id: owner, local_id: workout.id, payload },
-            { onConflict: "owner_id,local_id", ignoreDuplicates: true },
-          )
-          .abortSignal(abort.signal);
-        if (!current()) return;
-        if (error) throw error;
+        if (!(await upload(payload))) return;
         useAppStore.setState((s) => ({
           backupReceipts: {
             ...s.backupReceipts,
-            [backupKey(owner, workout.id)]: "saved",
+            [backupKey(owner, workout.id)]: receipt,
           },
         }));
       }
@@ -82,7 +174,7 @@ export function syncBackup(owner: string): Promise<void> {
       for (;;) {
         if (!current()) return;
         const { data, error } = await client
-          .from("workout_backups")
+          .from("encrypted_workout_backups")
           .select("local_id")
           .eq("owner_id", owner)
           .gt("local_id", cursor)
@@ -106,26 +198,21 @@ export function syncBackup(owner: string): Promise<void> {
         for (let offset = 0; offset < missing.length; offset += 5) {
           if (!current()) return;
           const { data: full, error: readError } = await client
-            .from("workout_backups")
-            .select("local_id,payload")
+            .from("encrypted_workout_backups")
+            .select("local_id,key_id,ciphertext")
             .eq("owner_id", owner)
             .in("local_id", missing.slice(offset, offset + 5))
             .abortSignal(abort.signal);
           if (!current()) return;
           if (readError) throw readError;
-          const remote = (full ?? []).map((row) => {
-            if (!validBackup(row.payload, owner, row.local_id))
-              throw new Error(
-                "En sikkerhetskopi kunne ikke leses. Ingen lokale økter er overskrevet.",
-              );
-            return backupPayload(row.payload, owner);
-          });
+          const remote = await Promise.all((full ?? []).map(decrypt));
+          if (!current()) return;
           useAppStore.setState((s) => ({
             workouts: mergeBackups(s.workouts, remote, s.hiddenBackups),
             backupReceipts: {
               ...s.backupReceipts,
               ...Object.fromEntries(
-                remote.map((w) => [backupKey(owner, w.id), "saved"]),
+                remote.map((w) => [backupKey(owner, w.id), receipt]),
               ),
             },
           }));
@@ -173,6 +260,12 @@ export async function deleteBackups(owner: string) {
       .delete()
       .eq("owner_id", owner);
     if (error) throw error;
+    if (useAuthStore.getState().session?.user.id !== owner) return;
+    const encrypted = await supabase
+      .from("encrypted_workout_backups")
+      .delete()
+      .eq("owner_id", owner);
+    if (encrypted.error) throw encrypted.error;
     if (useAuthStore.getState().session?.user.id !== owner) return;
     useAppStore.setState((s) => ({
       backupReceipts: Object.fromEntries(

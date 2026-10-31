@@ -1,5 +1,9 @@
 # Til Codex på PC: fortsett herfra
 
+## Nyeste iPhone-bygg — 31. oktober 2026
+
+[Preview 15](https://expo.dev/accounts/xamse10/projects/vyro/builds/cb69dbb1-0b93-47b9-9753-a507865f00b0) er **FINISHED** 10:44:17 UTC, versjon 0.1.0 (15), med installasjonsfil. Kilde: commit `c3158b3`, inkludert klubbsoner/eiernåler, klubbresultater og sikkerhetsarbeidet fra 28.–30. oktober. Typecheck, lint og alle 547 tester i 86 suiter består på nytt. Eksisterende app-ID/signering for iPhone, widget og Watch er beholdt; installer over eksisterende VYRO. Ingen Git-push eller TestFlight-innsending utført i byggerunden. Fysisk iPhone-test av klubbkart, profilbilder, to kontoers soneforsøk og sikkerhetsflyter gjenstår. Se nyeste `docs/testing.md`, `docs/roadmap.md` og `docs/social-and-turf.md`; eldre status nedenfor er historikk.
+
 ## Nyeste retting — Start med bakgrunn på, 27. oktober 2026
 
 [Preview 7](https://expo.dev/accounts/xamse10/projects/vyro/builds/667d8a24-3308-4843-bf22-ac766f8c328e) er **FINISHED** 18:10:49 UTC, versjon 0.1.0 (7). Typecheck/lint og 404 tester i 67 suiter består. Installer over eksisterende VYRO. Brukeren må bekrefte fysisk Start/locking/Live Activity på iPhone.

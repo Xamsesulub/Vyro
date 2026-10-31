@@ -1,5 +1,12 @@
 # Testing
 
+## Signert iPhone-preview 15 — 31. oktober 2026
+
+- Før bygging: typecheck, lint og **547 tester i 86 suiter** består på nytt på commit `c3158b3`.
+- [EAS preview 15](https://expo.dev/accounts/xamse10/projects/vyro/builds/cb69dbb1-0b93-47b9-9753-a507865f00b0) er **FINISHED** 31. oktober kl. 11:44:17 norsk tid (10:44:17 UTC), versjon 0.1.0 (15), og har en installasjonsfil. Eksisterende ad hoc-signering for VYRO, widget og Watch ble brukt.
+- Bygget inkluderer klubbkartet og sikkerhetsendringene. Installer over eksisterende app. Fysiske kontroller beskrevet nedenfor gjenstår, inkludert native profilbilder, klubbbytte, ekte soneforsøk, kryptert backup og kontoflyt. Et vellykket signert bygg er ikke fysisk funksjonsverifisering.
+- Ingen produksjonstestdata, Git-push eller TestFlight-innsending i denne byggerunden.
+
 ## Klubbsoner og eiernåler — 30. oktober 2026
 
 - Ekstra simulering før brukerens egen push: **58 klubbkontroller + 35 sonekontroller + 30 app-tester i fem suiter** består på nytt, sammen med typecheck og lint. Simuleringen bruker 20 fiktive medlemmer, etterfølgende eierskifter, resultatlisten, forsøk fra feil klubb, utmelding, blokkering, gjentatt innsending og avvisning av simulerte økter. Ingen produksjonsskriving eller Git-push. Dette er fortsatt en funksjonstest, ikke en måling av 20 samtidige brukere eller en fysisk iPhone-test.

@@ -1,5 +1,9 @@
 # Leveranseplan
 
+## iPhone-preview 15 ferdig — 31. oktober 2026
+
+[Preview 15](https://expo.dev/accounts/xamse10/projects/vyro/builds/cb69dbb1-0b93-47b9-9753-a507865f00b0) er **FINISHED**, versjon 0.1.0 (15), med installasjonsfil. Bygget bruker commit `c3158b3` og inkluderer klubbsoner/eiernåler samt sikkerhetsarbeidet nedenfor. Eksisterende app-ID og signering for iPhone, widget og Watch er beholdt. Alle 547 tester, typecheck og lint bestod igjen før opplasting. Fysisk testing av den nye appen gjenstår; installer over eksisterende VYRO. Ingen Git-push eller TestFlight-innsending er gjort i denne byggerunden.
+
 ## Klubbsoner med eiernåler — 30. oktober 2026
 
 Kart → Soner åpner nå et eget klubbkart etter den godkjente skissen: VYRO-topp, klubbvalg og medlemsantall, Soner/Resultater, fargede løypesoner, profilbilder i kartnåler og et kompakt sonekort. Bildet viser eieren av sonen, ikke personens nåværende posisjon. Manglende bilde får en initial. Klubbens side har en direkte inngang til sonene.
